@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using IATK;
 
-public class VisualisationManager : MonoBehaviour {
+public class ChartManager : MonoBehaviour {
 
     public CSVDataSource dataSource;
-    private List<VisualisationInteractor> visualisations;
+    private List<Chart> visualisations;
 
     private void Start()
     {
-        visualisations = new List<VisualisationInteractor>();
+        visualisations = new List<Chart>();
     }
 
     private void Update()
@@ -28,7 +28,7 @@ public class VisualisationManager : MonoBehaviour {
     private void AddVisualisation()
     {
         GameObject vis = new GameObject();
-        VisualisationInteractor interactor = vis.AddComponent<VisualisationInteractor>();
+        Chart interactor = vis.AddComponent<Chart>();
         visualisations.Add(interactor);
 
         interactor.Initialise(dataSource);
@@ -41,7 +41,7 @@ public class VisualisationManager : MonoBehaviour {
     private void asd()
     {
         GameObject vis = new GameObject();
-        VisualisationInteractor interactor = vis.AddComponent<VisualisationInteractor>();
+        Chart interactor = vis.AddComponent<Chart>();
         visualisations.Add(interactor);
 
         interactor.Initialise(dataSource);

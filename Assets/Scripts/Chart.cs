@@ -8,11 +8,12 @@ using VRTK.GrabAttachMechanics;
 /// <summary>
 /// Acts as a wrapper for IATK's visualisation script
 /// </summary>
+[RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(VRTK_InteractableObject))]
 [RequireComponent(typeof(VRTK_ChildOfControllerGrabAttach))]
 [RequireComponent(typeof(BoxCollider))]
 [RequireComponent(typeof(Visualisation))]
-public class VisualisationInteractor : MonoBehaviour {
+public class Chart : MonoBehaviour {
 
     private Visualisation visualisation;
     private VRTK_InteractableObject interactableObject;
@@ -20,6 +21,7 @@ public class VisualisationInteractor : MonoBehaviour {
 
     private Vector3 scale = new Vector3(0.25f, 0.25f, 0.25f);
 
+    private bool isAttached = false;
 
     public void Initialise(CSVDataSource dataSource)
     {
@@ -41,6 +43,25 @@ public class VisualisationInteractor : MonoBehaviour {
 
         // Add collider
         boxCollider = gameObject.GetComponent<BoxCollider>();
+        boxCollider.isTrigger = true;
+
+        // Configure rigidbody
+        Rigidbody rb = gameObject.GetComponent<Rigidbody>();
+        rb.useGravity = false;
+        rb.isKinematic = true;
+    }
+
+    private void Update()
+    {
+        if (isAttached && interactableObject.IsGrabbed())
+        {
+            if (Vector3.Distance(transform.position, interactableObject.GetGrabbingObject().transform.position) > 0.2f)
+            {
+                GameObject.FindGameObjectWithTag("Screen").GetComponent<Screen>().DetachChart(this);
+                gameObject.transform.localPosition = Vector3.zero;
+                isAttached = false;
+            }
+        }
     }
 
     public void SetDataSource(CSVDataSource dataSource)
@@ -143,5 +164,14 @@ public class VisualisationInteractor : MonoBehaviour {
 
         boxCollider.center = new Vector3(xCenter, yCenter, zCenter);
         boxCollider.size = new Vector3(xSize, ySize, zSize);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.tag == "Screen")
+        {
+            other.gameObject.GetComponent<Screen>().AttachChart(this);
+            isAttached = true;
+        }
     }
 }
