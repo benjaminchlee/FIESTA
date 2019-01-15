@@ -4,31 +4,171 @@ using UnityEngine;
 using IATK;
 using VRTK;
 using VRTK.GrabAttachMechanics;
+using System;
 
 /// <summary>
 /// Acts as a wrapper for IATK's visualisation script
 /// </summary>
-[RequireComponent(typeof(Rigidbody))]
-[RequireComponent(typeof(VRTK_InteractableObject))]
-[RequireComponent(typeof(VRTK_ChildOfControllerGrabAttach))]
-[RequireComponent(typeof(BoxCollider))]
+//[RequireComponent(typeof(Rigidbody))]
+//[RequireComponent(typeof(SpringJoint))]
+//[RequireComponent(typeof(VRTK_MoveTransformGrabAttach))]
+//[RequireComponent(typeof(VRTK_InteractableObject))]
+//[RequireComponent(typeof(BoxCollider))]
 [RequireComponent(typeof(Visualisation))]
 public class Chart : MonoBehaviour {
 
+    private GameObject screen;
     private Visualisation visualisation;
     private VRTK_InteractableObject interactableObject;
+    private VRTK_BaseGrabAttach grabAttach;
     private BoxCollider boxCollider;
 
-    private Vector3 scale = new Vector3(0.25f, 0.25f, 0.25f);
-
+    public bool isAnimating = false;
     private bool isAttached = false;
+    private Coroutine activeCoroutine;
+
+    /// <summary>
+    /// Visualisation properties
+    /// </summary>
+    public DataSource DataSource
+    {
+        get { return visualisation.dataSource; }
+        set { visualisation.dataSource = value; }
+    }
+
+    public AbstractVisualisation.VisualisationTypes VisualisationType
+    {
+        get { return visualisation.visualisationType; }
+        set { visualisation.CreateVisualisation(value); }
+    }
+
+    public AbstractVisualisation.GeometryType GeometryType
+    {
+        get { return visualisation.geometry; }
+        set
+        {
+            visualisation.geometry = value;
+            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.GeometryType);
+        }
+    }
+
+    public string XDimension
+    {
+        get { return visualisation.xDimension.Attribute; }
+        set
+        {
+            // Resize to zero to ensure uniform axes scaling
+            Vector3 previousScale = transform.localScale;
+            transform.localScale = Vector3.one;
+
+            visualisation.xDimension = value;
+            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.X);
+            SetColliderBounds();
+
+            // Resize back to original
+            transform.localScale = previousScale;
+        }
+    }
+
+    public string YDimension
+    {
+        get { return visualisation.yDimension.Attribute; }
+        set
+        {
+            // Resize to zero to ensure uniform axes scaling
+            Vector3 previousScale = transform.localScale;
+            transform.localScale = Vector3.one;
+
+            visualisation.yDimension = value;
+            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Y);
+            SetColliderBounds();
+
+            // Resize back to original
+            transform.localScale = previousScale;
+        }
+    }
+
+    public string ZDimension
+    {
+        get { return visualisation.zDimension.Attribute; }
+        set
+        {
+            // Resize to zero to ensure uniform axes scaling
+            Vector3 previousScale = transform.localScale;
+            transform.localScale = Vector3.one;
+
+            visualisation.zDimension = value;
+            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Z);
+            SetColliderBounds();
+
+            // Resize back to original
+            transform.localScale = previousScale;
+        }
+    }
+
+    public Color Color
+    {
+        get { return visualisation.colour; }
+        set
+        {
+            visualisation.colour = value;
+            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
+        }
+    }
+
+    public float Size
+    {
+        get { return visualisation.size; }
+        set
+        {
+            visualisation.size = value;
+            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Size);
+        }
+    }
+
+    public float Width
+    {
+        get { return visualisation.width; }
+        set
+        {
+            visualisation.width = value;
+            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.VisualisationWidth);
+            SetColliderBounds();
+        }
+    }
+
+    public float Height
+    {
+        get { return visualisation.height; }
+        set
+        {
+            visualisation.height = value;
+            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.VisualisationHeight);
+            SetColliderBounds();
+        }
+    }
+
+    public float Depth
+    {
+        get { return visualisation.depth; }
+        set
+        {
+            visualisation.depth = value;
+            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.VisualisationLength);
+            SetColliderBounds();
+        }
+    }
+
 
     public void Initialise(CSVDataSource dataSource)
     {
         visualisation = gameObject.GetComponent<Visualisation>();
+        gameObject.tag = "Chart";
 
-        SetDataSource(dataSource);
+        DataSource = dataSource;
 
+        screen = GameObject.FindGameObjectWithTag("Screen");
+        
         // Set blank values
         visualisation.colourDimension = "Undefined";
         visualisation.sizeDimension = "Undefined";
@@ -36,113 +176,65 @@ public class Chart : MonoBehaviour {
         visualisation.colorPaletteDimension = "Undefined";
 
         // Add VRTK interactable scripts
-        interactableObject = gameObject.GetComponent<VRTK_InteractableObject>();
+        interactableObject = gameObject.AddComponent<VRTK_InteractableObject>();
         interactableObject.isGrabbable = true;
-        interactableObject.grabAttachMechanicScript = gameObject.GetComponent<VRTK_ChildOfControllerGrabAttach>();
+        grabAttach = gameObject.AddComponent<VRTK_ChildOfControllerGrabAttach>();
+        interactableObject.grabAttachMechanicScript = grabAttach;
         interactableObject.grabAttachMechanicScript.precisionGrab = true;
 
+        // Subscribe to events
+        interactableObject.InteractableObjectGrabbed += ChartGrabbed;
+        interactableObject.InteractableObjectUngrabbed += ChartUngrabbed;
+
         // Add collider
-        boxCollider = gameObject.GetComponent<BoxCollider>();
+        boxCollider = gameObject.AddComponent<BoxCollider>();
         boxCollider.isTrigger = true;
 
         // Configure rigidbody
-        Rigidbody rb = gameObject.GetComponent<Rigidbody>();
+        Rigidbody rb = gameObject.AddComponent<Rigidbody>();
         rb.useGravity = false;
         rb.isKinematic = true;
     }
 
+    private void ChartGrabbed(object sender, InteractableObjectEventArgs e)
+    {
+        Rigidbody rb = gameObject.GetComponent<Rigidbody>();
+        rb.isKinematic = false;
+        InteractionsManager.Instance.GrabbingStarted();  // TODO: FIX
+    }
+
+    private void ChartUngrabbed(object sender, InteractableObjectEventArgs e)
+    {
+        Rigidbody rb = gameObject.GetComponent<Rigidbody>();
+        rb.isKinematic = true;
+        InteractionsManager.Instance.GrabbingFinished();  // TODO: FIX
+    }
+
+    private void OnDestroy()
+    {
+        //Unsubscribe to events
+        interactableObject.InteractableObjectGrabbed -= ChartGrabbed;
+        interactableObject.InteractableObjectUngrabbed -= ChartUngrabbed;
+    }
+
     private void Update()
     {
+        // TODO: MAKE BETTER
         if (isAttached && interactableObject.IsGrabbed())
         {
-            if (Vector3.Distance(transform.position, interactableObject.GetGrabbingObject().transform.position) > 0.2f)
+            if (Vector3.Distance(screen.GetComponent<Collider>().ClosestPoint(gameObject.transform.TransformPoint(boxCollider.bounds.center)), gameObject.transform.TransformPoint(boxCollider.bounds.center)) > 0.25f)
             {
-                GameObject.FindGameObjectWithTag("Screen").GetComponent<Screen>().DetachChart(this);
-                gameObject.transform.localPosition = Vector3.zero;
-                isAttached = false;
+                DetachFromScreen();
             }
         }
     }
+    
 
-    public void SetDataSource(CSVDataSource dataSource)
-    {
-        if (visualisation != null)
-        {
-            visualisation.dataSource = dataSource;
-        }
-    }
-
-    public void SetVisualisationType(AbstractVisualisation.VisualisationTypes visualisationType)
-    {
-        if (visualisation != null)
-        {
-            visualisation.CreateVisualisation(visualisationType);
-        }
-    }
-
-    public void SetXDimension(string dimension)
-    {
-        if (visualisation != null)
-        {
-            // Resize back up to ensure uniform axes scaling
-            gameObject.transform.localScale = Vector3.one;
-
-            visualisation.xDimension = dimension;
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.X);
-            CalculateColliderBounds();
-
-            // Resize back down
-            gameObject.transform.localScale = scale;
-        }
-    }
-
-    public void SetYDimension(string dimension)
-    {
-        if (visualisation != null)
-        {
-            gameObject.transform.localScale = Vector3.one;
-
-            visualisation.yDimension = dimension;
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Y);
-            CalculateColliderBounds();
-
-            gameObject.transform.localScale = scale;
-        }
-    }
-
-    public void SetZDimension(string dimension)
-    {
-        if (visualisation != null)
-        {
-            gameObject.transform.localScale = Vector3.one;
-
-            visualisation.zDimension = dimension;
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Z);
-            CalculateColliderBounds();
-
-            gameObject.transform.localScale = scale;
-        }
-    }
-
-    public void SetGeometry(AbstractVisualisation.GeometryType geometryType)
-    {
-        if (visualisation != null)
-        {
-            visualisation.geometry = geometryType;
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.GeometryType);
-        }
-    }
-
-    public void SetColor(Color color)
-    {
-        if (visualisation != null)
-        {
-            visualisation.colour = color;
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
-        }
-    }
-
-    private void CalculateColliderBounds()
+    /// <summary>
+    /// Sets the size of the collider based on the size and dimensions stored in the Visualisation. This should be called whenever a dimension is added/changed or when
+    /// the size is changed.
+    /// </summary>
+    private void SetColliderBounds()
     {
         float width = visualisation.width;
         float height = visualisation.height;
@@ -168,10 +260,113 @@ public class Chart : MonoBehaviour {
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.tag == "Screen")
+        if (!isAnimating && !isAttached && other.tag == "Screen")
         {
             other.gameObject.GetComponent<Screen>().AttachChart(this);
             isAttached = true;
+            AttachToScreen();
         }
+    }
+
+    public void AnimateTowards(Vector3 targetPos, float duration)
+    {
+        if (activeCoroutine != null)
+        {
+            StopCoroutine(activeCoroutine);
+        }
+
+        activeCoroutine = StartCoroutine(AnimateTo(targetPos, duration));
+    }
+
+    public void AnimateTowards(GameObject targetObj, float duration)
+    {
+        if (activeCoroutine != null)
+        {
+            StopCoroutine(activeCoroutine);
+        }
+
+        activeCoroutine = StartCoroutine(AnimateTo(targetObj, duration));
+    }
+
+    private IEnumerator AnimateTo(Vector3 targetPos, float duration)
+    {
+        SetAnimating(true);
+        float time = 0;
+        Vector3 startPos = gameObject.transform.position;
+        Rigidbody rb = gameObject.GetComponent<Rigidbody>();
+
+        while (time < duration)
+        {
+            rb.MovePosition(Vector3.Lerp(startPos, targetPos, time / duration));
+            time += Time.deltaTime;
+            yield return null;
+        }
+
+        gameObject.transform.position = gameObject.transform.position;
+        SetAnimating(false);
+    }
+
+    private IEnumerator AnimateTo(GameObject targetObj, float duration)
+    {
+
+        SetAnimating(true);
+        float time = 0;
+        Vector3 startPos = gameObject.transform.position;
+        Rigidbody rb = gameObject.GetComponent<Rigidbody>();
+
+        while (time < duration)
+        {
+            rb.MovePosition(Vector3.Lerp(startPos, targetObj.transform.position, time / duration));
+            time += Time.deltaTime;
+            yield return null;
+        }
+
+        gameObject.transform.position = targetObj.transform.position;
+        SetAnimating(false);
+    }
+
+    private void SetAnimating(bool flag)
+    {
+        if (flag)
+        {
+            isAnimating = true;
+            grabAttach.enabled = false;
+        }
+        else
+        {
+            isAnimating = false;
+            grabAttach.enabled = true;
+        }
+    }
+
+    private void AttachToScreen()
+    {
+        screen.GetComponent<Screen>().AttachChart(this);
+        isAttached = true;
+        
+        //Destroy(grabAttach);
+        //grabAttach = gameObject.AddComponent<VRTK_SpringJointGrabAttach>();
+        //SpringJoint springJoint = gameObject.AddComponent<SpringJoint>();
+        //springJoint.spring = 100000;
+        //interactableObject.grabAttachMechanicScript = grabAttach;
+
+        Vector3 newPos = screen.GetComponent<Collider>().ClosestPoint(gameObject.transform.TransformPoint(boxCollider.bounds.center));
+        newPos = screen.transform.InverseTransformPoint(newPos);
+        newPos.z = -0.025f;
+        newPos = screen.transform.TransformPoint(newPos);
+        AnimateTowards(newPos, 0.2f);
+    }
+
+    private void DetachFromScreen()
+    {
+        isAttached = false;
+
+        //Destroy(grabAttach);
+        //Destroy(gameObject.GetComponent<SpringJoint>());
+        //grabAttach = gameObject.AddComponent<VRTK_ChildOfControllerGrabAttach>();
+        //interactableObject.grabAttachMechanicScript = grabAttach;
+
+        screen.GetComponent<Screen>().DetachChart(this);
+        //AnimateTowards(interactableObject.GetGrabbingObject(), 0.2f);
     }
 }

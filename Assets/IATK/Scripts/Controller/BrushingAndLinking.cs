@@ -42,7 +42,7 @@ public class BrushingAndLinking : MonoBehaviour
     public Color brushColor = Color.red;
 
     [SerializeField]
-    [Range (1f,10f)]
+    [Range(1f, 10f)]
     public float brushSizeFactor = 1f;
 
     [SerializeField]
@@ -76,6 +76,9 @@ public class BrushingAndLinking : MonoBehaviour
     public Material debugObjectTexture;
 
     public List<string> brushedData;
+
+    // private fields
+    private bool activated = false;
 
     /// <summary>
     /// Runs the shader and writes the result itn the "Result" texture
@@ -143,13 +146,21 @@ public class BrushingAndLinking : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-
         if (brushingVisualisation != null)
             //bind brushing vertices
             initializeComputeAndRenderBuffers(brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.getBigMeshVertices());
 
         Visualisation.OnUpdateViewAction += Visualisation_OnUpdateViewAction;
 
+    }
+
+    public void InitialiseBuffers()
+    {
+        if (brushingVisualisation != null)
+            //bind brushing vertices
+            initializeComputeAndRenderBuffers(brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.getBigMeshVertices());
+
+        Visualisation.OnUpdateViewAction += Visualisation_OnUpdateViewAction;
     }
 
     private void Visualisation_OnUpdateViewAction(AbstractVisualisation.PropertyType propertyType)
@@ -198,13 +209,18 @@ public class BrushingAndLinking : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (brushingVisualisation != null && (brushButtonController))// && brushedVisualisations.Count>0)
+        if (brushingVisualisation != null && (brushButtonController) && input1 != null && input2 != null)// && brushedVisualisations.Count>0)
         {
             updateBrushTexture();
 
             //EXPERIMENTAL - GET details of original data
             // getDetailsOnDemand();
 
+        }
+        else if (brushingVisualisation != null && !activated)
+        {
+            InitialiseBuffers();
+            activated = true;
         }
     }
 
@@ -291,7 +307,7 @@ public class BrushingAndLinking : MonoBehaviour
                 v.BigMesh.SharedMaterial.SetFloat("_DataHeight", texSize);
                 v.BigMesh.SharedMaterial.SetFloat("showBrush", Convert.ToSingle(showBrush));
                 v.BigMesh.SharedMaterial.SetColor("brushColor", brushColor);
-            }            
+            }
         }
 
         foreach (var item in brushedLinkingVisualisations)

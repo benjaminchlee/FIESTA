@@ -15,7 +15,8 @@ public class Screen : MonoBehaviour {
     {
         foreach (Chart chart in attachedCharts)
         {
-            ConstrainChartToScreen(chart);
+            if (!chart.isAnimating)
+                ConstrainChartToScreen(chart);
         }
     }
 
@@ -71,8 +72,8 @@ public class Screen : MonoBehaviour {
         // Force z position
         pos.z = -0.025f;
 
-        chart.transform.position = gameObject.transform.TransformPoint(pos);
-
+        //chart.transform.position = gameObject.transform.TransformPoint(pos);
+        chart.GetComponent<Rigidbody>().MovePosition(gameObject.transform.TransformPoint(pos));
         chart.transform.SetParent(previousParent);
     }
 
@@ -97,7 +98,7 @@ public class Screen : MonoBehaviour {
 
     public void DetachChart(Chart chart)
     {
-        if (!attachedCharts.Contains(chart))
+        if (attachedCharts.Contains(chart))
         {
             attachedCharts.Remove(chart);
         }
