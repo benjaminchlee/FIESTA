@@ -64,15 +64,12 @@ public class ChartManager : MonoBehaviour {
     public Chart DuplicateVisualisation(Chart dupe)
     {
         GameObject vis = new GameObject();
-        vis.transform.position = dupe.transform.position;
-        vis.transform.rotation = dupe.transform.rotation;
-        vis.transform.localScale = dupe.transform.localScale;
-
         Chart chart = vis.AddComponent<Chart>();
         visualisations.Add(chart);
 
         chart.Initialise(dataSource);
         chart.VisualisationType = dupe.VisualisationType;
+        chart.GeometryType = dupe.GeometryType;
         chart.XDimension = dupe.XDimension;
         chart.YDimension = dupe.YDimension;
         chart.ZDimension = dupe.ZDimension;
@@ -81,7 +78,17 @@ public class ChartManager : MonoBehaviour {
         chart.Width = dupe.Width;
         chart.Height = dupe.Height;
         chart.Depth = dupe.Depth;
-        
+
+        vis.transform.position = dupe.transform.position;
+        vis.transform.rotation = dupe.transform.rotation;
+        vis.transform.localScale = dupe.transform.localScale;
+
         return chart;
+    }
+
+    public void RemoveVisualisation(Chart chart)
+    {
+        if (visualisations.Contains(chart))
+            visualisations.Remove(chart);
     }
 }

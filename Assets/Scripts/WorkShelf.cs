@@ -48,6 +48,7 @@ public class WorkShelf : MonoBehaviour
         scatterplot.transform.position = scatterplotTransform.position;
         scatterplot.transform.rotation = scatterplotTransform.rotation;
         scatterplot.transform.localScale = scatterplotTransform.localScale;
+        scatterplot.SetAsPrototype();
 
         foreach (Menu menu in scatterplotButtons)
         {
@@ -61,10 +62,12 @@ public class WorkShelf : MonoBehaviour
         scatterplotMatrix.transform.position = scatterplotMatrixTransform.position;
         scatterplotMatrix.transform.rotation = scatterplotMatrixTransform.rotation;
         scatterplotMatrix.transform.localScale = scatterplotMatrixTransform.localScale;
+        scatterplotMatrix.SetAsPrototype();
 
         // Configure facets
         // TODO
         facet = ChartManager.Instance.CreateVisualisation("Workshelf Facet");
+        facet.SetAsPrototype();
 
         ShowScatterplot();
     }
@@ -104,5 +107,42 @@ public class WorkShelf : MonoBehaviour
         {
             button.SetActive(f);
         }
+    }
+
+    public void SizeSliderValueChanged(float value)
+    {
+        scatterplot.Size = value;
+        scatterplotMatrix.Size = value;
+        facet.Size = value;
+    }
+
+    public void RedSliderValueChanged(float value)
+    {
+        Color color = scatterplot.Color;
+        color.r = value;
+
+        scatterplot.Color = color;
+        scatterplotMatrix.Color = color;
+        facet.Color = color;
+    }
+
+    public void GreenSliderValueChanged(float value)
+    {
+        Color color = scatterplot.Color;
+        color.g = value;
+
+        scatterplot.Color = color;
+        scatterplotMatrix.Color = color;
+        facet.Color = color;
+    }
+
+    public void BlueSliderValueChanged(float value)
+    {
+        Color color = scatterplot.Color;
+        color.b = value;
+
+        scatterplot.Color = color;
+        scatterplotMatrix.Color = color;
+        facet.Color = color;
     }
 }

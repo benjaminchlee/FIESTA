@@ -24,8 +24,14 @@ public class Chart : MonoBehaviour {
     private BoxCollider boxCollider;
 
     public bool isAnimating = false;
+    private bool isPrototype = false;
     private bool isAttached = false;
+    private bool isDestroying = false;
     private Coroutine activeCoroutine;
+
+    private Vector3 originalPos;
+    private Quaternion originalRot;
+
 
     /// <summary>
     /// Visualisation properties
@@ -129,7 +135,7 @@ public class Chart : MonoBehaviour {
         set
         {
             visualisation.size = value;
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Size);
+            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.SizeValues);
         }
     }
 
@@ -213,8 +219,29 @@ public class Chart : MonoBehaviour {
     private void ChartUngrabbed(object sender, InteractableObjectEventArgs e)
     {
         Rigidbody rb = gameObject.GetComponent<Rigidbody>();
-        rb.isKinematic = true;
-        InteractionsManager.Instance.GrabbingFinished();  // TODO: FIX
+        InteractionsManager.Instance.GrabbingFinished(); // TODO: FIX
+
+        if (isPrototype)
+        {
+            rb.isKinematic = true;
+
+            AnimateTowards(originalPos, originalRot, 0.2f);
+        }
+        else
+        {
+            Vector3 velocity = VRTK_DeviceFinder.GetControllerVelocity(VRTK_ControllerReference.GetControllerReference(e.interactingObject));
+            float speed = velocity.magnitude;
+
+            if (speed > 2.5f)
+            {
+                rb.useGravity = true;
+                isDestroying = true;
+            }
+            else
+            {
+                rb.isKinematic = true;
+            }
+        }
     }
 
     private void OnDestroy()
@@ -226,14 +253,61 @@ public class Chart : MonoBehaviour {
 
     private void Update()
     {
-        // TODO: MAKE BETTER
-        if (isAttached && interactableObject.IsGrabbed())
+        bool isBeingGrabbed = interactableObject.IsGrabbed();
+
+        if (isBeingGrabbed)
         {
-            if (Vector3.Distance(screen.GetComponent<Collider>().ClosestPoint(gameObject.transform.TransformPoint(boxCollider.bounds.center)), gameObject.transform.TransformPoint(boxCollider.bounds.center)) > 0.25f)
+            // TODO: MAKE BETTER
+            if (isAttached)
             {
-                DetachFromScreen();
+                if (Vector3.Distance(screen.GetComponent<Collider>().ClosestPoint(gameObject.transform.TransformPoint(boxCollider.bounds.center)), gameObject.transform.TransformPoint(boxCollider.bounds.center)) > 0.25f)
+                {
+                    DetachFromScreen();
+                }
+            }
+
+            if (isPrototype)
+            {
+                if (Vector3.Distance(transform.position, originalPos) > 0.25f)
+                {
+                    // Create a duplicate of this visualisation
+                    Chart dupe = ChartManager.Instance.DuplicateVisualisation(this);
+
+                    VRTK_InteractTouch interactTouch = interactableObject.GetGrabbingObject().GetComponent<VRTK_InteractTouch>();
+                    VRTK_InteractGrab interactGrab = interactableObject.GetGrabbingObject().GetComponent<VRTK_InteractGrab>();
+                    
+                    // Drop this visualisation (it wil return automatically)
+                    interactGrab.ForceRelease();
+
+                    // Grab the duplicate
+                    interactTouch.ForceTouch(dupe.gameObject);
+                    interactGrab.AttemptGrab();
+                }
             }
         }
+        else if (isDestroying)
+        {
+            float size = transform.localScale.x;
+            size -= 0.005f;
+
+            if (size > 0)
+            {
+                transform.localScale = Vector3.one * size;
+            }
+            else
+            {
+                ChartManager.Instance.RemoveVisualisation(this);
+                Destroy(gameObject);
+            }
+        }
+    }
+
+    public void SetAsPrototype()
+    {
+        isPrototype = true;
+
+        originalPos = transform.position;
+        originalRot = transform.rotation; 
     }
 
     /// <summary>
@@ -274,14 +348,14 @@ public class Chart : MonoBehaviour {
         }
     }
 
-    public void AnimateTowards(Vector3 targetPos, float duration)
+    public void AnimateTowards(Vector3 targetPos, Quaternion targetRot, float duration)
     {
         if (activeCoroutine != null)
         {
             StopCoroutine(activeCoroutine);
         }
 
-        activeCoroutine = StartCoroutine(AnimateTo(targetPos, duration));
+        activeCoroutine = StartCoroutine(AnimateTo(targetPos, targetRot, duration));
     }
 
     public void AnimateTowards(GameObject targetObj, float duration)
@@ -294,21 +368,24 @@ public class Chart : MonoBehaviour {
         activeCoroutine = StartCoroutine(AnimateTo(targetObj, duration));
     }
 
-    private IEnumerator AnimateTo(Vector3 targetPos, float duration)
+    private IEnumerator AnimateTo(Vector3 targetPos, Quaternion targetRot, float duration)
     {
         SetAnimating(true);
         float time = 0;
-        Vector3 startPos = gameObject.transform.position;
+        Vector3 startPos = transform.position;
+        Quaternion startRot = transform.rotation;
         Rigidbody rb = gameObject.GetComponent<Rigidbody>();
 
         while (time < duration)
         {
-            rb.MovePosition(Vector3.Lerp(startPos, targetPos, time / duration));
+            rb.MovePosition(Vector3.Slerp(startPos, targetPos, time / duration));
+            rb.MoveRotation(Quaternion.Slerp(startRot, targetRot, time / duration));
             time += Time.deltaTime;
             yield return null;
         }
 
-        gameObject.transform.position = gameObject.transform.position;
+        rb.MovePosition(targetPos);
+        rb.MoveRotation(targetRot);
         SetAnimating(false);
     }
 
@@ -360,7 +437,7 @@ public class Chart : MonoBehaviour {
         newPos = screen.transform.InverseTransformPoint(newPos);
         newPos.z = -0.025f;
         newPos = screen.transform.TransformPoint(newPos);
-        AnimateTowards(newPos, 0.2f);
+        AnimateTowards(newPos, screen.transform.rotation, 0.2f);
     }
 
     private void DetachFromScreen()

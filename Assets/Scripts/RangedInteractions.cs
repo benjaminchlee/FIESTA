@@ -929,7 +929,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             SetInteractionState(InteractionState.RangedInteraction);
         }
 
-        rangedPullCreatedGameObject.GetComponent<Chart>().AnimateTowards(rangedInteractionGameObject.transform.position, 0.1f);
+        //TODO: Fix
+        //rangedPullCreatedGameObject.GetComponent<Chart>().AnimateTowards(rangedInteractionGameObject.transform.position,  0.1f);
     }
 
     // Override the color of the laser such that it is still invalid when hitting the just the screen itself

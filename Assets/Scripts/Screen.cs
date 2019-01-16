@@ -88,7 +88,7 @@ public class Screen : MonoBehaviour {
 
             Vector3 newPos = gameObject.GetComponent<Collider>().ClosestPoint(chart.GetComponent<Collider>().bounds.center);
 
-            chart.transform.position = newPos;
+            //chart.transform.position = newPos;
 
             chart.transform.SetParent(previousParent);
 
