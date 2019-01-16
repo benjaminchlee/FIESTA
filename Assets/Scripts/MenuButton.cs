@@ -4,13 +4,18 @@ using UnityEngine;
 using VRTK;
 using TMPro;
 using System;
+using UnityEngine.Events;
 
 public class MenuButton : MonoBehaviour {
 
     [SerializeField]
     private TextMeshPro textMesh;
 
-    public Menu ParentMenu { get; set; }
+    [System.Serializable]
+    public class ButtonClickedEvent : UnityEvent<MenuButton> {}
+
+    public ButtonClickedEvent ButtonClicked;
+
     public string Text
     {
         get { return textMesh.text; }
@@ -26,12 +31,7 @@ public class MenuButton : MonoBehaviour {
             textMesh = GetComponent<TextMeshPro>();
 
         interactableObject = GetComponent<VRTK_InteractableObject>();
-        interactableObject.InteractableObjectUsed += ButtonClicked;
-    }
-
-    private void OnDestroy()
-    {
-        interactableObject.InteractableObjectUsed -= ButtonClicked;
+        interactableObject.InteractableObjectUsed += OnButtonClicked;
     }
 
     public void AnimateTowards(Vector3 targetPos, float duration, bool toDisable = false)
@@ -62,8 +62,8 @@ public class MenuButton : MonoBehaviour {
             gameObject.SetActive(false);
     }
 
-    private void ButtonClicked(object sender, InteractableObjectEventArgs e)
+    private void OnButtonClicked(object sender, InteractableObjectEventArgs e)
     {
-        ParentMenu.ButtonClicked(this);
+        ButtonClicked.Invoke(this);
     }
 }

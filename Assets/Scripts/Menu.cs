@@ -45,12 +45,13 @@ public class Menu : MonoBehaviour {
         foreach (string dimensionName in dimensions)
         {
             GameObject go = Instantiate(menuButtonPrefab);
+            go.transform.SetParent(transform);
             go.transform.position = transform.position;
             go.transform.rotation = transform.rotation;
 
             MenuButton button = go.GetComponent<MenuButton>();
             buttons.Add(button);
-            button.ParentMenu = this;
+            button.ButtonClicked.AddListener(ButtonClicked);
             button.Text = dimensionName;
 
             go.SetActive(false);

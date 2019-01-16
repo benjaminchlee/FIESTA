@@ -22,13 +22,10 @@ public class ChartManager : MonoBehaviour {
         {
             Destroy(gameObject);
         }
-    }
 
-    private void Start()
-    {
         visualisations = new List<Chart>();
     }
-
+    
     private void Update()
     {
         if (Input.GetKeyDown("a"))
@@ -48,6 +45,18 @@ public class ChartManager : MonoBehaviour {
         chart.GeometryType = AbstractVisualisation.GeometryType.Points;
         chart.XDimension = "mpg";
         chart.YDimension = "cylinders";
+
+        return chart;
+    }
+
+    public Chart CreateVisualisation(string name)
+    {
+        GameObject vis = new GameObject();
+        vis.name = name;
+        Chart chart = vis.AddComponent<Chart>();
+        visualisations.Add(chart);
+
+        chart.Initialise(dataSource);
 
         return chart;
     }

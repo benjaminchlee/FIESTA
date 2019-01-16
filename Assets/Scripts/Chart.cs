@@ -39,7 +39,14 @@ public class Chart : MonoBehaviour {
     public AbstractVisualisation.VisualisationTypes VisualisationType
     {
         get { return visualisation.visualisationType; }
-        set { visualisation.CreateVisualisation(value); }
+        set
+        {
+            if (value == AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX)
+            {
+                visualisation.zScatterplotMatrixDimensions = new DimensionFilter[0];
+            }
+            visualisation.CreateVisualisation(value);
+        }
     }
 
     public AbstractVisualisation.GeometryType GeometryType
@@ -228,7 +235,6 @@ public class Chart : MonoBehaviour {
             }
         }
     }
-    
 
     /// <summary>
     /// Sets the size of the collider based on the size and dimensions stored in the Visualisation. This should be called whenever a dimension is added/changed or when
