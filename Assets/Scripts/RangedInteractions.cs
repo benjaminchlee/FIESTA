@@ -74,9 +74,9 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     [SerializeField] [Tooltip("The distance that the controller needs to be moved until an object finishes being pulled from the screen.")]
     private float rangedPullCompleteThreshold = 0.2f;
 
-    private Vector3 rangedPullStartPosition;
-    private GameObject rangedInteractionGameObject;
-    private GameObject rangedPullCreatedGameObject;
+    private Vector3 rangedPullControllerStartPosition;
+    private Vector3 rangedPullObjectStartPosition;
+    private GameObject rangedPullGameObject;
     private bool isPullable = false;
 
     [Header("Details on Demand Parameters")]
@@ -648,7 +648,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
             if (collidedObject != null)
             {
-                if (collidedObject == screen || collidedObject.tag == "Screen")
+                if (collidedObject == screen || collidedObject.tag == "DisplayScreen")
                 {
                     int nbLassoPoints = lassoRenderer.positionCount;
 
@@ -835,8 +835,9 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             if (collidedObject.tag == "Chart")
             {
                 isPullable = true;
-                rangedInteractionGameObject = collidedObject;
-                rangedPullStartPosition = transform.position;
+                rangedPullGameObject = collidedObject;
+                rangedPullControllerStartPosition = transform.position;
+                rangedPullObjectStartPosition = collidedObject.transform.position;
                 SetInteractionState(InteractionState.RangedInteracting);
             }
         }
@@ -846,7 +847,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     {
         if (isPullable)
         {
-            float distance = Vector3.Distance(rangedPullStartPosition, transform.position);
+            float distance = Vector3.Distance(rangedPullControllerStartPosition, transform.position);
 
             // Vibrate the controller based on how far away it is from the origin
             float vibrateAmount = 0.75f * (distance / rangedPullCompleteThreshold);
@@ -874,7 +875,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         /*
         GameObject collidedObject = GetCollidedObject();
         // If the object the pointer is colliding with is the one which was initially "clicked"
-        if (collidedObject != null && collidedObject == rangedInteractionGameObject)
+        if (collidedObject != null && collidedObject == rangedPullGameObject)
         {
             if (collidedObject.tag == "HtmlElement")
             {
@@ -891,7 +892,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
     private void RangedPullLoop()
     {
-        float distance = Vector3.Distance(rangedPullStartPosition, transform.position);
+        float distance = Vector3.Distance(rangedPullControllerStartPosition, transform.position);
 
         // Vibrate the controller based on how far away it is from the origin
         float vibrateAmount = 0.75f * (distance / rangedPullCompleteThreshold);
@@ -902,18 +903,19 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         {
             SetInteractionState(InteractionState.None);
 
-            rangedPullCreatedGameObject.transform.position = transform.position;
+            rangedPullGameObject.transform.position = transform.position;
 
+            GetComponent<VRTK_InteractTouch>().ForceTouch(rangedPullGameObject);
             GetComponent<VRTK_InteractGrab>().AttemptGrab();
         }
         else
         {
-            Rigidbody rb = rangedPullCreatedGameObject.GetComponent<Rigidbody>();
-            rb.MovePosition(Vector3.Lerp(rangedInteractionGameObject.transform.position, transform.position, distance / rangedPullCompleteThreshold));
+            Rigidbody rb = rangedPullGameObject.GetComponent<Rigidbody>();
+            rb.MovePosition(Vector3.Lerp(rangedPullObjectStartPosition, transform.position, distance / rangedPullCompleteThreshold));
 
             // Lock LookAt rotation to only rotate along the y axis
-            Vector3 targetPostition = new Vector3(Camera.main.transform.position.x, rangedPullCreatedGameObject.transform.position.y, Camera.main.transform.position.z);
-            rangedPullCreatedGameObject.transform.LookAt(targetPostition);
+            //Vector3 targetPosition = new Vector3(Camera.main.transform.position.x, rangedPullGameObject.transform.position.y, Camera.main.transform.position.z);
+            //rangedPullGameObject.transform.LookAt(targetPosition);
         }
     }
 
@@ -930,7 +932,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         }
 
         //TODO: Fix
-        //rangedPullCreatedGameObject.GetComponent<Chart>().AnimateTowards(rangedInteractionGameObject.transform.position,  0.1f);
+        //rangedPullCreatedGameObject.GetComponent<Chart>().AnimateTowards(rangedPullGameObject.transform.position,  0.1f);
     }
 
     // Override the color of the laser such that it is still invalid when hitting the just the screen itself

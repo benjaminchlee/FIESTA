@@ -2,33 +2,41 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Screen : MonoBehaviour {
+public class DisplayScreen : MonoBehaviour {
 
-    private List<Chart> attachedCharts;
+    //private List<Chart> attachedCharts;
 
-    private void Start()
+    //private void Start()
+    //{
+    //    attachedCharts = new List<Chart>();
+    //}
+
+    //private void Update()
+    //{
+    //    foreach (Chart chart in attachedCharts)
+    //    {
+    //        if (!chart.isAnimating)
+    //            ConstrainChartToScreen(chart);
+    //    }
+    //}
+
+    public Vector3 CalculatePositionOnScreen(Chart chart)
     {
-        attachedCharts = new List<Chart>();
-    }
-
-    private void Update()
-    {
-        foreach (Chart chart in attachedCharts)
-        {
-            if (!chart.isAnimating)
-                ConstrainChartToScreen(chart);
-        }
-    }
-
-    private void ConstrainChartToScreen(Chart chart)
-    {
-        Transform previousParent = chart.transform.parent;
+        // Temporarily remove parent for calculations
+        Transform oldParent = chart.transform.parent;
         chart.transform.parent = null;
-                
-        chart.transform.rotation = gameObject.transform.rotation;  // Force rotation
 
-        // Position
-        Vector3 pos = gameObject.transform.InverseTransformPoint(chart.transform.position);
+        // Calculate initial position of the chart
+        Vector3 pos = gameObject.GetComponent<Collider>().ClosestPoint(chart.GetComponent<Collider>().bounds.center);
+
+        // Temporarily move the chart to that position, storing the previous position and rotation
+        Vector3 oldPos = chart.transform.position;
+        Quaternion oldRot = chart.transform.rotation;
+        chart.transform.position = pos;
+        chart.transform.rotation = CalculateRotationOnScreen(chart);
+        
+        // Convert the working position to local space
+        pos = gameObject.transform.InverseTransformPoint(pos);
 
         // Calculate corners of the chart's collider from local to world space
         BoxCollider b = chart.GetComponent<BoxCollider>();
@@ -72,35 +80,19 @@ public class Screen : MonoBehaviour {
         // Force z position
         pos.z = -0.025f;
 
-        //chart.transform.position = gameObject.transform.TransformPoint(pos);
-        chart.GetComponent<Rigidbody>().MovePosition(gameObject.transform.TransformPoint(pos));
-        chart.transform.SetParent(previousParent);
+        // Convert the working pos back to world space
+        pos = gameObject.transform.TransformPoint(pos);
+
+        // Restore the original position, rotation and parent
+        chart.transform.position = oldPos;
+        chart.transform.rotation = oldRot;
+        chart.transform.SetParent(oldParent);
+
+        return pos;
     }
 
-    public void AttachChart(Chart chart)
+    public Quaternion CalculateRotationOnScreen(Chart chart)
     {
-        if (!attachedCharts.Contains(chart))
-        {
-            attachedCharts.Add(chart);
-
-            Transform previousParent = chart.transform.parent;
-            chart.transform.parent = null;
-
-            Vector3 newPos = gameObject.GetComponent<Collider>().ClosestPoint(chart.GetComponent<Collider>().bounds.center);
-
-            //chart.transform.position = newPos;
-
-            chart.transform.SetParent(previousParent);
-
-            ConstrainChartToScreen(chart);
-        }
-    }
-
-    public void DetachChart(Chart chart)
-    {
-        if (attachedCharts.Contains(chart))
-        {
-            attachedCharts.Remove(chart);
-        }
+        return transform.rotation;
     }
 }

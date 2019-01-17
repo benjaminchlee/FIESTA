@@ -5,6 +5,7 @@ using IATK;
 using VRTK;
 using VRTK.GrabAttachMechanics;
 using System;
+using DG.Tweening;
 
 /// <summary>
 /// Acts as a wrapper for IATK's visualisation script
@@ -17,25 +18,25 @@ using System;
 [RequireComponent(typeof(Visualisation))]
 public class Chart : MonoBehaviour {
 
-    private GameObject screen;
+    private DisplayScreen displayScreen;
     private Visualisation visualisation;
     private VRTK_InteractableObject interactableObject;
     private VRTK_BaseGrabAttach grabAttach;
     private BoxCollider boxCollider;
-
-    public bool isAnimating = false;
+    private Rigidbody rigidbody;
+    
     private bool isPrototype = false;
-    private bool isAttached = false;
+    private bool isThrowing = false;
     private bool isDestroying = false;
-    private Coroutine activeCoroutine;
+    private bool isTouchingDisplayScreen = false;
 
     private Vector3 originalPos;
     private Quaternion originalRot;
 
+    private float deletionTimer = 0;
 
-    /// <summary>
-    /// Visualisation properties
-    /// </summary>
+    #region VisualisationProperties
+
     public DataSource DataSource
     {
         get { return visualisation.dataSource; }
@@ -145,7 +146,13 @@ public class Chart : MonoBehaviour {
         set
         {
             visualisation.width = value;
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.VisualisationWidth);
+
+            // Update the axis object with the length
+            GameObject axis = visualisation.theVisualizationObject.X_AXIS;
+            if (axis != null)
+                axis.GetComponent<Axis>().Length = value;
+
+            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
             SetColliderBounds();
         }
     }
@@ -156,7 +163,13 @@ public class Chart : MonoBehaviour {
         set
         {
             visualisation.height = value;
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.VisualisationHeight);
+
+            // Update the axis object with the length
+            GameObject axis = visualisation.theVisualizationObject.Y_AXIS;
+            if (axis != null)
+                axis.GetComponent<Axis>().Length = value;
+
+            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
             SetColliderBounds();
         }
     }
@@ -167,11 +180,18 @@ public class Chart : MonoBehaviour {
         set
         {
             visualisation.depth = value;
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.VisualisationLength);
+
+            // Update the axis object with the length
+            GameObject axis = visualisation.theVisualizationObject.Z_AXIS;
+            if (axis != null)
+                axis.GetComponent<Axis>().Length = value;
+
+            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
             SetColliderBounds();
         }
     }
 
+    #endregion
 
     public void Initialise(CSVDataSource dataSource)
     {
@@ -180,7 +200,7 @@ public class Chart : MonoBehaviour {
 
         DataSource = dataSource;
 
-        screen = GameObject.FindGameObjectWithTag("Screen");
+        displayScreen = GameObject.FindGameObjectWithTag("DisplayScreen").GetComponent<DisplayScreen>();
         
         // Set blank values
         visualisation.colourDimension = "Undefined";
@@ -204,42 +224,49 @@ public class Chart : MonoBehaviour {
         boxCollider.isTrigger = true;
 
         // Configure rigidbody
-        Rigidbody rb = gameObject.AddComponent<Rigidbody>();
-        rb.useGravity = false;
-        rb.isKinematic = true;
+        rigidbody = gameObject.AddComponent<Rigidbody>();
+        rigidbody.useGravity = false;
+        rigidbody.isKinematic = true;
     }
 
     private void ChartGrabbed(object sender, InteractableObjectEventArgs e)
     {
-        Rigidbody rb = gameObject.GetComponent<Rigidbody>();
-        rb.isKinematic = false;
+        rigidbody.isKinematic = false;
         InteractionsManager.Instance.GrabbingStarted();  // TODO: FIX
     }
 
     private void ChartUngrabbed(object sender, InteractableObjectEventArgs e)
     {
-        Rigidbody rb = gameObject.GetComponent<Rigidbody>();
         InteractionsManager.Instance.GrabbingFinished(); // TODO: FIX
 
+        // Animate the work shelf prototype back to its position
         if (isPrototype)
         {
-            rb.isKinematic = true;
+            rigidbody.isKinematic = true;
 
             AnimateTowards(originalPos, originalRot, 0.2f);
         }
         else
         {
+            // Check to see if the chart was thrown
             Vector3 velocity = VRTK_DeviceFinder.GetControllerVelocity(VRTK_ControllerReference.GetControllerReference(e.interactingObject));
             float speed = velocity.magnitude;
 
             if (speed > 2.5f)
             {
-                rb.useGravity = true;
-                isDestroying = true;
+                rigidbody.useGravity = true;
+                isThrowing = true;
+                deletionTimer = 0;
             }
             else
             {
-                rb.isKinematic = true;
+                rigidbody.isKinematic = true;
+
+                // If it wasn't thrown, check to see if it is being placed on the display screen
+                if (isTouchingDisplayScreen)
+                {
+                    AttachToDisplayScreen();
+                }
             }
         }
     }
@@ -253,36 +280,34 @@ public class Chart : MonoBehaviour {
 
     private void Update()
     {
-        bool isBeingGrabbed = interactableObject.IsGrabbed();
-
-        if (isBeingGrabbed)
+        if (isPrototype && interactableObject.IsGrabbed())
         {
-            // TODO: MAKE BETTER
-            if (isAttached)
+            if (Vector3.Distance(transform.position, originalPos) > 0.25f)
             {
-                if (Vector3.Distance(screen.GetComponent<Collider>().ClosestPoint(gameObject.transform.TransformPoint(boxCollider.bounds.center)), gameObject.transform.TransformPoint(boxCollider.bounds.center)) > 0.25f)
-                {
-                    DetachFromScreen();
-                }
+                // Create a duplicate of this visualisation
+                Chart dupe = ChartManager.Instance.DuplicateVisualisation(this);
+
+                VRTK_InteractTouch interactTouch = interactableObject.GetGrabbingObject().GetComponent<VRTK_InteractTouch>();
+                VRTK_InteractGrab interactGrab = interactableObject.GetGrabbingObject().GetComponent<VRTK_InteractGrab>();
+                
+                // Drop this visualisation (it wil return automatically)
+                interactGrab.ForceRelease();
+
+                // Grab the duplicate
+                interactTouch.ForceTouch(dupe.gameObject);
+                interactGrab.AttemptGrab();
             }
-
-            if (isPrototype)
+        }
+        else if (isThrowing)
+        {
+            if (1 < deletionTimer)
             {
-                if (Vector3.Distance(transform.position, originalPos) > 0.25f)
-                {
-                    // Create a duplicate of this visualisation
-                    Chart dupe = ChartManager.Instance.DuplicateVisualisation(this);
-
-                    VRTK_InteractTouch interactTouch = interactableObject.GetGrabbingObject().GetComponent<VRTK_InteractTouch>();
-                    VRTK_InteractGrab interactGrab = interactableObject.GetGrabbingObject().GetComponent<VRTK_InteractGrab>();
-                    
-                    // Drop this visualisation (it wil return automatically)
-                    interactGrab.ForceRelease();
-
-                    // Grab the duplicate
-                    interactTouch.ForceTouch(dupe.gameObject);
-                    interactGrab.AttemptGrab();
-                }
+                isThrowing = false;
+                isDestroying = true;
+            }
+            else
+            {
+                deletionTimer += Time.deltaTime;
             }
         }
         else if (isDestroying)
@@ -340,116 +365,40 @@ public class Chart : MonoBehaviour {
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!isAnimating && !isAttached && other.tag == "Screen")
+        if (other.tag == "DisplayScreen")
         {
-            other.gameObject.GetComponent<Screen>().AttachChart(this);
-            isAttached = true;
-            AttachToScreen();
+            isTouchingDisplayScreen = true;
+
+            // If the chart was thrown at the screen, attach it to the screen
+            if (isThrowing)
+            {
+                isThrowing = false;
+                rigidbody.isKinematic = true;
+                rigidbody.useGravity = false;
+                AttachToDisplayScreen();
+            }
         }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.tag == "DisplayScreen")
+        {
+            isTouchingDisplayScreen = false;
+        }
+    }
+
+    private void AttachToDisplayScreen()
+    {
+        Vector3 pos = displayScreen.CalculatePositionOnScreen(this);
+        Quaternion rot = displayScreen.CalculateRotationOnScreen(this);
+
+        AnimateTowards(pos, rot, 0.1f);
     }
 
     public void AnimateTowards(Vector3 targetPos, Quaternion targetRot, float duration)
     {
-        if (activeCoroutine != null)
-        {
-            StopCoroutine(activeCoroutine);
-        }
-
-        activeCoroutine = StartCoroutine(AnimateTo(targetPos, targetRot, duration));
-    }
-
-    public void AnimateTowards(GameObject targetObj, float duration)
-    {
-        if (activeCoroutine != null)
-        {
-            StopCoroutine(activeCoroutine);
-        }
-
-        activeCoroutine = StartCoroutine(AnimateTo(targetObj, duration));
-    }
-
-    private IEnumerator AnimateTo(Vector3 targetPos, Quaternion targetRot, float duration)
-    {
-        SetAnimating(true);
-        float time = 0;
-        Vector3 startPos = transform.position;
-        Quaternion startRot = transform.rotation;
-        Rigidbody rb = gameObject.GetComponent<Rigidbody>();
-
-        while (time < duration)
-        {
-            rb.MovePosition(Vector3.Slerp(startPos, targetPos, time / duration));
-            rb.MoveRotation(Quaternion.Slerp(startRot, targetRot, time / duration));
-            time += Time.deltaTime;
-            yield return null;
-        }
-
-        rb.MovePosition(targetPos);
-        rb.MoveRotation(targetRot);
-        SetAnimating(false);
-    }
-
-    private IEnumerator AnimateTo(GameObject targetObj, float duration)
-    {
-
-        SetAnimating(true);
-        float time = 0;
-        Vector3 startPos = gameObject.transform.position;
-        Rigidbody rb = gameObject.GetComponent<Rigidbody>();
-
-        while (time < duration)
-        {
-            rb.MovePosition(Vector3.Lerp(startPos, targetObj.transform.position, time / duration));
-            time += Time.deltaTime;
-            yield return null;
-        }
-
-        gameObject.transform.position = targetObj.transform.position;
-        SetAnimating(false);
-    }
-
-    private void SetAnimating(bool flag)
-    {
-        if (flag)
-        {
-            isAnimating = true;
-            grabAttach.enabled = false;
-        }
-        else
-        {
-            isAnimating = false;
-            grabAttach.enabled = true;
-        }
-    }
-
-    private void AttachToScreen()
-    {
-        screen.GetComponent<Screen>().AttachChart(this);
-        isAttached = true;
-        
-        //Destroy(grabAttach);
-        //grabAttach = gameObject.AddComponent<VRTK_SpringJointGrabAttach>();
-        //SpringJoint springJoint = gameObject.AddComponent<SpringJoint>();
-        //springJoint.spring = 100000;
-        //interactableObject.grabAttachMechanicScript = grabAttach;
-
-        Vector3 newPos = screen.GetComponent<Collider>().ClosestPoint(gameObject.transform.TransformPoint(boxCollider.bounds.center));
-        newPos = screen.transform.InverseTransformPoint(newPos);
-        newPos.z = -0.025f;
-        newPos = screen.transform.TransformPoint(newPos);
-        AnimateTowards(newPos, screen.transform.rotation, 0.2f);
-    }
-
-    private void DetachFromScreen()
-    {
-        isAttached = false;
-
-        //Destroy(grabAttach);
-        //Destroy(gameObject.GetComponent<SpringJoint>());
-        //grabAttach = gameObject.AddComponent<VRTK_ChildOfControllerGrabAttach>();
-        //interactableObject.grabAttachMechanicScript = grabAttach;
-
-        screen.GetComponent<Screen>().DetachChart(this);
-        //AnimateTowards(interactableObject.GetGrabbingObject(), 0.2f);
+        rigidbody.DOMove(targetPos, duration).SetEase(Ease.OutBack);
+        rigidbody.DORotate(targetRot.eulerAngles, duration).SetEase(Ease.OutQuad);
     }
 }

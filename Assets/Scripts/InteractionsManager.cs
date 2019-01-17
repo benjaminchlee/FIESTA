@@ -267,9 +267,9 @@ public class InteractionsManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Calculates the distance between the Screen and the HMD
+    /// Calculates the distance between the DisplayScreen and the HMD
     /// </summary>
-    /// <returns>The distance between the Screen and the HMD, or infinity if the headset does not exist</returns>
+    /// <returns>The distance between the DisplayScreen and the HMD, or infinity if the headset does not exist</returns>
     private float CalculateHeadDistance()
     {
         if (Camera.main != null)
@@ -279,9 +279,9 @@ public class InteractionsManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Calculates the distance between the Screen and the left controller
+    /// Calculates the distance between the DisplayScreen and the left controller
     /// </summary>
-    /// <returns>The distance between the Screen and the left controller</returns>
+    /// <returns>The distance between the DisplayScreen and the left controller</returns>
     private float CalculateLeftControllerDistance()
     {
         Vector3 closestPointOnScreen = screen.GetComponent<Collider>().ClosestPointOnBounds(leftController.transform.position);
@@ -291,9 +291,9 @@ public class InteractionsManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Calculates the distance between the Screen and the right controller
+    /// Calculates the distance between the DisplayScreen and the right controller
     /// </summary>
-    /// <returns>The distance between the Screen and the right controller</returns>
+    /// <returns>The distance between the DisplayScreen and the right controller</returns>
     private float CalculateRightControllerDistance()
     {
         Vector3 closestPointOnScreen = screen.GetComponent<Collider>().ClosestPointOnBounds(rightController.transform.position);
@@ -303,9 +303,9 @@ public class InteractionsManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Calculates the distance between the Screen and the controllers
+    /// Calculates the distance between the DisplayScreen and the controllers
     /// </summary>
-    /// <returns>The shortest distance between the Screen and either controller</returns>
+    /// <returns>The shortest distance between the DisplayScreen and either controller</returns>
     private float CalculateControllerDistance()
     {
         float leftDistance = CalculateLeftControllerDistance();

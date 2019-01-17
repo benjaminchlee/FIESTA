@@ -179,7 +179,7 @@ Transform:
   m_GameObject: {fileID: 87914444}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0.2198, y: -0.411, z: -0.016}
-  m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 890242514}
   m_RootOrder: 1
@@ -347,7 +347,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_TypeName: WorkShelfSlider+WorkShelfSliderValueChangedEvent, Assembly-CSharp,
+    m_TypeName: WorkScreenSlider+WorkShelfSliderValueChangedEvent, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 --- !u!114 &125112611
 MonoBehaviour:
@@ -600,7 +600,7 @@ Transform:
   m_GameObject: {fileID: 203089498}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0.3078, y: -0.425, z: -0.016}
-  m_LocalScale: {x: 1.0000004, y: 0.9999998, z: 1.0000002}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 890242514}
   m_RootOrder: 2
@@ -1428,7 +1428,7 @@ Transform:
   m_GameObject: {fileID: 333754725}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.1018, y: -0.208, z: -0.016}
-  m_LocalScale: {x: 0.6, y: 0.6, z: 0.6}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 890242514}
   m_RootOrder: 0
@@ -3784,93 +3784,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!1001 &766059170
-Prefab:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4067935990587634, guid: 161281fdb9551da4283f75386fcee607, type: 2}
-      propertyPath: m_LocalPosition.x
-      value: -2.82
-      objectReference: {fileID: 0}
-    - target: {fileID: 4067935990587634, guid: 161281fdb9551da4283f75386fcee607, type: 2}
-      propertyPath: m_LocalPosition.y
-      value: 0.86
-      objectReference: {fileID: 0}
-    - target: {fileID: 4067935990587634, guid: 161281fdb9551da4283f75386fcee607, type: 2}
-      propertyPath: m_LocalPosition.z
-      value: 0.477
-      objectReference: {fileID: 0}
-    - target: {fileID: 4067935990587634, guid: 161281fdb9551da4283f75386fcee607, type: 2}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4067935990587634, guid: 161281fdb9551da4283f75386fcee607, type: 2}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4067935990587634, guid: 161281fdb9551da4283f75386fcee607, type: 2}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4067935990587634, guid: 161281fdb9551da4283f75386fcee607, type: 2}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4067935990587634, guid: 161281fdb9551da4283f75386fcee607, type: 2}
-      propertyPath: m_RootOrder
-      value: 21
-      objectReference: {fileID: 0}
-    - target: {fileID: 224125822401399910, guid: 161281fdb9551da4283f75386fcee607,
-        type: 2}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 224135005337200898, guid: 161281fdb9551da4283f75386fcee607,
-        type: 2}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 224232554669926696, guid: 161281fdb9551da4283f75386fcee607,
-        type: 2}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 224232554669926696, guid: 161281fdb9551da4283f75386fcee607,
-        type: 2}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 224283101355353630, guid: 161281fdb9551da4283f75386fcee607,
-        type: 2}
-      propertyPath: m_AnchorMin.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 224283101355353630, guid: 161281fdb9551da4283f75386fcee607,
-        type: 2}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 224283101355353630, guid: 161281fdb9551da4283f75386fcee607,
-        type: 2}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 224727468889473128, guid: 161281fdb9551da4283f75386fcee607,
-        type: 2}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 224585585506719280, guid: 161281fdb9551da4283f75386fcee607,
-        type: 2}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 161281fdb9551da4283f75386fcee607, type: 2}
-  m_IsPrefabAsset: 0
 --- !u!1 &778017365
 GameObject:
   m_ObjectHideFlags: 0
@@ -4204,7 +4117,7 @@ GameObject:
   - component: {fileID: 890242511}
   - component: {fileID: 890242515}
   m_Layer: 0
-  m_Name: WorkShelf
+  m_Name: WorkScreen
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4346,7 +4259,7 @@ GameObject:
   m_Component:
   - component: {fileID: 928426328}
   m_Layer: 0
-  m_Name: ===WORKSHELF===
+  m_Name: ===WORKSCREEN===
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5339,7 +5252,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_TypeName: WorkShelfSlider+WorkShelfSliderValueChangedEvent, Assembly-CSharp,
+    m_TypeName: WorkScreenSlider+WorkShelfSliderValueChangedEvent, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 --- !u!114 &1097627243
 MonoBehaviour:
@@ -5835,7 +5748,7 @@ MonoBehaviour:
   selectOnPress: 0
   selectionDelay: 0
   selectAfterHoverDuration: 0
-  interactWithObjects: 1
+  interactWithObjects: 0
   grabToPointerTip: 0
   attachedTo: {fileID: 0}
   controllerEvents: {fileID: 0}
@@ -6340,8 +6253,8 @@ GameObject:
   - component: {fileID: 1227811083}
   - component: {fileID: 1227811079}
   m_Layer: 0
-  m_Name: ScreenShelf
-  m_TagString: Screen
+  m_Name: DisplayScreen
+  m_TagString: DisplayScreen
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -7662,7 +7575,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_TypeName: WorkShelfSlider+WorkShelfSliderValueChangedEvent, Assembly-CSharp,
+    m_TypeName: WorkScreenSlider+WorkShelfSliderValueChangedEvent, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 --- !u!114 &1449332719
 MonoBehaviour:
@@ -9357,6 +9270,77 @@ Behaviour:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1668586227}
   m_Enabled: 1
+--- !u!1001 &1670210549
+Prefab:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4987830469036994, guid: c061a8385aca89546a8f90550de16cf9, type: 2}
+      propertyPath: m_LocalPosition.x
+      value: -0.819
+      objectReference: {fileID: 0}
+    - target: {fileID: 4987830469036994, guid: c061a8385aca89546a8f90550de16cf9, type: 2}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4987830469036994, guid: c061a8385aca89546a8f90550de16cf9, type: 2}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4987830469036994, guid: c061a8385aca89546a8f90550de16cf9, type: 2}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4987830469036994, guid: c061a8385aca89546a8f90550de16cf9, type: 2}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4987830469036994, guid: c061a8385aca89546a8f90550de16cf9, type: 2}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4987830469036994, guid: c061a8385aca89546a8f90550de16cf9, type: 2}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4987830469036994, guid: c061a8385aca89546a8f90550de16cf9, type: 2}
+      propertyPath: m_RootOrder
+      value: 21
+      objectReference: {fileID: 0}
+    - target: {fileID: 33689676122938106, guid: c061a8385aca89546a8f90550de16cf9,
+        type: 2}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 23302952236399642, guid: c061a8385aca89546a8f90550de16cf9,
+        type: 2}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2132638, guid: 316f956b856b45c448987b5018ec3ef4, type: 2}
+    - target: {fileID: 114013564137714342, guid: c061a8385aca89546a8f90550de16cf9,
+        type: 2}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2132638, guid: 316f956b856b45c448987b5018ec3ef4, type: 2}
+    - target: {fileID: 114700309297647410, guid: c061a8385aca89546a8f90550de16cf9,
+        type: 2}
+      propertyPath: m_havePropertiesChanged
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114700309297647410, guid: c061a8385aca89546a8f90550de16cf9,
+        type: 2}
+      propertyPath: m_isInputParsingRequired
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1960369366394742, guid: c061a8385aca89546a8f90550de16cf9, type: 2}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: c061a8385aca89546a8f90550de16cf9, type: 2}
+  m_IsPrefabAsset: 0
 --- !u!1 &1683453230
 GameObject:
   m_ObjectHideFlags: 0
@@ -11036,7 +11020,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1930878837}
   m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 1.529, y: -0.37, z: -1.563}
+  m_LocalPosition: {x: 1.322, y: -1.348, z: -1.28}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 2072441599}
@@ -11213,7 +11197,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_TypeName: WorkShelfSlider+WorkShelfSliderValueChangedEvent, Assembly-CSharp,
+    m_TypeName: WorkScreenSlider+WorkShelfSliderValueChangedEvent, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 --- !u!114 &1940776125
 MonoBehaviour:

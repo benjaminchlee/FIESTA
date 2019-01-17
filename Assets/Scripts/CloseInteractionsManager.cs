@@ -49,7 +49,7 @@ public class CloseInteractionsManager : MonoBehaviour {
 
     private GameObject selectionSquare;
 
-    [Header("Screen Object References")]
+    [Header("DisplayScreen Object References")]
     [SerializeField] [Tooltip("The game object which represents the screen.")]
     public GameObject screen;
     [SerializeField] [Tooltip("The script used to draw convex meshes of selections.")]

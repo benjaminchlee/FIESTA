@@ -4,6 +4,7 @@ using UnityEngine;
 using VRTK;
 using TMPro;
 using System;
+using DG.Tweening;
 using UnityEngine.Events;
 
 public class MenuButton : MonoBehaviour {
@@ -11,7 +12,7 @@ public class MenuButton : MonoBehaviour {
     [SerializeField]
     private TextMeshPro textMesh;
 
-    [System.Serializable]
+    [Serializable]
     public class ButtonClickedEvent : UnityEvent<MenuButton> {}
 
     public ButtonClickedEvent ButtonClicked;
@@ -23,7 +24,6 @@ public class MenuButton : MonoBehaviour {
     }
 
     private VRTK_InteractableObject interactableObject;
-    private Coroutine activeCoroutine;
 
     private void Start()
     {
@@ -36,30 +36,7 @@ public class MenuButton : MonoBehaviour {
 
     public void AnimateTowards(Vector3 targetPos, float duration, bool toDisable = false)
     {
-        if (activeCoroutine != null)
-        {
-            StopCoroutine(activeCoroutine);
-        }
-
-        activeCoroutine = StartCoroutine(AnimateTo(targetPos, duration, toDisable));
-    }
-
-    private IEnumerator AnimateTo(Vector3 targetPos, float duration, bool toDisable = false)
-    {
-        float time = 0;
-        Vector3 startPos = transform.position;
-
-        while (time < duration)
-        {
-            transform.position = Vector3.Lerp(startPos, targetPos, time / duration);
-            time += Time.deltaTime;
-            yield return null;
-        }
-
-        transform.position = targetPos;
-
-        if (toDisable)
-            gameObject.SetActive(false);
+        transform.DOMove(targetPos, duration).SetEase(Ease.OutCirc).OnComplete(() => gameObject.SetActive(!toDisable));
     }
 
     private void OnButtonClicked(object sender, InteractableObjectEventArgs e)

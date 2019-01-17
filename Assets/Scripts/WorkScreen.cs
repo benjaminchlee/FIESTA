@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using IATK;
 using UnityEngine;
 
-public class WorkShelf : MonoBehaviour
+public class WorkScreen : MonoBehaviour
 {
     private DataSource dataSource;
 
@@ -40,14 +40,16 @@ public class WorkShelf : MonoBehaviour
             facetButtons = new List<GameObject>();
 
         // Configure scatterplot
-        scatterplot = ChartManager.Instance.CreateVisualisation("Workshelf Scatterplot");
+        scatterplot = ChartManager.Instance.CreateVisualisation("WorkscreenScatterplot");
         scatterplot.VisualisationType = AbstractVisualisation.VisualisationTypes.SCATTERPLOT;
         scatterplot.GeometryType = AbstractVisualisation.GeometryType.Points;
         scatterplot.XDimension = dataSource[0].Identifier;
         scatterplot.YDimension = dataSource[0].Identifier;
+        scatterplot.Width = 0.6f;
+        scatterplot.Height = 0.6f;
+        scatterplot.Depth = 0.6f;
         scatterplot.transform.position = scatterplotTransform.position;
         scatterplot.transform.rotation = scatterplotTransform.rotation;
-        scatterplot.transform.localScale = scatterplotTransform.localScale;
         scatterplot.SetAsPrototype();
 
         foreach (Menu menu in scatterplotButtons)
@@ -56,17 +58,19 @@ public class WorkShelf : MonoBehaviour
         }
 
         // Configure scatterplot matrix
-        scatterplotMatrix = ChartManager.Instance.CreateVisualisation("Workshelf Scatterplot Matrix");
+        scatterplotMatrix = ChartManager.Instance.CreateVisualisation("WorkscreenScatterplotMatrix");
         scatterplotMatrix.VisualisationType = AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX;
         scatterplotMatrix.GeometryType = AbstractVisualisation.GeometryType.Points;
         scatterplotMatrix.transform.position = scatterplotMatrixTransform.position;
         scatterplotMatrix.transform.rotation = scatterplotMatrixTransform.rotation;
-        scatterplotMatrix.transform.localScale = scatterplotMatrixTransform.localScale;
+        scatterplotMatrix.Width = 0.4f;
+        scatterplotMatrix.Height = 0.4f;
+        scatterplotMatrix.Depth = 0.4f;
         scatterplotMatrix.SetAsPrototype();
 
         // Configure facets
         // TODO
-        facet = ChartManager.Instance.CreateVisualisation("Workshelf Facet");
+        facet = ChartManager.Instance.CreateVisualisation("WorkscreenFacet");
         facet.SetAsPrototype();
 
         ShowScatterplot();

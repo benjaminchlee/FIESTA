@@ -7,7 +7,7 @@ using VRTK;
 using VRTK.Controllables;
 using VRTK.Controllables.PhysicsBased;
 
-public class WorkShelfSlider : MonoBehaviour {
+public class WorkScreenSlider : MonoBehaviour {
 
     private VRTK_PhysicsSlider physicsSlider;
 

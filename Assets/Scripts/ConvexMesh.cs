@@ -17,7 +17,7 @@ public class ConvexMesh : MonoBehaviour {
 
     private void Start()
     {
-        screen = GameObject.FindGameObjectWithTag("Screen");
+        screen = GameObject.FindGameObjectWithTag("DisplayScreen");
         meshFilter = GetComponent<MeshFilter>();
         meshRenderer = GetComponent<MeshRenderer>();
     }
