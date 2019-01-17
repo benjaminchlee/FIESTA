@@ -15,11 +15,12 @@ using DG.Tweening;
 //[RequireComponent(typeof(VRTK_MoveTransformGrabAttach))]
 //[RequireComponent(typeof(VRTK_InteractableObject))]
 //[RequireComponent(typeof(BoxCollider))]
-[RequireComponent(typeof(Visualisation))]
+//[RequireComponent(typeof(Visualisation))]
 public class Chart : MonoBehaviour {
 
     private DisplayScreen displayScreen;
     private Visualisation visualisation;
+    private GameObject visualisationGameObject;
     private VRTK_InteractableObject interactableObject;
     private VRTK_BaseGrabAttach grabAttach;
     private BoxCollider boxCollider;
@@ -71,16 +72,10 @@ public class Chart : MonoBehaviour {
         get { return visualisation.xDimension.Attribute; }
         set
         {
-            // Resize to zero to ensure uniform axes scaling
-            Vector3 previousScale = transform.localScale;
-            transform.localScale = Vector3.one;
-
             visualisation.xDimension = value;
             visualisation.updateViewProperties(AbstractVisualisation.PropertyType.X);
+            CenterVisualisation();
             SetColliderBounds();
-
-            // Resize back to original
-            transform.localScale = previousScale;
         }
     }
 
@@ -89,16 +84,10 @@ public class Chart : MonoBehaviour {
         get { return visualisation.yDimension.Attribute; }
         set
         {
-            // Resize to zero to ensure uniform axes scaling
-            Vector3 previousScale = transform.localScale;
-            transform.localScale = Vector3.one;
-
             visualisation.yDimension = value;
             visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Y);
+            CenterVisualisation();
             SetColliderBounds();
-
-            // Resize back to original
-            transform.localScale = previousScale;
         }
     }
 
@@ -107,16 +96,10 @@ public class Chart : MonoBehaviour {
         get { return visualisation.zDimension.Attribute; }
         set
         {
-            // Resize to zero to ensure uniform axes scaling
-            Vector3 previousScale = transform.localScale;
-            transform.localScale = Vector3.one;
-
             visualisation.zDimension = value;
             visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Z);
+            CenterVisualisation();
             SetColliderBounds();
-
-            // Resize back to original
-            transform.localScale = previousScale;
         }
     }
 
@@ -153,6 +136,7 @@ public class Chart : MonoBehaviour {
                 axis.GetComponent<Axis>().Length = value;
 
             visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
+            CenterVisualisation();
             SetColliderBounds();
         }
     }
@@ -170,6 +154,7 @@ public class Chart : MonoBehaviour {
                 axis.GetComponent<Axis>().Length = value;
 
             visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
+            CenterVisualisation();
             SetColliderBounds();
         }
     }
@@ -187,6 +172,7 @@ public class Chart : MonoBehaviour {
                 axis.GetComponent<Axis>().Length = value;
 
             visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
+            CenterVisualisation();
             SetColliderBounds();
         }
     }
@@ -195,11 +181,13 @@ public class Chart : MonoBehaviour {
 
     public void Initialise(CSVDataSource dataSource)
     {
-        visualisation = gameObject.GetComponent<Visualisation>();
-        gameObject.tag = "Chart";
+        visualisationGameObject = new GameObject("Visualisation");
+        visualisationGameObject.transform.SetParent(transform);
+        visualisationGameObject.tag = "Chart";
+
+        visualisation = visualisationGameObject.AddComponent<Visualisation>();
 
         DataSource = dataSource;
-
         displayScreen = GameObject.FindGameObjectWithTag("DisplayScreen").GetComponent<DisplayScreen>();
         
         // Set blank values
@@ -349,18 +337,27 @@ public class Chart : MonoBehaviour {
         string y = visualisation.yDimension.Attribute;
         string z = visualisation.zDimension.Attribute;
 
-        // Calculate center
-        float xCenter = (x != "Undefined") ? width / 2 : 0;
-        float yCenter = (y != "Undefined") ? height / 2 : 0;
-        float zCenter = (z != "Undefined") ? depth/ 2 : 0;
+        //// Calculate center
+        //float xCenter = (x != "Undefined") ? width / 2 : 0;
+        //float yCenter = (y != "Undefined") ? height / 2 : 0;
+        //float zCenter = (z != "Undefined") ? depth/ 2 : 0;
 
         // Calculate size
         float xSize = (x != "Undefined") ? width + 0.3f : 0.2f;
         float ySize = (y != "Undefined") ? height + 0.3f : 0.2f;
         float zSize = (z != "Undefined") ? depth + 0.3f : 0.2f;
 
-        boxCollider.center = new Vector3(xCenter, yCenter, zCenter);
+        //boxCollider.center = new Vector3(xCenter, yCenter, zCenter);
         boxCollider.size = new Vector3(xSize, ySize, zSize);
+    }
+
+    private void CenterVisualisation()
+    {
+        float x = (XDimension != "Undefined") ? -Width / 2 : 0;
+        float y = (YDimension != "Undefined") ? -Height / 2 : 0;
+        float z = (ZDimension != "Undefined") ? -Depth / 2 : 0;
+
+        visualisationGameObject.transform.DOLocalMove(new Vector3(x, y, z), 0.1f).SetEase(Ease.OutCubic);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -393,7 +390,7 @@ public class Chart : MonoBehaviour {
         Vector3 pos = displayScreen.CalculatePositionOnScreen(this);
         Quaternion rot = displayScreen.CalculateRotationOnScreen(this);
 
-        AnimateTowards(pos, rot, 0.1f);
+        AnimateTowards(pos, rot, 0.2f);
     }
 
     public void AnimateTowards(Vector3 targetPos, Quaternion targetRot, float duration)
