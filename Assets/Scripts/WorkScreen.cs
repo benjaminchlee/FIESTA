@@ -48,6 +48,7 @@ public class WorkScreen : MonoBehaviour
         scatterplot.Width = 0.6f;
         scatterplot.Height = 0.6f;
         scatterplot.Depth = 0.6f;
+        scatterplot.Color = Color.white;
         scatterplot.transform.position = scatterplotTransform.position;
         scatterplot.transform.rotation = scatterplotTransform.rotation;
         scatterplot.SetAsPrototype();
@@ -63,17 +64,16 @@ public class WorkScreen : MonoBehaviour
         scatterplotMatrix.GeometryType = AbstractVisualisation.GeometryType.Points;
         scatterplotMatrix.transform.position = scatterplotMatrixTransform.position;
         scatterplotMatrix.transform.rotation = scatterplotMatrixTransform.rotation;
-        scatterplotMatrix.Width = 0.4f;
-        scatterplotMatrix.Height = 0.4f;
-        scatterplotMatrix.Depth = 0.4f;
-        scatterplotMatrix.SetAsPrototype();
+        scatterplotMatrix.Width = 0.9f;
+        scatterplotMatrix.Height = 0.9f;
+        scatterplotMatrix.Depth = 0.9f;
 
         // Configure facets
         // TODO
         facet = ChartManager.Instance.CreateVisualisation("WorkscreenFacet");
         facet.SetAsPrototype();
 
-        ShowScatterplot();
+        ShowScatterplotMatrix();
     }
 
     public void ShowScatterplot()
@@ -148,5 +148,10 @@ public class WorkScreen : MonoBehaviour
         scatterplot.Color = color;
         scatterplotMatrix.Color = color;
         facet.Color = color;
+    }
+
+    public void ScatterplotMatrixSizeSlider(float value)
+    {
+        scatterplotMatrix.ScatterplotMatrixSize = (int)value;
     }
 }

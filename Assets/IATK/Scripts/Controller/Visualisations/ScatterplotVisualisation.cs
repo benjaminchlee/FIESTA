@@ -542,17 +542,17 @@ namespace IATK
         private void Update()
         {
             // handle update to persistent properties
-            if (X_AXIS != null)
+            if (X_AXIS != null && X_AXIS.activeSelf)
             {
                 X_AXIS.GetComponent<Axis>().Length = visualisationReference.width;
                 X_AXIS.GetComponent<Axis>().UpdateLength();
             }
-            if (Y_AXIS != null)
+            if (Y_AXIS != null && Y_AXIS.activeSelf)
             {
                 Y_AXIS.GetComponent<Axis>().Length = visualisationReference.height;
                 Y_AXIS.GetComponent<Axis>().UpdateLength();
             }
-            if (Z_AXIS != null)
+            if (Z_AXIS != null && Z_AXIS.activeSelf)
             {
                 Z_AXIS.GetComponent<Axis>().Length = visualisationReference.depth;
                 Z_AXIS.GetComponent<Axis>().UpdateLength();

@@ -90,5 +90,7 @@ public class ChartManager : MonoBehaviour {
     {
         if (visualisations.Contains(chart))
             visualisations.Remove(chart);
+
+        Destroy(chart.gameObject);
     }
 }
