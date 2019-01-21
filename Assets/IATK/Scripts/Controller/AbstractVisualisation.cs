@@ -58,7 +58,9 @@ namespace IATK
             SCATTERPLOT, 
             SCATTERPLOT_MATRIX, 
             PARALLEL_COORDINATES, 
-            GRAPH_LAYOUT};
+            GRAPH_LAYOUT,
+            FACET
+        };
 
         // PUBLIC HIDDEN
 

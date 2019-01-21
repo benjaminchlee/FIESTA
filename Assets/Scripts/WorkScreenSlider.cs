@@ -23,7 +23,7 @@ public class WorkScreenSlider : MonoBehaviour {
     {
         physicsSlider = GetComponent<VRTK_PhysicsSlider>();
 
-        physicsSlider.SetValue(startValue * physicsSlider.maximumLength);
+        physicsSlider.SetValue((startValue - physicsSlider.stepValueRange.minimum) / (physicsSlider.stepValueRange.maximum - physicsSlider.stepValueRange.minimum) * physicsSlider.maximumLength);
 
         physicsSlider.ValueChanged += OnSizeSliderValueChanged;
     }

@@ -6,6 +6,7 @@ using VRTK;
 using VRTK.GrabAttachMechanics;
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Security.Cryptography;
 using DG.Tweening;
 using UnityEditorInternal.VersionControl;
@@ -31,7 +32,6 @@ public class Chart : MonoBehaviour
 
     private bool isPrototype = false;
     private bool isThrowing = false;
-    private bool isDestroying = false;
     private bool isTouchingDisplayScreen = false;
 
     private Vector3 originalPos;
@@ -47,27 +47,32 @@ public class Chart : MonoBehaviour
         set { visualisation.dataSource = value; }
     }
 
-    private AbstractVisualisation.VisualisationTypes visualisationType;
-
+    /// <summary>
+    /// ChartType is the type of the chart (the wrapper to the visualisation)
+    /// </summary>
+    private AbstractVisualisation.VisualisationTypes chartType;
     public AbstractVisualisation.VisualisationTypes VisualisationType
     {
-        get { return visualisationType; }
+        get { return chartType; }
         set
         {
-            if (visualisationType != value)
+            chartType = value;
+
+            switch (value)
             {
-                visualisationType = value;
+                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                    visualisation.visualisationType = value;
+                    visualisation.CreateVisualisation(value);
+                    SetAsScatterplot();
+                    break;
 
-                switch (visualisationType)
-                {
-                    case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
-                        SetAsScatterplot();
-                        break;
+                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+                    SetAsScatterplotMatrix();
+                    break;
 
-                    case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
-                        SetAsScatterplotMatrix();
-                        break;
-                }
+                case AbstractVisualisation.VisualisationTypes.FACET:
+                    SetAsFacet();
+                    break;
             }
         }
     }
@@ -80,9 +85,10 @@ public class Chart : MonoBehaviour
             visualisation.geometry = value;
             visualisation.updateViewProperties(AbstractVisualisation.PropertyType.GeometryType);
 
-            switch (visualisationType)
+            switch (chartType)
             {
                 case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+                case AbstractVisualisation.VisualisationTypes.FACET:
                     foreach (Chart chart in subCharts)
                         chart.GeometryType = value;
                     break;
@@ -96,9 +102,24 @@ public class Chart : MonoBehaviour
         set
         {
             visualisation.xDimension = value;
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.X);
-            CenterVisualisation();
-            SetColliderBounds();
+
+            switch (chartType)
+            {
+                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.X);
+                    CenterVisualisation();
+                    SetColliderBounds();
+                    break;
+
+                case AbstractVisualisation.VisualisationTypes.FACET:
+                    foreach (Chart chart in subCharts)
+                    {
+                        chart.XDimension = value;
+                        chart.visualisation.updateViewProperties(AbstractVisualisation.PropertyType.X);  // Effectively gets called twice to properly update
+                    }
+                        
+                    break;
+            }
         }
     }
 
@@ -108,9 +129,23 @@ public class Chart : MonoBehaviour
         set
         {
             visualisation.yDimension = value;
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Y);
-            CenterVisualisation();
-            SetColliderBounds();
+
+            switch (chartType)
+            {
+                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Y);
+                    CenterVisualisation();
+                    SetColliderBounds();
+                    break;
+
+                case AbstractVisualisation.VisualisationTypes.FACET:
+                    foreach (Chart chart in subCharts)
+                    {
+                        chart.YDimension = value;
+                        chart.visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Y);  // Effectively gets called twice to properly update
+                    }
+                    break;
+            }
         }
     }
 
@@ -120,9 +155,23 @@ public class Chart : MonoBehaviour
         set
         {
             visualisation.zDimension = value;
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Z);
-            CenterVisualisation();
-            SetColliderBounds();
+
+            switch (chartType)
+            {
+                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Z);
+                    CenterVisualisation();
+                    SetColliderBounds();
+                    break;
+
+                case AbstractVisualisation.VisualisationTypes.FACET:
+                    foreach (Chart chart in subCharts)
+                    {
+                        chart.ZDimension = value;
+                        chart.visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Z);  // Effectively gets called twice to properly update
+                    }
+                    break;
+            }
         }
     }
 
@@ -134,9 +183,10 @@ public class Chart : MonoBehaviour
             visualisation.colour = value;
             visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
 
-            switch (visualisationType)
+            switch (chartType)
             {
                 case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+                case AbstractVisualisation.VisualisationTypes.FACET:
                     foreach (Chart chart in subCharts)
                         chart.Color = value;
                     break;
@@ -152,9 +202,10 @@ public class Chart : MonoBehaviour
             visualisation.size = value;
             visualisation.updateViewProperties(AbstractVisualisation.PropertyType.SizeValues);
 
-            switch (visualisationType)
+            switch (chartType)
             {
                 case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+                case AbstractVisualisation.VisualisationTypes.FACET:
                     foreach (Chart chart in subCharts)
                         chart.Size = value;
                     break;
@@ -168,8 +219,10 @@ public class Chart : MonoBehaviour
         set
         {
             visualisation.width = value;
+            CenterVisualisation();
+            SetColliderBounds();
 
-            switch (visualisationType)
+            switch (chartType)
             {
                 case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
                     // Update the axis object with the length
@@ -182,12 +235,14 @@ public class Chart : MonoBehaviour
 
                     visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
                     ForceViewScale();
-                    CenterVisualisation();
-                    SetColliderBounds();
                     break;
 
                 case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
                     ResizeAndPositionScatterplotMatrix();
+                    break;
+
+                case AbstractVisualisation.VisualisationTypes.FACET:
+                    AdjustAndUpdateFacet();
                     break;
             }
         }
@@ -199,8 +254,10 @@ public class Chart : MonoBehaviour
         set
         {
             visualisation.height = value;
+            CenterVisualisation();
+            SetColliderBounds();
 
-            switch (visualisationType)
+            switch (chartType)
             {
                 case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
                     // Update the axis object with the length
@@ -213,12 +270,14 @@ public class Chart : MonoBehaviour
 
                     visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
                     ForceViewScale();
-                    CenterVisualisation();
-                    SetColliderBounds();
                     break;
 
                 case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
                     ResizeAndPositionScatterplotMatrix();
+                    break;
+
+                case AbstractVisualisation.VisualisationTypes.FACET:
+                    AdjustAndUpdateFacet();
                     break;
             }
         }
@@ -230,8 +289,10 @@ public class Chart : MonoBehaviour
         set
         {
             visualisation.depth = value;
+            CenterVisualisation();
+            SetColliderBounds();
 
-            switch (visualisationType)
+            switch (chartType)
             {
                 case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
                     // Update the axis object with the length
@@ -244,14 +305,26 @@ public class Chart : MonoBehaviour
 
                     visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
                     ForceViewScale();
-                    CenterVisualisation();
-                    SetColliderBounds();
                     break;
 
                 case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
                     ResizeAndPositionScatterplotMatrix();
                     break;
+
+                case AbstractVisualisation.VisualisationTypes.FACET:
+                    AdjustAndUpdateFacet();
+                    break;
             }
+        }
+    }
+
+    public AttributeFilter[] AttributeFilters
+    {
+        get { return visualisation.attributeFilters; }
+        set
+        {
+            visualisation.attributeFilters = value;
+            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.AttributeFiltering);
         }
     }
 
@@ -266,11 +339,43 @@ public class Chart : MonoBehaviour
             else if (scatterplotMatrixSize > DataSource.DimensionCount)
                 value = DataSource.DimensionCount;
 
-            // If value has changed, resize SPLOM
-            if (scatterplotMatrixSize != value)
+            if (VisualisationType == AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX)
             {
                 scatterplotMatrixSize = value;
                 AdjustScatterplotMatrixSize();
+            }
+        }
+    }
+
+    private string facetDimension;
+    public string FacetDimension
+    {
+        get { return facetDimension; }
+        set
+        {
+            facetDimension = value;
+
+            if (VisualisationType == AbstractVisualisation.VisualisationTypes.FACET)
+            {
+                AdjustAndUpdateFacet();
+            }
+        }
+    }
+
+    private int facetSize = 1;
+    public int FacetSize
+    {
+        get { return facetSize; }
+        set
+        {
+            if (0 < facetSize)
+            {
+                facetSize = value;
+
+                if (VisualisationType == AbstractVisualisation.VisualisationTypes.FACET)
+                {
+                    AdjustAndUpdateFacet();
+                }
             }
         }
     }
@@ -327,15 +432,12 @@ public class Chart : MonoBehaviour
         visualisationGameObject.SetActive(true);
 
         // Enable this collider
-        boxCollider.enabled = transform;
+        boxCollider.enabled = true;
         
-        // Destroy scatterplot matrix gameobjects
-        for (int i = 0; i < splomCharts.GetLength(0); i++)
-            for (int j = 0; j < splomCharts.GetLength(1); j++)
-                Destroy(splomCharts[i, j]);
-
-        visualisation.visualisationType = AbstractVisualisation.VisualisationTypes.SCATTERPLOT;
-        visualisation.CreateVisualisation(visualisation.visualisationType);
+        //// Destroy scatterplot matrix gameobjects
+        //for (int i = 0; i < splomCharts.GetLength(0); i++)
+        //    for (int j = 0; j < splomCharts.GetLength(1); j++)
+        //        Destroy(splomCharts[i, j]);
     }
 
     private void SetAsScatterplotMatrix()
@@ -357,32 +459,26 @@ public class Chart : MonoBehaviour
         ResizeAndPositionScatterplotMatrix();
     }
 
-    private void ScatterplotMatrixDimensionChanged(SPLOMButton button)
+    private void SetAsFacet()
     {
-        // Find which index the button belongs to (along the diagonal)
-        int index = Array.IndexOf(splomButtons, button);
+        // Disable the visualisation
+        visualisationGameObject.SetActive(false);
 
-        // Change y-axis of charts along SPLOM's horizontal
-        for (int i = 0; i < scatterplotMatrixSize; i++)
-        {
-            if (splomCharts[i, index].tag == "Chart")
-            {
-                splomCharts[i, index].GetComponent<Chart>().YDimension = button.Text;
-                splomCharts[i, index].GetComponent<Chart>().ForceUpdate();
-            }
-        }
+        // Disable this collider
+        boxCollider.enabled = false;
 
-        // Change x-axis of charts along SPLOM's vertical
-        for (int i = 0; i < scatterplotMatrixSize; i++)
-        {
-            if (splomCharts[index, i].tag == "Chart")
-            {
-                splomCharts[index, i].GetComponent<Chart>().XDimension = button.Text;
-                splomCharts[index, i].GetComponent<Chart>().ForceUpdate();
-            }
-        }
+        // Create facet gameobjects
+        subCharts = new List<Chart>();
+
+        // Set default faceted dimension
+        facetDimension = DataSource[0].Identifier;
+
+        AdjustAndUpdateFacet();
     }
 
+    /// <summary>
+    /// Adjusts the number of dimensions by creating/removing subcharts
+    /// </summary>
     private void AdjustScatterplotMatrixSize()
     {
         // Create scatterplot matrix gameobjects
@@ -405,12 +501,11 @@ public class Chart : MonoBehaviour
                             subChart = ChartManager.Instance.CreateVisualisation(DataSource[i].Identifier + ", " + DataSource[j].Identifier);
 
                             subChart.VisualisationType = AbstractVisualisation.VisualisationTypes.SCATTERPLOT;
-                            subChart.GeometryType = AbstractVisualisation.GeometryType.Points;
+                            subChart.GeometryType = GeometryType;
                             // Get the x and y dimension from the splom button if it exists, otherwise use default
                             subChart.XDimension = (splomButtons[i] != null) ? splomButtons[i].Text : DataSource[i].Identifier;
                             subChart.YDimension = (splomButtons[j] != null) ? splomButtons[j].Text : DataSource[j].Identifier;
                             subChart.Color = Color;
-                            subChart.ForceUpdate();
                             subChart.SetAsPrototype();
 
                             splomCharts[i, j] = subChart;
@@ -471,8 +566,8 @@ public class Chart : MonoBehaviour
 
                     if (chart != null)
                     {
-                        subCharts.Remove(chart.GetComponent<Chart>());
-                        ChartManager.Instance.RemoveVisualisation(chart.GetComponent<Chart>());
+                        subCharts.Remove(chart);
+                        ChartManager.Instance.RemoveVisualisation(chart);
                     }
                 }
             }
@@ -491,9 +586,12 @@ public class Chart : MonoBehaviour
         ResizeAndPositionScatterplotMatrix();
     }
 
+    /// <summary>
+    /// Resizes and positions the subcharts in the scatterplot matrix
+    /// </summary>
     private void ResizeAndPositionScatterplotMatrix()
     {
-        if (visualisationType == AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX && splomCharts != null)
+        if (chartType == AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX && splomCharts != null)
         {
             for (int i = 0; i < scatterplotMatrixSize; i++)
             {
@@ -501,11 +599,15 @@ public class Chart : MonoBehaviour
                 float w = Width / scatterplotMatrixSize;
                 float h = Height / scatterplotMatrixSize;
                 float d = Depth / scatterplotMatrixSize;
-                float x = -0.5f + w * i;
-                float y = 0.5f - h * i;
+
+                // Get the distance from the edge to the centre-point (tentatively called etcp) of each subchart (x and y deltas are the same)
+                float delta = Width / (scatterplotMatrixSize * 2);
+
+                // Position such that subcharts start from 1 etcp from the edge, and are spaced two etcp distances from each other
+                float x = (-(Width / 2) + delta) + 2 * delta * i;
+                float y = ((Height / 2) - delta) - 2 * delta * i;
 
                 SPLOMButton splomButton = splomButtons[i];
-
                 splomButton.transform.localPosition = new Vector3(x, y, 0);
                 splomButton.transform.rotation = transform.rotation;
                 splomButton.transform.localScale = new Vector3(w * 0.9f, h * 0.9f, 0.05f);
@@ -513,20 +615,124 @@ public class Chart : MonoBehaviour
                 // Resize charts
                 for (int j = 0; j < scatterplotMatrixSize; j++)
                 {
-                    y = 0.5f - h * j;
+                    y = ((Height / 2) - delta) - 2 * delta * j;
 
-                    Chart chart = splomCharts[i, j];
-                        
-                    chart.Width = w * 0.75f;
-                    chart.Height = h * 0.75f;
-                    chart.Depth = d * 0.75f;
-                    chart.transform.localPosition = new Vector3(x, y, 0);
-                    chart.transform.rotation = transform.rotation;
+                    Chart subChart = splomCharts[i, j];
+                    subChart.Width = w * 0.75f;
+                    subChart.Height = h * 0.75f;
+                    subChart.Depth = d * 0.75f;
+                    subChart.transform.localPosition = new Vector3(x, y, 0);
+                    subChart.transform.rotation = transform.rotation;
                 }
             }
         }
     }
 
+    /// <summary>
+    /// Readjust the dimensions of the scatterplot matrix
+    /// </summary>
+    /// <param name="button"></param>
+    private void ScatterplotMatrixDimensionChanged(SPLOMButton button)
+    {
+        // Find which index the button belongs to (along the diagonal)
+        int index = Array.IndexOf(splomButtons, button);
+
+        // Change y-axis of charts along SPLOM's horizontal
+        for (int i = 0; i < scatterplotMatrixSize; i++)
+        {
+            if (splomCharts[i, index].tag == "Chart")
+            {
+                splomCharts[i, index].GetComponent<Chart>().YDimension = button.Text;
+                splomCharts[i, index].GetComponent<Chart>().ForceUpdate();
+            }
+        }
+
+        // Change x-axis of charts along SPLOM's vertical
+        for (int i = 0; i < scatterplotMatrixSize; i++)
+        {
+            if (splomCharts[index, i].tag == "Chart")
+            {
+                splomCharts[index, i].GetComponent<Chart>().XDimension = button.Text;
+                splomCharts[index, i].GetComponent<Chart>().ForceUpdate();
+            }
+        }
+    }
+
+    private void AdjustAndUpdateFacet()
+    {
+        for (int i = 0; i < facetSize; i++)
+        {
+            Chart subChart = subCharts.ElementAtOrDefault(i);
+
+            // Create a chart if it does not already yet exist
+            if (subChart == null)
+            {
+                subChart = ChartManager.Instance.CreateVisualisation(i.ToString());
+
+                subChart.VisualisationType = AbstractVisualisation.VisualisationTypes.SCATTERPLOT;
+                subChart.GeometryType = GeometryType;
+                subChart.XDimension = XDimension;
+                subChart.YDimension = YDimension;
+                subChart.Color = Color;
+                subChart.SetAsPrototype();
+
+                // Create attribute filters for each chart
+                AttributeFilter af = new AttributeFilter();
+                subChart.AttributeFilters = new AttributeFilter[] {af};
+
+                subChart.transform.SetParent(transform);
+                subCharts.Add(subChart);
+            }
+
+            // Set ranges for the chart
+            AttributeFilter filter = subChart.AttributeFilters[0];
+            filter.Attribute = facetDimension;
+            filter.minFilter = 0;
+            filter.maxFilter = 1;
+            filter.minScale = i / (float)facetSize;
+            filter.maxScale = (i + 1) / (float)facetSize;
+            subChart.AttributeFilters[0] = filter;
+            subChart.visualisation.updateViewProperties(AbstractVisualisation.PropertyType.AttributeFiltering);
+        }
+
+        // Position the charts
+        int index = 0;
+        int numRows = (int)Mathf.Sqrt(facetSize);
+        int numCols = (int)Mathf.Ceil(facetSize / (float)numRows);
+
+        // Get the distance from the edge to the centre-point (tentatively called etcp) of each subchart
+        float xDelta = Width / (numCols * 2);
+        float yDelta = Height / (numRows * 2);
+
+        float w = Width / numCols;
+        float h = Height / numRows;
+
+        for (int i = 0; i < numCols; i++)
+        {
+            for (int j = 0; j < numRows; j++)
+            {
+                if (index < facetSize)
+                {
+                    Chart subChart = subCharts[index];
+                    // Position such that subcharts start from 1 etcp from the edge, and are spaced two etcp distances from each other
+                    float x = (-(Width / 2) + xDelta) + 2 * xDelta * i;
+                    float y = ((Height / 2) - yDelta) - 2 * yDelta * j;
+                    subChart.Width = w * 0.75f;
+                    subChart.Height = h * 0.75f;
+                    subChart.transform.localPosition = new Vector3(x, y, 0);
+                    subChart.transform.rotation = transform.rotation;
+                }
+                index++;
+            }
+        }
+
+        // Destroy any extra subcharts
+        while (facetSize < subCharts.Count)
+        {
+            ChartManager.Instance.RemoveVisualisation(subCharts[subCharts.Count - 1]);
+            subCharts.Remove(subCharts[subCharts.Count-1]);
+        }
+    }
 
     private void ChartGrabbed(object sender, InteractableObjectEventArgs e)
     {
@@ -575,7 +781,7 @@ public class Chart : MonoBehaviour
             }
         }
     }
-
+    
     private void OnDestroy()
     {
         //Unsubscribe to events
@@ -608,26 +814,11 @@ public class Chart : MonoBehaviour
             if (1 < deletionTimer)
             {
                 isThrowing = false;
-                isDestroying = true;
+                transform.DOScale(0, 1f).OnComplete(() => ChartManager.Instance.RemoveVisualisation(this));
             }
             else
             {
                 deletionTimer += Time.deltaTime;
-            }
-        }
-        else if (isDestroying)
-        {
-            float size = transform.localScale.x;
-            size -= 0.005f;
-
-            if (size > 0)
-            {
-                transform.localScale = Vector3.one * size;
-            }
-            else
-            {
-                ChartManager.Instance.RemoveVisualisation(this);
-                Destroy(gameObject);
             }
         }
     }

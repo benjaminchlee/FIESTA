@@ -41,7 +41,7 @@ public class SpinMenuButton : VRTK_InteractableObject {
     {
         if (activeCoroutine != null)
             StopCoroutine(activeCoroutine);
-
+        
         activeCoroutine = StartCoroutine(AnimateTowardsPosition(position, scale, time));
     }
 

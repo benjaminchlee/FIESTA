@@ -8,8 +8,15 @@ public class ChartManager : MonoBehaviour {
 
     public static ChartManager Instance { get; private set; }
 
-    public CSVDataSource dataSource;
-    private List<Chart> visualisations;
+    [SerializeField]
+    private CSVDataSource dataSource;
+    public CSVDataSource DataSource
+    {
+        get { return dataSource; }
+        set { dataSource = value; }
+    }
+    
+    public List<Chart> Visualisations { get; private set; }
 
     private void Awake()
     {
@@ -23,9 +30,11 @@ public class ChartManager : MonoBehaviour {
             Destroy(gameObject);
         }
 
-        visualisations = new List<Chart>();
+        Visualisations = new List<Chart>();
     }
     
+    private void Start() { }
+
     private void Update()
     {
         if (Input.GetKeyDown("a"))
@@ -38,9 +47,9 @@ public class ChartManager : MonoBehaviour {
     {
         GameObject vis = new GameObject();
         Chart chart = vis.AddComponent<Chart>();
-        visualisations.Add(chart);
+        Visualisations.Add(chart);
 
-        chart.Initialise(dataSource);
+        chart.Initialise(DataSource);
         chart.VisualisationType = AbstractVisualisation.VisualisationTypes.SCATTERPLOT;
         chart.GeometryType = AbstractVisualisation.GeometryType.Points;
         chart.XDimension = "mpg";
@@ -54,9 +63,9 @@ public class ChartManager : MonoBehaviour {
         GameObject vis = new GameObject();
         vis.name = name;
         Chart chart = vis.AddComponent<Chart>();
-        visualisations.Add(chart);
+        Visualisations.Add(chart);
 
-        chart.Initialise(dataSource);
+        chart.Initialise(DataSource);
 
         return chart;
     }
@@ -65,9 +74,9 @@ public class ChartManager : MonoBehaviour {
     {
         GameObject vis = new GameObject();
         Chart chart = vis.AddComponent<Chart>();
-        visualisations.Add(chart);
+        Visualisations.Add(chart);
 
-        chart.Initialise(dataSource);
+        chart.Initialise(DataSource);
         chart.VisualisationType = dupe.VisualisationType;
         chart.GeometryType = dupe.GeometryType;
         chart.XDimension = dupe.XDimension;
@@ -78,6 +87,7 @@ public class ChartManager : MonoBehaviour {
         chart.Width = dupe.Width;
         chart.Height = dupe.Height;
         chart.Depth = dupe.Depth;
+        chart.AttributeFilters = dupe.AttributeFilters;
 
         vis.transform.position = dupe.transform.position;
         vis.transform.rotation = dupe.transform.rotation;
@@ -88,8 +98,8 @@ public class ChartManager : MonoBehaviour {
 
     public void RemoveVisualisation(Chart chart)
     {
-        if (visualisations.Contains(chart))
-            visualisations.Remove(chart);
+        if (Visualisations.Contains(chart))
+            Visualisations.Remove(chart);
 
         Destroy(chart.gameObject);
     }

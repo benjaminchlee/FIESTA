@@ -14,7 +14,6 @@ public class MenuButton : MonoBehaviour {
 
     [Serializable]
     public class ButtonClickedEvent : UnityEvent<MenuButton> {}
-
     public ButtonClickedEvent ButtonClicked;
 
     public string Text

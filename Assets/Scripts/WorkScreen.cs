@@ -1,7 +1,18 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using IATK;
 using UnityEngine;
+using UnityEngine.Rendering;
+
+public enum WorkScreenDimension
+{
+    X,
+    Y,
+    Z,
+    FACETBY,
+    COLORBY
+}
 
 public class WorkScreen : MonoBehaviour
 {
@@ -19,7 +30,7 @@ public class WorkScreen : MonoBehaviour
     private Transform facetTransform;
 
     [SerializeField]
-    private List<Menu> scatterplotButtons;
+    private List<GameObject> scatterplotButtons;
     [SerializeField]
     private List<GameObject> scatterplotMatrixButtons;
     [SerializeField]
@@ -28,10 +39,10 @@ public class WorkScreen : MonoBehaviour
     private void Start()
     {
         if (dataSource == null)
-            dataSource = ChartManager.Instance.dataSource;
+            dataSource = ChartManager.Instance.DataSource;
 
         if (scatterplotButtons == null)
-            scatterplotButtons = new List<Menu>();
+            scatterplotButtons = new List<GameObject>();
 
         if (scatterplotMatrixButtons == null)
             scatterplotMatrixButtons = new List<GameObject>();
@@ -45,18 +56,12 @@ public class WorkScreen : MonoBehaviour
         scatterplot.GeometryType = AbstractVisualisation.GeometryType.Points;
         scatterplot.XDimension = dataSource[0].Identifier;
         scatterplot.YDimension = dataSource[0].Identifier;
-        scatterplot.Width = 0.6f;
-        scatterplot.Height = 0.6f;
-        scatterplot.Depth = 0.6f;
-        scatterplot.Color = Color.white;
+        scatterplot.Width = scatterplotTransform.localScale.x;
+        scatterplot.Height = scatterplotTransform.localScale.y;
+        scatterplot.Depth = scatterplotTransform.localScale.z;
         scatterplot.transform.position = scatterplotTransform.position;
         scatterplot.transform.rotation = scatterplotTransform.rotation;
         scatterplot.SetAsPrototype();
-
-        foreach (Menu menu in scatterplotButtons)
-        {
-            menu.targetChart = scatterplot;
-        }
 
         // Configure scatterplot matrix
         scatterplotMatrix = ChartManager.Instance.CreateVisualisation("WorkscreenScatterplotMatrix");
@@ -64,16 +69,25 @@ public class WorkScreen : MonoBehaviour
         scatterplotMatrix.GeometryType = AbstractVisualisation.GeometryType.Points;
         scatterplotMatrix.transform.position = scatterplotMatrixTransform.position;
         scatterplotMatrix.transform.rotation = scatterplotMatrixTransform.rotation;
-        scatterplotMatrix.Width = 0.9f;
-        scatterplotMatrix.Height = 0.9f;
-        scatterplotMatrix.Depth = 0.9f;
+        scatterplotMatrix.Width = scatterplotMatrixTransform.localScale.x;
+        scatterplotMatrix.Height = scatterplotMatrixTransform.localScale.y;
+        scatterplotMatrix.Depth = scatterplotMatrixTransform.localScale.z;
 
         // Configure facets
-        // TODO
         facet = ChartManager.Instance.CreateVisualisation("WorkscreenFacet");
-        facet.SetAsPrototype();
+        facet.VisualisationType = AbstractVisualisation.VisualisationTypes.FACET;
+        facet.GeometryType = AbstractVisualisation.GeometryType.Points;
+        facet.XDimension = "cylinders";
+        facet.YDimension = "displacement";
+        //facet.FacetDimension = "mpg";
+        //facet.FacetSize = 5;
+        facet.Width = facetTransform.localScale.x;
+        facet.Height = facetTransform.localScale.y;
+        facet.Depth = facetTransform.localScale.z;
+        facet.transform.position = facetTransform.position;
+        facet.transform.rotation = facetTransform.rotation;
 
-        ShowScatterplotMatrix();
+        ShowFacet();
     }
 
     public void ShowScatterplot()
@@ -97,19 +111,37 @@ public class WorkScreen : MonoBehaviour
         scatterplotMatrix.gameObject.SetActive(spm);
         facet.gameObject.SetActive(f);
 
-        foreach (Menu button in scatterplotButtons)
+        foreach (GameObject button in scatterplotButtons.Concat(scatterplotMatrixButtons).Concat(facetButtons))
         {
-            button.gameObject.SetActive(sp);
+            bool isActive = (sp && scatterplotButtons.Contains(button)) ||
+                            (spm && scatterplotMatrixButtons.Contains(button)) || 
+                            (f && facetButtons.Contains(button));
+            button.SetActive(isActive);
         }
+    }
 
-        foreach (GameObject button in scatterplotMatrixButtons)
+    public void DimensionChanged(WorkScreenDimension dimension, string dimensionName)
+    {
+        switch (dimension)
         {
-            button.SetActive(spm);
-        }
+            case WorkScreenDimension.X:
+                scatterplot.XDimension = dimensionName;
+                facet.XDimension = dimensionName;
+                break;
 
-        foreach (GameObject button in facetButtons)
-        {
-            button.SetActive(f);
+            case WorkScreenDimension.Y:
+                scatterplot.YDimension = dimensionName;
+                facet.YDimension = dimensionName;
+                break;
+
+            case WorkScreenDimension.Z:
+                scatterplot.ZDimension = dimensionName;
+                facet.ZDimension = dimensionName;
+                break;
+
+            case WorkScreenDimension.FACETBY:
+                facet.FacetDimension = dimensionName;
+                break;
         }
     }
 
@@ -153,5 +185,10 @@ public class WorkScreen : MonoBehaviour
     public void ScatterplotMatrixSizeSlider(float value)
     {
         scatterplotMatrix.ScatterplotMatrixSize = (int)value;
+    }
+
+    public void FacetSizeSlider(float value)
+    {
+        facet.FacetSize = (int)value;
     }
 }

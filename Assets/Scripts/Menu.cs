@@ -1,14 +1,16 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Remoting.Lifetime;
 using UnityEngine;
 using IATK;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class Menu : MonoBehaviour {
 
     [SerializeField]
-    private CreationConfiguration.Axis menuDimension;
+    private WorkScreenDimension dimension;
     [SerializeField]
     private CSVDataSource dataSource;
     [SerializeField]
@@ -16,7 +18,9 @@ public class Menu : MonoBehaviour {
     [SerializeField]
     private float spacing = 0.02f;
 
-    public Chart targetChart;
+    [Serializable]
+    public class DimensionChangedEvent : UnityEvent<WorkScreenDimension, string> { }
+    public DimensionChangedEvent DimensionChanged;
 
     private int selectedIndex;
     public string SelectedButton
@@ -28,6 +32,7 @@ public class Menu : MonoBehaviour {
     }
     
     private List<MenuButton> buttons;
+    private string prefix;
     private bool isOpen;
 
     private void Start()
@@ -61,18 +66,22 @@ public class Menu : MonoBehaviour {
         selectedIndex = 0;
 
         // Add a prefix to the default button
-        switch (menuDimension)
+        switch (dimension)
         {
-            case CreationConfiguration.Axis.X:
-                buttons[0].Text = "X: " + buttons[0].Text;
+            case WorkScreenDimension.X:
+                prefix = "X: ";
                 break;
-            case CreationConfiguration.Axis.Y:
-                buttons[0].Text = "Y: " + buttons[0].Text;
+            case WorkScreenDimension.Y:
+                prefix = "Y: ";
                 break;
-            case CreationConfiguration.Axis.Z:
-                buttons[0].Text = "Z: " + buttons[0].Text;
+            case WorkScreenDimension.Z:
+                prefix = "Z: ";
+                break;
+            case WorkScreenDimension.FACETBY:
+                prefix = "Facet: ";
                 break;
         }
+        buttons[0].Text = prefix + buttons[0].Text;
     }
 
     private List<string> GetAttributesList()
@@ -99,7 +108,7 @@ public class Menu : MonoBehaviour {
         }
 
         // Remove prefix from selected button
-        buttons[selectedIndex].Text = buttons[selectedIndex].Text.Substring(3);
+        buttons[selectedIndex].Text = buttons[selectedIndex].Text.Replace(prefix, "");
     }
 
     private void CloseButtons()
@@ -115,22 +124,11 @@ public class Menu : MonoBehaviour {
         // If the menu was open, then close it
         if (isOpen)
         {
-            // Modify the target chart and add a prefix to the clicked button
-            switch (menuDimension)
-            {
-                case CreationConfiguration.Axis.X:
-                    targetChart.XDimension = button.Text;
-                    button.Text = "X: " + button.Text;
-                    break;
-                case CreationConfiguration.Axis.Y:
-                    targetChart.YDimension = button.Text;
-                    button.Text = "Y: " + button.Text;
-                    break;
-                case CreationConfiguration.Axis.Z:
-                    targetChart.ZDimension = button.Text;
-                    button.Text = "Z: " + button.Text;
-                    break;
-            }
+            // Invoke the event telling listeners that the chosen dimension has changed
+            DimensionChanged.Invoke(dimension, button.Text);
+
+            // Add the prefix to the clicked button
+            button.Text = prefix + button.Text;
 
             // Store the index of the selected option
             selectedIndex = buttons.IndexOf(button);

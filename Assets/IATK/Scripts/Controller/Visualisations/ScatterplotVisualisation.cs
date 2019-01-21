@@ -340,9 +340,9 @@ namespace IATK
                     default:
                         break;
                 }
-            
+
             if (visualisationReference.geometry != GeometryType.Undefined)// || visualisationType == VisualisationTypes.PARALLEL_COORDINATES)
-            SerializeViewConfiguration(creationConfiguration);
+                SerializeViewConfiguration(creationConfiguration);
 
             //Update any label on the corresponding axes
             UpdateVisualisationAxes(propertyType);
