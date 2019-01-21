@@ -7,8 +7,11 @@ using VRTK.GrabAttachMechanics;
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Net.Mime;
 using System.Security.Cryptography;
+using System.Xml.Serialization;
 using DG.Tweening;
+using TMPro;
 using UnityEditorInternal.VersionControl;
 
 /// <summary>
@@ -27,6 +30,7 @@ public class Chart : MonoBehaviour
     private Chart[,] splomCharts;  // Stored as 2D array
     private List<Chart> subCharts;  // Stored as 1D array
     private SPLOMButton[] splomButtons;
+    private List<GameObject> facetLabels;
 
     private DisplayScreen displayScreen;
 
@@ -467,8 +471,9 @@ public class Chart : MonoBehaviour
         // Disable this collider
         boxCollider.enabled = false;
 
-        // Create facet gameobjects
+        // Create facet gameobjects and labels
         subCharts = new List<Chart>();
+        facetLabels = new List<GameObject>();
 
         // Set default faceted dimension
         facetDimension = DataSource[0].Identifier;
@@ -538,25 +543,10 @@ public class Chart : MonoBehaviour
                     GameObject xAxis = subChart.visualisation.theVisualizationObject.X_AXIS;
                     GameObject yAxis = subChart.visualisation.theVisualizationObject.Y_AXIS;
 
-                    if (!isAlongLeft && !isAlongBottom)
+                    if (xAxis != null && yAxis != null)
                     {
-                        xAxis.SetActive(false);
-                        yAxis.SetActive(false);
-                    }
-                    else if (isAlongLeft && !isAlongBottom)
-                    {
-                        xAxis.SetActive(false);
-                        yAxis.SetActive(true);
-                    }
-                    else if (!isAlongLeft && isAlongBottom)
-                    {
-                        xAxis.SetActive(true);
-                        yAxis.SetActive(false);
-                    }
-                    else
-                    {
-                        xAxis.SetActive(true);
-                        yAxis.SetActive(true);
+                        xAxis.SetActive(isAlongBottom);
+                        yAxis.SetActive(isAlongLeft);
                     }
                 }
                 // If it is larger, delete any charts if there were any
@@ -675,6 +665,7 @@ public class Chart : MonoBehaviour
                 subChart.YDimension = YDimension;
                 subChart.Color = Color;
                 subChart.SetAsPrototype();
+                subChart.ForceUpdate();
 
                 // Create attribute filters for each chart
                 AttributeFilter af = new AttributeFilter();
@@ -695,6 +686,12 @@ public class Chart : MonoBehaviour
             subChart.visualisation.updateViewProperties(AbstractVisualisation.PropertyType.AttributeFiltering);
         }
 
+        // Destroy all previous labels (lazy)
+        foreach (GameObject label in facetLabels)
+        {
+            Destroy(label);
+        }
+
         // Position the charts
         int index = 0;
         int numRows = (int)Mathf.Sqrt(facetSize);
@@ -707,20 +704,56 @@ public class Chart : MonoBehaviour
         float w = Width / numCols;
         float h = Height / numRows;
 
-        for (int i = 0; i < numCols; i++)
+        for (int i = 0; i < numRows; i++)
         {
-            for (int j = 0; j < numRows; j++)
+            for (int j = 0; j < numCols; j++)
             {
                 if (index < facetSize)
                 {
                     Chart subChart = subCharts[index];
                     // Position such that subcharts start from 1 etcp from the edge, and are spaced two etcp distances from each other
-                    float x = (-(Width / 2) + xDelta) + 2 * xDelta * i;
-                    float y = ((Height / 2) - yDelta) - 2 * yDelta * j;
+                    float x = (-(Width / 2) + xDelta) + 2 * xDelta * j;
+                    float y = ((Height / 2) - yDelta) - 2 * yDelta * i;
                     subChart.Width = w * 0.75f;
-                    subChart.Height = h * 0.75f;
+                    subChart.Height = h * 0.65f;
                     subChart.transform.localPosition = new Vector3(x, y, 0);
                     subChart.transform.rotation = transform.rotation;
+
+                    // Create and position labels
+                    GameObject labelHolder = new GameObject();
+                    facetLabels.Add(labelHolder);
+                    labelHolder.transform.SetParent(transform);
+                    labelHolder.transform.localPosition = new Vector3(x, y + yDelta * 0.9f, 0);
+                    labelHolder.transform.rotation = transform.rotation;
+
+                    TextMeshPro label = labelHolder.AddComponent<TextMeshPro>();
+                    label.fontSize = 0.3f;
+                    label.alignment = TextAlignmentOptions.Center;
+
+                    string range1 = DataSource.getOriginalValue(index / (float) facetSize, FacetDimension).ToString();
+                    string range2 = DataSource.getOriginalValue((index + 1) / (float) facetSize, FacetDimension).ToString();
+                    label.text = range1 + " ... " + range2;
+
+                    RectTransform container = labelHolder.GetComponent<RectTransform>();
+                    container.sizeDelta = new Vector2(w, 0.1f);
+
+                    // Hide the axis for all but the charts along the edge
+                    bool isAlongLeft = (j == 0);
+                    bool isAlongBottom = (i == numRows - 1);
+                    GameObject xAxis = subChart.visualisation.theVisualizationObject.X_AXIS;
+                    GameObject yAxis = subChart.visualisation.theVisualizationObject.Y_AXIS;
+
+                    // If the the index of a subchart below this one would be larger than the total number of subcharts, then it does not exist, therefore
+                    // this subchart is along the bottom
+                    int count = index + 1 + numCols;
+                    if (count > facetSize)
+                        isAlongBottom = true;
+
+                    if (xAxis != null && yAxis != null)
+                    {
+                        xAxis.SetActive(isAlongBottom);
+                        yAxis.SetActive(isAlongLeft);
+                    }
                 }
                 index++;
             }

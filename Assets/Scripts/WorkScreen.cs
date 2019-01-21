@@ -77,8 +77,8 @@ public class WorkScreen : MonoBehaviour
         facet = ChartManager.Instance.CreateVisualisation("WorkscreenFacet");
         facet.VisualisationType = AbstractVisualisation.VisualisationTypes.FACET;
         facet.GeometryType = AbstractVisualisation.GeometryType.Points;
-        facet.XDimension = "cylinders";
-        facet.YDimension = "displacement";
+        facet.XDimension = dataSource[0].Identifier;
+        facet.YDimension = dataSource[0].Identifier;
         //facet.FacetDimension = "mpg";
         //facet.FacetSize = 5;
         facet.Width = facetTransform.localScale.x;
