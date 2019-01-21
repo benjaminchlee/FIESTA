@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using IATK;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -35,7 +36,7 @@ public class WorkScreen : MonoBehaviour
     private List<GameObject> scatterplotMatrixButtons;
     [SerializeField]
     private List<GameObject> facetButtons;
-
+    
     private void Start()
     {
         if (dataSource == null)
@@ -107,9 +108,13 @@ public class WorkScreen : MonoBehaviour
 
     private void ToggleState(bool sp, bool spm, bool f)
     {
-        scatterplot.gameObject.SetActive(sp);
-        scatterplotMatrix.gameObject.SetActive(spm);
-        facet.gameObject.SetActive(f);
+        scatterplot.transform.position = sp ? scatterplotTransform.position : new Vector3(9999, 9999, 9999);
+        scatterplotMatrix.transform.position = spm ? scatterplotMatrixTransform.position : new Vector3(99999, 9999, 9999);
+        facet.transform.position = f ? facetTransform.position : new Vector3(9999, 9999, 9999);
+
+        //scatterplot.gameObject.SetActive(sp);
+        //scatterplotMatrix.gameObject.SetActive(spm);
+        //facet.gameObject.SetActive(f);
 
         foreach (GameObject button in scatterplotButtons.Concat(scatterplotMatrixButtons).Concat(facetButtons))
         {

@@ -119,7 +119,6 @@ public class Chart : MonoBehaviour
                     foreach (Chart chart in subCharts)
                     {
                         chart.XDimension = value;
-                        chart.visualisation.updateViewProperties(AbstractVisualisation.PropertyType.X);  // Effectively gets called twice to properly update
                     }
                         
                     break;
@@ -146,7 +145,6 @@ public class Chart : MonoBehaviour
                     foreach (Chart chart in subCharts)
                     {
                         chart.YDimension = value;
-                        chart.visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Y);  // Effectively gets called twice to properly update
                     }
                     break;
             }
@@ -172,7 +170,6 @@ public class Chart : MonoBehaviour
                     foreach (Chart chart in subCharts)
                     {
                         chart.ZDimension = value;
-                        chart.visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Z);  // Effectively gets called twice to properly update
                     }
                     break;
             }
@@ -425,11 +422,6 @@ public class Chart : MonoBehaviour
         rigidbody.isKinematic = true;
     }
 
-    public void ForceUpdate()
-    {
-        visualisation.updateProperties();
-    }
-
     private void SetAsScatterplot()
     {
         // Enable the visualisation
@@ -633,7 +625,6 @@ public class Chart : MonoBehaviour
             if (splomCharts[i, index].tag == "Chart")
             {
                 splomCharts[i, index].GetComponent<Chart>().YDimension = button.Text;
-                splomCharts[i, index].GetComponent<Chart>().ForceUpdate();
             }
         }
 
@@ -643,7 +634,6 @@ public class Chart : MonoBehaviour
             if (splomCharts[index, i].tag == "Chart")
             {
                 splomCharts[index, i].GetComponent<Chart>().XDimension = button.Text;
-                splomCharts[index, i].GetComponent<Chart>().ForceUpdate();
             }
         }
     }
@@ -665,7 +655,6 @@ public class Chart : MonoBehaviour
                 subChart.YDimension = YDimension;
                 subChart.Color = Color;
                 subChart.SetAsPrototype();
-                subChart.ForceUpdate();
 
                 // Create attribute filters for each chart
                 AttributeFilter af = new AttributeFilter();
@@ -727,7 +716,7 @@ public class Chart : MonoBehaviour
                     labelHolder.transform.rotation = transform.rotation;
 
                     TextMeshPro label = labelHolder.AddComponent<TextMeshPro>();
-                    label.fontSize = 0.3f;
+                    label.fontSize = 0.25f;
                     label.alignment = TextAlignmentOptions.Center;
 
                     string range1 = DataSource.getOriginalValue(index / (float) facetSize, FacetDimension).ToString();
