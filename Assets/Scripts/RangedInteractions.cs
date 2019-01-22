@@ -101,6 +101,10 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     private bool isEnabled = false;
     private bool isControllerSelecting = true;
 
+    [Header("IATK")]
+    [SerializeField] [Tooltip("The brushing and linking script from IATK.")]
+    private BrushingAndLinking brushingAndLinking;
+
     /// <summary>
     /// The state of interaction the user is currently in. Note that this scope only extends to that of touchpad interactions, and not
     /// to other forms of interaction
@@ -556,14 +560,20 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     {
         SetInteractionState(InteractionState.RangedBrushing);
 
+        brushingAndLinking.input1 = rangedBrush.transform;
+        brushingAndLinking.input2 = rangedBrush.transform;
+        brushingAndLinking.brushButtonController = true;
+
         if (IsSelecting)
-            rangedBrush.GetComponent<Brush>().SetBrushMode(Brush.BrushMode.Select);
+            brushingAndLinking.SELECTION_TYPE = BrushingAndLinking.SelectionType.ADDITIVE;
         else if (IsDeselecting)
-            rangedBrush.GetComponent<Brush>().SetBrushMode(Brush.BrushMode.Deselect);
+            brushingAndLinking.SELECTION_TYPE = BrushingAndLinking.SelectionType.SUBTRACTIVE;
     }
 
     private void RangedBrushLoop()
     {
+        brushingAndLinking.radiusSphere = rangedBrush.transform.lossyScale.x * 5;
+
         RaycastHit hit;
         GameObject collidedObject = GetCollidedObject(out hit);
         if (collidedObject != null)
@@ -571,35 +581,6 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             if (!rangedBrush.activeSelf)
                 rangedBrush.SetActive(true);
 
-            /* TODO
-            // Select all shapes between the current position and the new position to prevent jitteriness
-            Vector3 start = rangedBrush.transform.position;
-            Vector3 end = hit.point;
-            Vector3 direction = Vector3.Normalize(end - start);
-
-            RaycastHit[] raycastHits = Physics.SphereCastAll(start, rangedBrush.transform.localScale.x / 2, direction, Vector3.Distance(start, end));
-            List<int> indicesToSelect = new List<int>();
-            foreach (RaycastHit raycastHit in raycastHits)
-            {
-                if (raycastHit.collider.gameObject.tag == "Shape")
-                {
-                    InteractableShape shapeScript = raycastHit.collider.gameObject.GetComponent<InteractableShape>();
-                    // If the brush is selecting and the shape is not selected, OR if the brush is deselecting and the shape is already selected
-                    if ((IsSelecting && !shapeScript.IsSelected) || (IsDeselecting && shapeScript.IsSelected))
-                        indicesToSelect.Add(shapeScript.Index);
-                }
-            }
-
-            if (indicesToSelect.Count > 0)
-            {
-                VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(gameObject), 0.15f);
-
-                if (IsSelecting)
-                    ScreenManager.Instance.ShapesSelected(indicesToSelect.ToArray());
-                if (IsDeselecting)
-                    ScreenManager.Instance.ShapesDeselected(indicesToSelect.ToArray());
-            }
-            */
             rangedBrush.transform.position = hit.point;
         }
         else
@@ -617,6 +598,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     private void RangedBrushTriggerEnd(ControllerInteractionEventArgs e)
     {
         SetInteractionState(InteractionState.RangedBrush);
+
+        brushingAndLinking.brushButtonController = false;
 
         rangedBrush.SetActive(false);
     }

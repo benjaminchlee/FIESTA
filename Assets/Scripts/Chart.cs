@@ -45,6 +45,11 @@ public class Chart : MonoBehaviour
 
     #region VisualisationProperties
 
+    public Visualisation Visualisation
+    {
+        get { return visualisation; }
+    }
+
     public DataSource DataSource
     {
         get { return visualisation.dataSource; }
