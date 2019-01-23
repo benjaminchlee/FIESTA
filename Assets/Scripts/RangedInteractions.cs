@@ -572,7 +572,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
     private void RangedBrushLoop()
     {
-        brushingAndLinking.radiusSphere = rangedBrush.transform.lossyScale.x * 5;
+        brushingAndLinking.radiusSphere = rangedBrush.transform.lossyScale.x / 2;
 
         RaycastHit hit;
         GameObject collidedObject = GetCollidedObject(out hit);

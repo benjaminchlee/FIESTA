@@ -72,7 +72,7 @@ bool brushSphere(float3 center, float radius, float3 testPoint)
 {
 	float3 displacementToCenter = testPoint - center;
 	float radiusSqr = radius * radius;
-	bool intersects = length(displacementToCenter) < radiusSqr;
+	bool intersects = dot(displacementToCenter, displacementToCenter) < radiusSqr;
 
 	return intersects;
 

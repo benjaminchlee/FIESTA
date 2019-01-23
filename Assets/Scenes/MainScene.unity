@@ -184,7 +184,7 @@ Transform:
   - {fileID: 871065227}
   - {fileID: 2033338729}
   m_Father: {fileID: 0}
-  m_RootOrder: 18
+  m_RootOrder: 17
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!1 &87914444
 GameObject:
@@ -1044,7 +1044,7 @@ Transform:
   - {fileID: 1449332713}
   - {fileID: 1473855034}
   m_Father: {fileID: 0}
-  m_RootOrder: 13
+  m_RootOrder: 12
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!1 &270127935
 GameObject:
@@ -1434,7 +1434,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4755349711056394, guid: 56c74d3723a6e7049ba24bab41aec899, type: 2}
       propertyPath: m_RootOrder
-      value: 21
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 33563364938536498, guid: 56c74d3723a6e7049ba24bab41aec899,
         type: 2}
@@ -1672,12 +1672,12 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 362545567}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -3.3354163, y: 0.22582412, z: 0.18186331}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_Father: {fileID: 952794466}
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &362545569
 MonoBehaviour:
@@ -1787,7 +1787,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &433204935
 GameObject:
@@ -2117,7 +2117,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   index: -1
   modelOverride: 
-  shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
+  shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 3}
   verbose: 0
   createComponents: 1
   updateDynamically: 1
@@ -4141,7 +4141,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 9
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 40.185, y: 0, z: 0}
 --- !u!1 &866574294
 GameObject:
@@ -4660,7 +4660,7 @@ Transform:
   - {fileID: 203089499}
   - {fileID: 886405794}
   m_Father: {fileID: 0}
-  m_RootOrder: 12
+  m_RootOrder: 11
   m_LocalEulerAnglesHint: {x: 0, y: -270.904, z: 0}
 --- !u!114 &890242515
 MonoBehaviour:
@@ -4748,7 +4748,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 11
+  m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &952794465
 GameObject:
@@ -4777,8 +4777,9 @@ Transform:
   m_Children:
   - {fileID: 952950781}
   - {fileID: 995847226}
+  - {fileID: 362545568}
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &952950781
 Transform:
@@ -5263,7 +5264,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4755349711056394, guid: 56c74d3723a6e7049ba24bab41aec899, type: 2}
       propertyPath: m_RootOrder
-      value: 19
+      value: 18
       objectReference: {fileID: 0}
     - target: {fileID: 33563364938536498, guid: 56c74d3723a6e7049ba24bab41aec899,
         type: 2}
@@ -6741,7 +6742,7 @@ Transform:
   - {fileID: 1277303372}
   - {fileID: 627323263}
   m_Father: {fileID: 0}
-  m_RootOrder: 17
+  m_RootOrder: 16
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!1 &1227811078
 GameObject:
@@ -6828,7 +6829,7 @@ Transform:
   m_Children:
   - {fileID: 1827032221}
   m_Father: {fileID: 0}
-  m_RootOrder: 10
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1227811083
 MonoBehaviour:
@@ -7286,23 +7287,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7e228c7aac3df145b0445e83d23f2c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startValue: 3
-  ScatterplotMatrixSizeSliderValueChanged:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 890242515}
-        m_MethodName: ScatterplotMatrixSizeSlider
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-    m_TypeName: SPLOMSizeSlider+ScatterplotMatrixSizeSliderValueChangedEvent, Assembly-CSharp,
-      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 --- !u!65 &1277303377
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -7428,7 +7412,7 @@ Transform:
   - {fileID: 1940776121}
   - {fileID: 543389592}
   m_Father: {fileID: 0}
-  m_RootOrder: 15
+  m_RootOrder: 14
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!1 &1316485569
 GameObject:
@@ -7772,7 +7756,7 @@ Transform:
   - {fileID: 125112607}
   - {fileID: 352895658}
   m_Father: {fileID: 0}
-  m_RootOrder: 16
+  m_RootOrder: 15
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!1 &1394522813
 GameObject:
@@ -9028,7 +9012,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1511434202
 GameObject:
@@ -9300,7 +9284,7 @@ Transform:
   - {fileID: 1097627239}
   - {fileID: 2055764336}
   m_Father: {fileID: 0}
-  m_RootOrder: 14
+  m_RootOrder: 13
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!1 &1594706121
 GameObject:
@@ -9509,7 +9493,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   index: -1
   modelOverride: 
-  shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
+  shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 3}
   verbose: 0
   createComponents: 1
   updateDynamically: 1
@@ -11381,7 +11365,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4755349711056394, guid: 56c74d3723a6e7049ba24bab41aec899, type: 2}
       propertyPath: m_RootOrder
-      value: 20
+      value: 19
       objectReference: {fileID: 0}
     - target: {fileID: 33563364938536498, guid: 56c74d3723a6e7049ba24bab41aec899,
         type: 2}
@@ -11723,7 +11707,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1930878837}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.496, y: -0.227, z: -1.269}
+  m_LocalPosition: {x: 0.237, y: -0.526, z: -0.731}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 2072441599}

@@ -169,7 +169,7 @@ public class BrushingAndLinking : MonoBehaviour
             switch (BRUSH_TYPE)
             {
                 case BrushType.SPHERE:
-                    Collider[] colliders = Physics.OverlapSphere(input1.position, radiusSphere / 5);
+                    Collider[] colliders = Physics.OverlapSphere(input1.position, radiusSphere);
                     brushingVisualisations.Clear();
                     foreach (Collider col in colliders)
                     {
@@ -320,7 +320,7 @@ public class BrushingAndLinking : MonoBehaviour
             computeShader.SetFloat("_MaxY", brushingVisualisation.yDimension.maxFilter);
             computeShader.SetFloat("_MinZ", brushingVisualisation.zDimension.minFilter);
             computeShader.SetFloat("_MaxZ", brushingVisualisation.zDimension.maxFilter);
-
+            
             computeShader.SetFloat("RadiusSphere", radiusSphere);
 
             computeShader.SetFloat("width", brushingVisualisation.width);

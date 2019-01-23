@@ -890,7 +890,7 @@ public class Chart : MonoBehaviour
         // Calculate size
         float xSize = (x != "Undefined") ? width + 0.15f : 0.1f;
         float ySize = (y != "Undefined") ? height + 0.15f : 0.1f;
-        float zSize = (z != "Undefined") ? depth + 0.15f : 0.1f;
+        float zSize = (z != "Undefined") ? depth + 0.15f : 0.02f;
 
         //boxCollider.center = new Vector3(xCenter, yCenter, zCenter);
         boxCollider.size = new Vector3(xSize, ySize, zSize);
