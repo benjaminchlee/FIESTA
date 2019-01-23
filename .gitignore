@@ -7,6 +7,7 @@
 /[Ll]ibrary/
 sysinfo.txt
 *.stackdump
+/[Aa]ssets/SerializedFields/
  
 # ============================================= #
 # Visual Studio / MonoDevelop / Rider generated #
