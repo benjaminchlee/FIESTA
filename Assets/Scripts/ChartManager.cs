@@ -16,7 +16,8 @@ public class ChartManager : MonoBehaviour {
         set { dataSource = value; }
     }
     
-    public List<Chart> Visualisations { get; private set; }
+    public List<Chart> Charts { get; private set; }
+    public List<Visualisation> Visualisations { get; private set; }
 
     private void Awake()
     {
@@ -30,42 +31,20 @@ public class ChartManager : MonoBehaviour {
             Destroy(gameObject);
         }
 
-        Visualisations = new List<Chart>();
+        Charts = new List<Chart>();
+        Visualisations = new List<Visualisation>();
     }
-    
-    private void Start() { }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown("a"))
-        {
-            AddVisualisation();
-        }
-    }
-
-    public Chart AddVisualisation()
-    {
-        GameObject vis = new GameObject();
-        Chart chart = vis.AddComponent<Chart>();
-        Visualisations.Add(chart);
-
-        chart.Initialise(DataSource);
-        chart.VisualisationType = AbstractVisualisation.VisualisationTypes.SCATTERPLOT;
-        chart.GeometryType = AbstractVisualisation.GeometryType.Points;
-        chart.XDimension = "mpg";
-        chart.YDimension = "cylinders";
-
-        return chart;
-    }
-
+        
     public Chart CreateVisualisation(string name)
     {
         GameObject vis = new GameObject();
         vis.name = name;
         Chart chart = vis.AddComponent<Chart>();
-        Visualisations.Add(chart);
 
         chart.Initialise(DataSource);
+
+        Charts.Add(chart);
+        Visualisations.Add(chart.Visualisation);
 
         return chart;
     }
@@ -74,7 +53,6 @@ public class ChartManager : MonoBehaviour {
     {
         GameObject vis = new GameObject();
         Chart chart = vis.AddComponent<Chart>();
-        Visualisations.Add(chart);
 
         chart.Initialise(DataSource);
         chart.VisualisationType = dupe.VisualisationType;
@@ -93,13 +71,19 @@ public class ChartManager : MonoBehaviour {
         vis.transform.rotation = dupe.transform.rotation;
         vis.transform.localScale = dupe.transform.localScale;
 
+        Charts.Add(chart);
+        Visualisations.Add(chart.Visualisation);
+
         return chart;
     }
 
     public void RemoveVisualisation(Chart chart)
     {
-        if (Visualisations.Contains(chart))
-            Visualisations.Remove(chart);
+        if (Charts.Contains(chart))
+            Charts.Remove(chart);
+
+        if (Visualisations.Contains(chart.Visualisation))
+            Visualisations.Remove(chart.Visualisation);
 
         Destroy(chart.gameObject);
     }

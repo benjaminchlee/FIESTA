@@ -527,7 +527,7 @@ public class Chart : MonoBehaviour
 
                             GameObject go = Instantiate((GameObject)Resources.Load("SPLOMButton"));
                             SPLOMButton button = go.GetComponent<SPLOMButton>();
-                            button.ButtonClicked.AddListener(ScatterplotMatrixDimensionChanged);
+                            button.SPLOMButtonClicked.AddListener(ScatterplotMatrixDimensionChanged);
                             button.Text = DataSource[i].Identifier;
                             splomButtons[i] = button;
                             go.transform.SetParent(transform);

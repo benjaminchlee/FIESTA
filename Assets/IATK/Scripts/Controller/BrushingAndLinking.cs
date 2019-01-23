@@ -337,7 +337,8 @@ public class BrushingAndLinking : MonoBehaviour
             brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial.SetColor("brushColor", brushColor);
         }
 
-        foreach (var bv in brushedVisualisations)// visualisationsMaterials)
+        //foreach (var bv in brushedVisualisations)// visualisationsMaterials)
+        foreach (var bv in ChartManager.Instance.Visualisations)// visualisationsMaterials)
         {
             foreach (var v in bv.theVisualizationObject.viewList)
             {
