@@ -203,7 +203,7 @@ public class BrushingAndLinking : MonoBehaviour
 
     public void InitialiseBuffers()
     {
-        if (brushingVisualisations != null)
+        if (brushingVisualisations.Count > 0)
             //bind brushing vertices
             initializeComputeAndRenderBuffers(brushingVisualisations[0].theVisualizationObject.viewList[0].BigMesh.getBigMeshVertices());
 

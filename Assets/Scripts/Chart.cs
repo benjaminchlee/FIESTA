@@ -11,15 +11,16 @@ using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Xml.Serialization;
 using DG.Tweening;
+using NetBase;
 using TMPro;
 using UnityEditorInternal.VersionControl;
+using Component = UnityEngine.Component;
 
 /// <summary>
 /// Acts as a wrapper for IATK's visualisation script
 /// </summary>
-public class Chart : MonoBehaviour
+public class Chart : Photon.MonoBehaviour
 {
-
     private Visualisation visualisation;
     private GameObject visualisationGameObject;
     private VRTK_InteractableObject interactableObject;
@@ -412,6 +413,17 @@ public class Chart : MonoBehaviour
         grabAttach = gameObject.AddComponent<VRTK_ChildOfControllerGrabAttach>();
         interactableObject.grabAttachMechanicScript = grabAttach;
         interactableObject.grabAttachMechanicScript.precisionGrab = true;
+
+        // Add Photon scripts for networking
+        PhotonView photonView = gameObject.AddComponent<PhotonView>();
+        photonView.viewID = PhotonNetwork.AllocateViewID();
+        photonView.synchronization = ViewSynchronization.UnreliableOnChange;
+
+        NetworkObject networkObject = gameObject.AddComponent<NetworkObject>();
+        networkObject.parent = true;
+        networkObject.onChangeOnly = false;
+
+        photonView.ObservedComponents = new List<Component>() {networkObject, this};
 
         // Subscribe to events
         interactableObject.InteractableObjectGrabbed += ChartGrabbed;
@@ -942,5 +954,46 @@ public class Chart : MonoBehaviour
     {
         rigidbody.DOMove(targetPos, duration).SetEase(Ease.OutQuint);
         rigidbody.DORotate(targetRot.eulerAngles, duration).SetEase(Ease.OutQuint);
+    }
+
+    void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.isWriting)
+        {
+            stream.SendNext(VisualisationType);
+            stream.SendNext(GeometryType);
+            stream.SendNext(XDimension);
+            stream.SendNext(YDimension);
+            stream.SendNext(ZDimension);
+            stream.SendNext(Color.r);
+            stream.SendNext(Color.g);
+            stream.SendNext(Color.b);
+            stream.SendNext(Color.a);
+            stream.SendNext(Size);
+            stream.SendNext(Width);
+            stream.SendNext(Height);
+            stream.SendNext(Depth);
+            //stream.SendNext(AttributeFilters);
+            stream.SendNext(ScatterplotMatrixSize);
+            stream.SendNext(FacetDimension);
+            stream.SendNext(FacetSize);
+        }
+        else
+        {
+            VisualisationType = (AbstractVisualisation.VisualisationTypes) stream.ReceiveNext();
+            GeometryType = (AbstractVisualisation.GeometryType) stream.ReceiveNext();
+            XDimension = (string) stream.ReceiveNext();
+            YDimension = (string) stream.ReceiveNext();
+            ZDimension = (string) stream.ReceiveNext();
+            Color col = new Color((float)stream.ReceiveNext(), (float)stream.ReceiveNext(), (float)stream.ReceiveNext(), (float)stream.ReceiveNext());
+            Size = (float) stream.ReceiveNext();
+            Width = (float) stream.ReceiveNext();
+            Height = (float) stream.ReceiveNext();
+            Depth = (float) stream.ReceiveNext();
+            //AttributeFilters = (AttributeFilters[]) stream.ReceiveNext();
+            ScatterplotMatrixSize = (int) stream.ReceiveNext();
+            FacetDimension = (string) stream.ReceiveNext();
+            FacetSize = (int) stream.ReceiveNext();
+        }
     }
 }
