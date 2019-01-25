@@ -7133,7 +7133,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1227811078}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.03, y: 1.391, z: 1.052}
+  m_LocalPosition: {x: -0.03, y: 1.391, z: 1.692}
   m_LocalScale: {x: 1.92, y: 1.08, z: 1}
   m_Children:
   - {fileID: 1827032221}
@@ -9452,7 +9452,7 @@ MonoBehaviour:
   BRUSH_TYPE: 0
   SELECTION_TYPE: 1
   debugObjectTexture: {fileID: 0}
-  brushedData: []
+  brushedIndices: 
 --- !u!4 &1506736747
 Transform:
   m_ObjectHideFlags: 0

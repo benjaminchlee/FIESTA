@@ -151,40 +151,14 @@ float normaliseValue(float value, float i0, float i1, float j0, float j1)
 [numthreads(8, 1, 1)]
 void ComputeBrushedIndicesArray(uint3 id : SV_DispatchThreadID)
 {
-	// 1 calculate the brushing for the current pixel
+	int x = id.x % _size;
+	int y = floor(id.x / _size);
+	float2 pos = float2(x, y);
 
-	int idx = id.x;
-	//vertex shader stage
-
-	float3 filteredPosition = float3(
-		normaliseValue(dataBuffer[idx].x, _MinNormX, _MaxNormX, 0, 1),
-		normaliseValue(dataBuffer[idx].y, _MinNormY, _MaxNormY, 0, 1),
-		normaliseValue(dataBuffer[idx].z, _MinNormZ, _MaxNormZ, 0, 1));
-
-	//filters out dots 
-	if (
-		(filteredPosition.x >= _MinX &&
-			filteredPosition.x <= _MaxX &&
-			filteredPosition.y >= _MinY &&
-			filteredPosition.y <= _MaxY &&
-			filteredPosition.z >= _MinZ &&
-			filteredPosition.z <= _MaxZ
-			))
-	{
-		if (Brush(BrushMode, filteredPosition))
-		{
-			brushedIndices[idx] = 1;
-		}
-		else
-		{
-			brushedIndices[idx] = -1;
-		}
-	}
+	if (Result.Load(pos).x == 1.0)
+		brushedIndices[id.x] = 1;
 	else
-	{
-		brushedIndices[idx] = -1;
-	}
-
+		brushedIndices[id.x] = -1;
 }
 
 [numthreads(32, 32, 1)]
