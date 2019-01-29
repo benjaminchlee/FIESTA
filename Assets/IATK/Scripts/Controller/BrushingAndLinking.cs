@@ -19,6 +19,8 @@ public class BrushingAndLinking : MonoBehaviour
 
     ComputeBuffer brushedIndicesBuffer;
 
+    ComputeBuffer filteredIndicesBuffer;
+
     [SerializeField]
     public Material myRenderMaterial;
 
@@ -165,9 +167,12 @@ public class BrushingAndLinking : MonoBehaviour
         for (int i = 0; i < data.Length; i++)
             brushIni[i] = -1;
         brushedIndicesBuffer.SetData(brushIni);
+  
+        filteredIndicesBuffer = new ComputeBuffer(data.Length, 4);
+        filteredIndicesBuffer.SetData(new float[data.Length]);
+
         computeShader.SetBuffer(kernelHandleBrushArrayIndices, "dataBuffer", buffer);
         computeShader.SetBuffer(kernelHandleBrushArrayIndices, "brushedIndices", brushedIndicesBuffer);
-
 
         texSize = computeTextureSize(datasetSize);
         Debug.Log(texSize);
@@ -232,6 +237,9 @@ public class BrushingAndLinking : MonoBehaviour
     {
         buffer.SetData(visualisation.theVisualizationObject.viewList[0].BigMesh.getBigMeshVertices());
         computeShader.SetBuffer(kernelHandleBrushTexture, "dataBuffer", buffer);
+        
+        filteredIndicesBuffer.SetData(visualisation.theVisualizationObject.viewList[0].GetFilterChannel());
+        computeShader.SetBuffer(kernelHandleBrushTexture, "filteredIndices", filteredIndicesBuffer);
     }
 
     /// <summary>

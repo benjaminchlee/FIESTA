@@ -57,7 +57,7 @@ namespace IATK
 
         private int NB_VERTTICES;
 
-        public static readonly int VERTEX_LIMIT = 65000;       // Unity's internal vertex limit
+        public static readonly int VERTEX_LIMIT = 2147483647;       // Unity's internal vertex limit
 
         private List<Mesh> meshList = new List<Mesh>();         // The list of meshes
 
@@ -283,6 +283,16 @@ namespace IATK
             List<Vector4> l = new List<Vector4>();
             mesh.GetUVs(channel, l);
             return l;
+        }
+
+        public Vector4[] getUVs(int channel)
+        {
+            List<Vector4> uvs = new List<Vector4>();
+            foreach (var mesh in meshList)
+            {
+                uvs.AddRange(GetUVList(channel, mesh));
+            }
+            return uvs.ToArray();
         }
 
         public void MapUVChannel(int channel, int component, float[] data)

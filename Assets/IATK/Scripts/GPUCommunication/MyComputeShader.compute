@@ -58,6 +58,7 @@ int SelectionMode;
 
 RWStructuredBuffer<float3> dataBuffer;
 RWStructuredBuffer<int> brushedIndices;
+StructuredBuffer<float> filteredIndices;
 
 //brush circle
 bool brush2DInCircle(float3 center, float radius, float4 testPoint)
@@ -169,26 +170,27 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 	int idx = id.x + id.y * _size;
 	//vertex shader stage
 
-	// DOES NOT WORK WITH NEGATIVE WIDTH/HEIGHT/DEPTH
+	// Only test if the point is not filtered
+	if (!filteredIndices[idx]) {
+		// DOES NOT WORK WITH NEGATIVE WIDTH/HEIGHT/DEPTH
 
-	float3 filteredPosition = float3(
-		normaliseValue(dataBuffer[idx].x, _MinNormX, _MaxNormX, 0, width),
-		normaliseValue(dataBuffer[idx].y, _MinNormY, _MaxNormY, 0, height),
-		normaliseValue(dataBuffer[idx].z, _MinNormZ, _MaxNormZ, 0, depth));
+		float3 filteredPosition = float3(
+			normaliseValue(dataBuffer[idx].x, _MinNormX, _MaxNormX, 0, width),
+			normaliseValue(dataBuffer[idx].y, _MinNormY, _MaxNormY, 0, height),
+			normaliseValue(dataBuffer[idx].z, _MinNormZ, _MaxNormZ, 0, depth));
 
-	//filters out dots 
-	if (
-		(filteredPosition.x >= _MinX &&
+		//filters out dots 
+		if (filteredPosition.x >= _MinX &&
 			filteredPosition.x <= _MaxX * width &&
 			filteredPosition.y >= _MinY &&
 			filteredPosition.y <= _MaxY * height &&
 			filteredPosition.z >= _MinZ &&
 			filteredPosition.z <= _MaxZ * depth
-			))
-	{
-		if (Brush(BrushMode, filteredPosition))
+			)
 		{
-			switch (SelectionMode) {
+			if (Brush(BrushMode, filteredPosition))
+			{
+				switch (SelectionMode) {
 				case 0:
 				case 1:
 					Result[id.xy] = float4(1.0, 0.0, 0.0, 1.0); // brushed
@@ -197,16 +199,17 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 				case 2:
 					Result[id.xy] = float4(0.0, 1.0, 0.0, 1.0); // not brushed
 					break;
+				}
+			}
+			else
+			{
+				if (SelectionMode == 0)
+					Result[id.xy] = float4(0.0, 1.0, 0.0, 1.0); // not brushed
 			}
 		}
 		else
 		{
-			if (SelectionMode == 0)
-				Result[id.xy] = float4(0.0, 1.0, 0.0, 1.0); // not brushed
+			Result[id.xy] = float4(0.0, 1.0, 0.0, 1.0); // not brushed
 		}
-	}
-	else
-	{
-		Result[id.xy] = float4(0.0, 1.0, 0.0, 1.0); // not brushed
 	}
 }

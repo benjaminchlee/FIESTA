@@ -88,7 +88,7 @@ public class WorkScreen : MonoBehaviour
         facet.transform.position = facetTransform.position;
         facet.transform.rotation = facetTransform.rotation;
 
-        ShowScatterplot();
+        ShowFacet();
     }
 
     public void ShowScatterplot()

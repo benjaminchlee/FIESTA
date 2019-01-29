@@ -254,8 +254,10 @@ Shader "IATK/OutlineDots"
 				FS_OUTPUT FS_Main(FS_INPUT input)
 				{
 					FS_OUTPUT o;
-					if(input.isBrushed >0 && showBrush > 0.0)
-					o.color = tex2D(_MainTex, input.tex0.xy) *brushColor;
+					if (input.isBrushed > 0 && showBrush > 0.0) {
+						float4 col = float4(brushColor.r, brushColor.g, brushColor.b, input.color.a);
+						o.color = tex2D(_MainTex, input.tex0.xy) * col;
+					}
 					
 					else
 					o.color = tex2D(_MainTex, input.tex0.xy) *input.color;
