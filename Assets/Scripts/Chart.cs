@@ -26,6 +26,7 @@ public class Chart : Photon.MonoBehaviour
     private VRTK_InteractableObject interactableObject;
     private VRTK_BaseGrabAttach grabAttach;
     private BoxCollider boxCollider;
+    private BoxCollider raycastCollider;
     private Rigidbody rigidbody;
 
     private Chart[,] splomCharts;  // Stored as 2D array
@@ -429,9 +430,16 @@ public class Chart : Photon.MonoBehaviour
         interactableObject.InteractableObjectGrabbed += ChartGrabbed;
         interactableObject.InteractableObjectUngrabbed += ChartUngrabbed;
 
-        // Add collider
+        // Add collider and ignore raycasts (child object will handle raycasts)
         boxCollider = gameObject.AddComponent<BoxCollider>();
         boxCollider.isTrigger = true;
+        gameObject.layer = 2;
+
+        // Add collider to be used for raycasting
+        GameObject go = new GameObject("RaycastCollider");
+        go.transform.SetParent(transform);
+        raycastCollider = go.AddComponent<BoxCollider>();
+        raycastCollider.isTrigger = true;
 
         // Configure rigidbody
         rigidbody = gameObject.AddComponent<Rigidbody>();
@@ -867,6 +875,11 @@ public class Chart : Photon.MonoBehaviour
         isPrototype = true;
     }
 
+    public bool IsPrototype()
+    {
+        return isPrototype;
+    }
+
 
     private void ForceViewScale()
     {
@@ -893,19 +906,21 @@ public class Chart : Photon.MonoBehaviour
         string x = visualisation.xDimension.Attribute;
         string y = visualisation.yDimension.Attribute;
         string z = visualisation.zDimension.Attribute;
-
-        //// Calculate center
-        //float xCenter = (x != "Undefined") ? width / 2 : 0;
-        //float yCenter = (y != "Undefined") ? height / 2 : 0;
-        //float zCenter = (z != "Undefined") ? depth/ 2 : 0;
-
+        
         // Calculate size
         float xSize = (x != "Undefined") ? width + 0.15f : 0.1f;
         float ySize = (y != "Undefined") ? height + 0.15f : 0.1f;
-        float zSize = (z != "Undefined") ? depth + 0.15f : 0.02f;
-
-        //boxCollider.center = new Vector3(xCenter, yCenter, zCenter);
+        float zSize = (z != "Undefined") ? depth + 0.15f : 0.1f;
+        
         boxCollider.size = new Vector3(xSize, ySize, zSize);
+        raycastCollider.size = new Vector3(xSize, ySize, 0.01f);
+
+        // Disable colliders if this is not a scatterplot
+        if (VisualisationType != AbstractVisualisation.VisualisationTypes.SCATTERPLOT)
+        {
+            boxCollider.enabled = false;
+            raycastCollider.enabled = false;
+        }
     }
 
     private void CenterVisualisation()
@@ -919,7 +934,7 @@ public class Chart : Photon.MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.tag == "DisplayScreen")
+        if (other.CompareTag("DisplayScreen"))
         {
             isTouchingDisplayScreen = true;
 
@@ -936,7 +951,7 @@ public class Chart : Photon.MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.tag == "DisplayScreen")
+        if (other.CompareTag("DisplayScreen"))
         {
             isTouchingDisplayScreen = false;
         }
@@ -950,9 +965,13 @@ public class Chart : Photon.MonoBehaviour
         AnimateTowards(pos, rot, 0.2f);
     }
 
-    public void AnimateTowards(Vector3 targetPos, Quaternion targetRot, float duration)
+    public void AnimateTowards(Vector3 targetPos, Quaternion targetRot, float duration, bool toDestroy = false)
     {
-        rigidbody.DOMove(targetPos, duration).SetEase(Ease.OutQuint);
+        if (toDestroy)
+            rigidbody.DOMove(targetPos, duration).SetEase(Ease.OutQuint).OnComplete(() => ChartManager.Instance.RemoveVisualisation(this));
+        else
+            rigidbody.DOMove(targetPos, duration).SetEase(Ease.OutQuint);
+
         rigidbody.DORotate(targetRot.eulerAngles, duration).SetEase(Ease.OutQuint);
     }
 

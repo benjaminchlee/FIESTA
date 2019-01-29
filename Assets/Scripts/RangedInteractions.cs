@@ -76,8 +76,10 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
     private Vector3 rangedPullControllerStartPosition;
     private Vector3 rangedPullObjectStartPosition;
+    private Quaternion rangedPullObjectStartRotation;
     private GameObject rangedPullGameObject;
-    private bool isPullable = false;
+    private bool isPullable;
+    private bool pullObjectIsPrototype;
 
     [Header("Details on Demand Parameters")]
     [SerializeField] [Tooltip("The gameobject that acts as the panel for the details on demand.")]
@@ -631,7 +633,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
             if (collidedObject != null)
             {
-                if (collidedObject == screen || collidedObject.tag == "DisplayScreen")
+                if (collidedObject == screen || collidedObject.CompareTag("DisplayScreen"))
                 {
                     int nbLassoPoints = lassoRenderer.positionCount;
 
@@ -726,7 +728,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
         if (collidedObject != null)
         {
-            if (collidedObject == screen || collidedObject.tag == "Shape")
+            if (collidedObject == screen || collidedObject.CompareTag("Shape"))
             {
                 SetInteractionState(InteractionState.RectangleSelecting);
                 rectangleStart = pointerCollidedWith.point;
@@ -815,13 +817,16 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         if (collidedObject != null)
         {
             // If the object that is being pointed at is a chart, it is pullable
-            if (collidedObject.tag == "Chart")
+            if (collidedObject.transform.parent != null && collidedObject.transform.parent.CompareTag("Chart"))
             {
                 isPullable = true;
-                rangedPullGameObject = collidedObject;
+                rangedPullGameObject = collidedObject.transform.parent.gameObject;
                 rangedPullControllerStartPosition = transform.position;
-                rangedPullObjectStartPosition = collidedObject.transform.position;
+                rangedPullObjectStartPosition = rangedPullGameObject.transform.position;
+                rangedPullObjectStartRotation = rangedPullGameObject.transform.rotation;
                 SetInteractionState(InteractionState.RangedInteracting);
+
+                pullObjectIsPrototype = rangedPullGameObject.GetComponent<Chart>().IsPrototype();
             }
         }
     }
@@ -840,6 +845,13 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             {
                 isPullable = false;
                 SetInteractionState(InteractionState.RangedPulling);
+
+                // If the object is a chart and it is a prototype, create a duplicate and use that instead
+                if (pullObjectIsPrototype)
+                {
+                    Chart chart = ChartManager.Instance.DuplicateVisualisation(rangedPullGameObject.GetComponent<Chart>());
+                    rangedPullGameObject = chart.gameObject;
+                }
             }
         }
     }
@@ -886,6 +898,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         {
             SetInteractionState(InteractionState.None);
 
+            rangedPullGameObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
             rangedPullGameObject.transform.position = transform.position;
 
             GetComponent<VRTK_InteractTouch>().ForceTouch(rangedPullGameObject);
@@ -893,12 +906,12 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         }
         else
         {
-            Rigidbody rb = rangedPullGameObject.GetComponent<Rigidbody>();
-            rb.MovePosition(Vector3.Lerp(rangedPullObjectStartPosition, transform.position, distance / rangedPullCompleteThreshold));
+            rangedPullGameObject.transform.position = Vector3.Lerp(rangedPullObjectStartPosition, transform.position, distance / rangedPullCompleteThreshold);
 
             // Lock LookAt rotation to only rotate along the y axis
             //Vector3 targetPosition = new Vector3(Camera.main.transform.position.x, rangedPullGameObject.transform.position.y, Camera.main.transform.position.z);
             //rangedPullGameObject.transform.LookAt(targetPosition);
+            rangedPullGameObject.transform.rotation = Quaternion.LookRotation(transform.position - VRTK_DeviceFinder.HeadsetTransform().position);
         }
     }
 
@@ -914,8 +927,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             SetInteractionState(InteractionState.RangedInteraction);
         }
 
-        //TODO: Fix
-        //rangedPullCreatedGameObject.GetComponent<Chart>().AnimateTowards(rangedPullGameObject.transform.position,  0.1f);
+        rangedPullGameObject.GetComponent<Chart>().AnimateTowards(rangedPullObjectStartPosition, rangedPullObjectStartRotation, 0.1f, pullObjectIsPrototype);
     }
 
     // Override the color of the laser such that it is still invalid when hitting the just the screen itself
