@@ -6,6 +6,7 @@ using TMPro;
 using UnityEngine;
 using Util;
 using VRTK;
+using Vuforia;
 
 public class RangedInteractions : VRTK_StraightPointerRenderer {
 
@@ -67,6 +68,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     private Vector3 rectangleStart;
     private Vector3 rectangleEnd;
     private GameObject selectionSquare;
+    private Transform rectangleTransform1;
+    private Transform rectangleTransform2;
 
     [Header("Ranged Selection Parameters")]
     [SerializeField] [Tooltip("The distance that the controller needs to be moved until an object begins being pulled from the screen.")]
@@ -162,6 +165,10 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         // Instantiate ranged brush
         rangedBrush = Instantiate(brushPrefab);
         rangedBrush.SetActive(false);
+
+        // Instantiate rectangle selection transforms
+        rectangleTransform1 = new GameObject().transform;
+        rectangleTransform2 = new GameObject().transform;
     }
     
     public void Enable()
@@ -728,11 +735,13 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
         if (collidedObject != null)
         {
-            if (collidedObject == screen || collidedObject.CompareTag("Shape"))
-            {
-                SetInteractionState(InteractionState.RectangleSelecting);
-                rectangleStart = pointerCollidedWith.point;
-            }
+            SetInteractionState(InteractionState.RectangleSelecting);
+            rectangleStart = pointerCollidedWith.point;
+            //if (collidedObject == screen || collidedObject.CompareTag("Shape"))
+            //{
+            //    SetInteractionState(InteractionState.RectangleSelecting);
+            //    rectangleStart = pointerCollidedWith.point;
+            //}
         }
     }
 
@@ -741,8 +750,9 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         RaycastHit pointerCollidedWith;
         GameObject collidedObject = GetCollidedObject(out pointerCollidedWith);
 
-        if (collidedObject != null)
+        if (collidedObject != null && collidedObject.transform.parent != null && collidedObject.transform.parent.CompareTag("Chart"))
         {
+            /*
             // Only draw the shape if the pointer is targeting at the screen
             if (collidedObject == screen)
             {
@@ -778,36 +788,59 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 selectionSquare.transform.localScale = localScale;
                 selectionSquare.transform.rotation = screen.transform.rotation;
             }
+            */
+
+            // Create the square to be used for the selection if it does not already exist
+            if (selectionSquare == null)
+            {
+                selectionSquare = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                // Set it to ignore raycasts
+                selectionSquare.layer = 2;
+                selectionSquare.GetComponent<Renderer>().material = rectangleSelectMaterial;
+                //LineRenderer lr = selectionSquare.AddComponent<LineRenderer>();
+                //lr.positionCount = 5;
+                //lr.SetPositions(new Vector3[] { new Vector3(0.5f, 0.5f, 0), new Vector3(-0.5f, 0.5f, 0), new Vector3(-0.5f, -0.5f, 0), new Vector3(0.5f, -0.5f, 0), new Vector3(0.5f, 0.5f, 0) });
+                //lr.material = rectangleSelectMaterial;
+                //lr.startWidth = rectangleSelectWidth;
+                //lr.endWidth = rectangleSelectWidth;
+                //lr.useWorldSpace = false;
+            }
+
+            rectangleEnd = pointerCollidedWith.point;
+
+            Vector3 scale = rectangleEnd - rectangleStart;
+            scale.x = Mathf.Abs(scale.x);
+            scale.y = Mathf.Abs(scale.y);
+            scale.z = Mathf.Abs(scale.z);
+
+            Vector3 center = (rectangleStart + rectangleEnd) / 2;
+
+            selectionSquare.transform.position = center;
+            selectionSquare.transform.localScale = scale;
+            selectionSquare.transform.rotation = collidedObject.transform.rotation;
+            selectionSquare.transform.Rotate(Vector3.up, 90f);
         }
     }
 
     private void RectangleSelectionTriggerEnd(ControllerInteractionEventArgs e)
     {
         SetInteractionState(InteractionState.RectangleSelection);
+        
+        brushingAndLinking.input1 = rectangleTransform1;
+        brushingAndLinking.input2 = rectangleTransform2;
+        rectangleTransform1.position = rectangleStart;
+        rectangleTransform2.position = rectangleEnd;
 
-        /* TODO
-        selectionSquare.transform.parent = null;
-        // Increase the area where the selection is done so that it catches shapes hovering away from the screen
-        Vector3 halfExtents = selectionSquare.transform.localScale / 2;
-        halfExtents.z += 0.3f;
+        brushingAndLinking.brushButtonController = true;
 
-        Collider[] colliders = Physics.OverlapBox(selectionSquare.transform.position, halfExtents, selectionSquare.transform.rotation);
-        List<int> indices = new List<int>();
+        StartCoroutine(StopRectangleSelection());
+    }
 
-        foreach (Collider collider in colliders)
-        {
-            if (collider.gameObject.tag == "Shape")
-            {
-                InteractableShape shapeScript = collider.gameObject.GetComponent<InteractableShape>();
-                indices.Add(shapeScript.Index);
-            }
-        }
+    private IEnumerator StopRectangleSelection()
+    {
+        yield return null;
 
-        if (IsSelecting)
-            ScreenManager.Instance.ShapesSelected(indices.ToArray());
-        else if (IsDeselecting)
-            ScreenManager.Instance.ShapesDeselected(indices.ToArray());
-        */
+        brushingAndLinking.brushButtonController = false;
         Destroy(selectionSquare);
     }
 
