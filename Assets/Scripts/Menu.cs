@@ -32,7 +32,6 @@ public class Menu : MonoBehaviour {
     }
     
     private List<MenuButton> buttons;
-    private string prefix;
     private bool isOpen;
 
     private void Start()
@@ -46,6 +45,9 @@ public class Menu : MonoBehaviour {
     private void CreateButtons()
     {
         List<string> dimensions = GetAttributesList();
+
+        if (dimension == WorkScreenDimension.FACETBY)
+            dimensions.Add("None");
 
         foreach (string dimensionName in dimensions)
         {
@@ -64,24 +66,6 @@ public class Menu : MonoBehaviour {
 
         buttons[0].gameObject.SetActive(true);
         selectedIndex = 0;
-
-        // Add a prefix to the default button
-        switch (dimension)
-        {
-            case WorkScreenDimension.X:
-                prefix = "X: ";
-                break;
-            case WorkScreenDimension.Y:
-                prefix = "Y: ";
-                break;
-            case WorkScreenDimension.Z:
-                prefix = "Z: ";
-                break;
-            case WorkScreenDimension.FACETBY:
-                prefix = "Facet: ";
-                break;
-        }
-        buttons[0].Text = prefix + buttons[0].Text;
     }
 
     private List<string> GetAttributesList()
@@ -106,9 +90,6 @@ public class Menu : MonoBehaviour {
             targetPos.y -= (i * (height + spacing));
             buttons[i].AnimateTowards(targetPos, 0.5f);
         }
-
-        // Remove prefix from selected button
-        buttons[selectedIndex].Text = buttons[selectedIndex].Text.Replace(prefix, "");
     }
 
     private void CloseButtons()
@@ -126,10 +107,7 @@ public class Menu : MonoBehaviour {
         {
             // Invoke the event telling listeners that the chosen dimension has changed
             DimensionChanged.Invoke(dimension, button.Text);
-
-            // Add the prefix to the clicked button
-            button.Text = prefix + button.Text;
-
+            
             // Store the index of the selected option
             selectedIndex = buttons.IndexOf(button);
 

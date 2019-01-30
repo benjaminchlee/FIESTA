@@ -94,6 +94,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     private int previousInspectedIndex;
 
     private VRTK_ControllerEvents controllerEvents;
+    private VRTK_Pointer vrtkPointer;
     //private GameObject screen;
     //private GameObject chart;
 
@@ -161,6 +162,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         controllerEvents.TriggerUnclicked += OnTriggerEnd;
         controllerEvents.GripClicked += OnGripStart;
         controllerEvents.GripUnclicked += OnGripEnd;
+
+        vrtkPointer = GetComponent<VRTK_Pointer>();
 
         // Instantiate ranged brush
         rangedBrush = Instantiate(brushPrefab);
@@ -540,6 +543,27 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     protected override void FixedUpdate()
     {
         base.FixedUpdate();
+
+        if (IsTracerVisible())
+        {
+            RaycastHit hit = GetDestinationHit();
+
+            if (objectInteractor != null)
+            {
+                objectInteractor.GetComponentInChildren<SphereCollider>().radius = 0.00000001f;
+
+                if (hit.collider != null && (hit.collider.gameObject.CompareTag("ChartRaycastCollider") || hit.collider.gameObject.CompareTag("Chart")))
+                {
+                    vrtkPointer.interactWithObjects = false;
+                    objectInteractor.SetActive(false);
+                }
+                else
+                {
+                    vrtkPointer.interactWithObjects = true;
+                    objectInteractor.SetActive(true);
+                }
+            }
+        }
 
         switch (activeState)
         {

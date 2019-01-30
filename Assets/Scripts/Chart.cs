@@ -437,9 +437,11 @@ public class Chart : Photon.MonoBehaviour
 
         // Add collider to be used for raycasting
         GameObject go = new GameObject("RaycastCollider");
+        go.tag = "ChartRaycastCollider";
         go.transform.SetParent(transform);
         raycastCollider = go.AddComponent<BoxCollider>();
         raycastCollider.isTrigger = true;
+        interactableObject.ignoredColliders = new Collider[] { raycastCollider };
 
         // Configure rigidbody
         rigidbody = gameObject.AddComponent<Rigidbody>();
@@ -454,7 +456,9 @@ public class Chart : Photon.MonoBehaviour
 
         // Enable this collider
         boxCollider.enabled = true;
-        
+
+        interactableObject.isGrabbable = true;
+
         //// Destroy scatterplot matrix gameobjects
         //for (int i = 0; i < splomCharts.GetLength(0); i++)
         //    for (int j = 0; j < splomCharts.GetLength(1); j++)
@@ -468,6 +472,8 @@ public class Chart : Photon.MonoBehaviour
 
         // Disable this collider
         boxCollider.enabled = false;
+
+        interactableObject.isGrabbable = false;
 
         // Create scatterplot matrix gameobjects
         int nbDimensions = DataSource.DimensionCount;
@@ -487,6 +493,8 @@ public class Chart : Photon.MonoBehaviour
 
         // Disable this collider
         boxCollider.enabled = false;
+
+        interactableObject.isGrabbable = false;
 
         // Create facet gameobjects and labels
         subCharts = new List<Chart>();

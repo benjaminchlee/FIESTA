@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using VRTK;
@@ -13,6 +14,10 @@ public class WorkScreenSlider : MonoBehaviour {
 
     [SerializeField]
     private float startValue;
+    [SerializeField]
+    private TextMeshPro valueLabel;
+    [SerializeField]
+    private bool labelAsPercentage = false;
 
     [Serializable]
     public class WorkShelfSliderValueChangedEvent : UnityEvent<float> { }
@@ -23,13 +28,21 @@ public class WorkScreenSlider : MonoBehaviour {
     {
         physicsSlider = GetComponent<VRTK_PhysicsSlider>();
 
-        physicsSlider.SetValue((startValue - physicsSlider.stepValueRange.minimum) / (physicsSlider.stepValueRange.maximum - physicsSlider.stepValueRange.minimum) * physicsSlider.maximumLength);
+        physicsSlider.ValueChanged += OnSliderValueChanged;
 
-        physicsSlider.ValueChanged += OnSizeSliderValueChanged;
+        physicsSlider.SetValue((startValue - physicsSlider.stepValueRange.minimum) / (physicsSlider.stepValueRange.maximum - physicsSlider.stepValueRange.minimum) * physicsSlider.maximumLength);
     }
 
-    private void OnSizeSliderValueChanged(object sender, ControllableEventArgs e)
+    private void OnSliderValueChanged(object sender, ControllableEventArgs e)
     {
+        if (valueLabel != null)
+        {
+            if (labelAsPercentage)
+                valueLabel.text = (e.value * 100) + "%";
+            else
+                valueLabel.text = e.value.ToString();
+        }
+
         WorkShelfSliderValueChanged.Invoke(e.value);
     }
 }

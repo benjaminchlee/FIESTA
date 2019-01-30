@@ -19,107 +19,89 @@ public class WorkScreen : MonoBehaviour
 {
     private DataSource dataSource;
 
-    private Chart scatterplot;
-    private Chart scatterplotMatrix;
-    private Chart facet;
+    private Chart standardChart;
+    private Chart splomChart;
 
     [SerializeField]
-    private Transform scatterplotTransform;
+    private Transform standardTransform;
     [SerializeField]
-    private Transform scatterplotMatrixTransform;
-    [SerializeField]
-    private Transform facetTransform;
+    private Transform splomTransform;
 
     [SerializeField]
-    private List<GameObject> scatterplotButtons;
-    [SerializeField]
-    private List<GameObject> scatterplotMatrixButtons;
+    private List<GameObject> standardButtons;
     [SerializeField]
     private List<GameObject> facetButtons;
+    [SerializeField]
+    private List<GameObject> splomButtons;
     
     private void Start()
     {
         if (dataSource == null)
             dataSource = ChartManager.Instance.DataSource;
 
-        if (scatterplotButtons == null)
-            scatterplotButtons = new List<GameObject>();
+        if (standardButtons == null)
+            standardButtons = new List<GameObject>();
 
-        if (scatterplotMatrixButtons == null)
-            scatterplotMatrixButtons = new List<GameObject>();
+        if (splomButtons == null)
+            splomButtons = new List<GameObject>();
         
         if (facetButtons == null)
             facetButtons = new List<GameObject>();
 
-        // Configure scatterplot
-        scatterplot = ChartManager.Instance.CreateVisualisation("WorkscreenScatterplot");
-        scatterplot.VisualisationType = AbstractVisualisation.VisualisationTypes.SCATTERPLOT;
-        scatterplot.GeometryType = AbstractVisualisation.GeometryType.Points;
-        scatterplot.XDimension = dataSource[0].Identifier;
-        scatterplot.YDimension = dataSource[0].Identifier;
-        scatterplot.Width = scatterplotTransform.localScale.x;
-        scatterplot.Height = scatterplotTransform.localScale.y;
-        scatterplot.Depth = scatterplotTransform.localScale.z;
-        scatterplot.transform.position = scatterplotTransform.position;
-        scatterplot.transform.rotation = scatterplotTransform.rotation;
-        scatterplot.SetAsPrototype();
-
+        // Configure standard scatterplot/standardChart
+        standardChart = ChartManager.Instance.CreateVisualisation("WorkscreenFacet");
+        standardChart.VisualisationType = AbstractVisualisation.VisualisationTypes.FACET;
+        standardChart.GeometryType = AbstractVisualisation.GeometryType.Points;
+        standardChart.Color = Color.white;
+        standardChart.XDimension = dataSource[0].Identifier;
+        standardChart.YDimension = dataSource[0].Identifier;
+        //standardChart.FacetDimension = "mpg";
+        //standardChart.FacetSize = 5;
+        standardChart.Width = standardTransform.localScale.x;
+        standardChart.Height = standardTransform.localScale.y;
+        standardChart.Depth = standardTransform.localScale.z;
+        standardChart.transform.position = standardTransform.position;
+        standardChart.transform.rotation = standardTransform.rotation;
+        
         // Configure scatterplot matrix
-        scatterplotMatrix = ChartManager.Instance.CreateVisualisation("WorkscreenScatterplotMatrix");
-        scatterplotMatrix.VisualisationType = AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX;
-        scatterplotMatrix.GeometryType = AbstractVisualisation.GeometryType.Points;
-        scatterplotMatrix.transform.position = scatterplotMatrixTransform.position;
-        scatterplotMatrix.transform.rotation = scatterplotMatrixTransform.rotation;
-        scatterplotMatrix.Width = scatterplotMatrixTransform.localScale.x;
-        scatterplotMatrix.Height = scatterplotMatrixTransform.localScale.y;
-        scatterplotMatrix.Depth = scatterplotMatrixTransform.localScale.z;
-
-        // Configure facets
-        facet = ChartManager.Instance.CreateVisualisation("WorkscreenFacet");
-        facet.VisualisationType = AbstractVisualisation.VisualisationTypes.FACET;
-        facet.GeometryType = AbstractVisualisation.GeometryType.Points;
-        facet.XDimension = dataSource[0].Identifier;
-        facet.YDimension = dataSource[0].Identifier;
-        //facet.FacetDimension = "mpg";
-        //facet.FacetSize = 5;
-        facet.Width = facetTransform.localScale.x;
-        facet.Height = facetTransform.localScale.y;
-        facet.Depth = facetTransform.localScale.z;
-        facet.transform.position = facetTransform.position;
-        facet.transform.rotation = facetTransform.rotation;
-
-        ShowFacet();
+        splomChart = ChartManager.Instance.CreateVisualisation("WorkscreenScatterplotMatrix");
+        splomChart.VisualisationType = AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX;
+        splomChart.GeometryType = AbstractVisualisation.GeometryType.Points;
+        splomChart.transform.position = splomTransform.position;
+        splomChart.transform.rotation = splomTransform.rotation;
+        splomChart.Width = splomTransform.localScale.x;
+        splomChart.Height = splomTransform.localScale.y;
+        splomChart.Depth = splomTransform.localScale.z;
+        
+        ShowStandard();
     }
 
-    public void ShowScatterplot()
+    public void ShowStandard()
     {
         ToggleState(true, false, false);
+
+        standardChart.FacetSize = 1;
     }
 
-    public void ShowScatterplotMatrix()
+    public void ShowSPLOM()
     {
         ToggleState(false, true, false);
     }
 
     public void ShowFacet()
     {
-        ToggleState(false, false, true);
+        ToggleState(true, false, true);
     }
 
     private void ToggleState(bool sp, bool spm, bool f)
     {
-        scatterplot.transform.position = sp ? scatterplotTransform.position : new Vector3(9999, 9999, 9999);
-        scatterplotMatrix.transform.position = spm ? scatterplotMatrixTransform.position : new Vector3(99999, 9999, 9999);
-        facet.transform.position = f ? facetTransform.position : new Vector3(9999, 9999, 9999);
-
-        //scatterplot.gameObject.SetActive(sp);
-        //scatterplotMatrix.gameObject.SetActive(spm);
-        //facet.gameObject.SetActive(f);
-
-        foreach (GameObject button in scatterplotButtons.Concat(scatterplotMatrixButtons).Concat(facetButtons))
+        standardChart.transform.position = (sp || f) ? standardTransform.position : new Vector3(9999, 9999, 9999);
+        splomChart.transform.position = spm ? splomTransform.position : new Vector3(99999, 9999, 9999);
+        
+        foreach (GameObject button in standardButtons.Concat(splomButtons).Concat(facetButtons))
         {
-            bool isActive = (sp && scatterplotButtons.Contains(button)) ||
-                            (spm && scatterplotMatrixButtons.Contains(button)) || 
+            bool isActive = (sp && standardButtons.Contains(button)) ||
+                            (spm && splomButtons.Contains(button)) || 
                             (f && facetButtons.Contains(button));
             button.SetActive(isActive);
         }
@@ -130,70 +112,72 @@ public class WorkScreen : MonoBehaviour
         switch (dimension)
         {
             case WorkScreenDimension.X:
-                scatterplot.XDimension = dimensionName;
-                facet.XDimension = dimensionName;
+                standardChart.XDimension = dimensionName;
                 break;
 
             case WorkScreenDimension.Y:
-                scatterplot.YDimension = dimensionName;
-                facet.YDimension = dimensionName;
+                standardChart.YDimension = dimensionName;
                 break;
 
             case WorkScreenDimension.Z:
-                scatterplot.ZDimension = dimensionName;
-                facet.ZDimension = dimensionName;
+                standardChart.ZDimension = dimensionName;
                 break;
 
             case WorkScreenDimension.FACETBY:
-                facet.FacetDimension = dimensionName;
+                if (dimensionName == "None")
+                {
+                    ShowStandard();
+                    standardChart.FacetSize = 1;
+                }
+                else
+                {
+                    ShowFacet();
+                    standardChart.FacetDimension = dimensionName;
+                }
                 break;
         }
     }
 
     public void SizeSliderValueChanged(float value)
     {
-        scatterplot.Size = value;
-        scatterplotMatrix.Size = value;
-        facet.Size = value;
+        standardChart.Size = value;
+        splomChart.Size = value;
     }
 
     public void RedSliderValueChanged(float value)
     {
-        Color color = scatterplot.Color;
+        Color color = standardChart.Color;
         color.r = value;
 
-        scatterplot.Color = color;
-        scatterplotMatrix.Color = color;
-        facet.Color = color;
+        standardChart.Color = color;
+        splomChart.Color = color;
     }
 
     public void GreenSliderValueChanged(float value)
     {
-        Color color = scatterplot.Color;
+        Color color = standardChart.Color;
         color.g = value;
-
-        scatterplot.Color = color;
-        scatterplotMatrix.Color = color;
-        facet.Color = color;
+        
+        standardChart.Color = color;
+        splomChart.Color = color;
     }
 
     public void BlueSliderValueChanged(float value)
     {
-        Color color = scatterplot.Color;
+        Color color = standardChart.Color;
         color.b = value;
 
-        scatterplot.Color = color;
-        scatterplotMatrix.Color = color;
-        facet.Color = color;
+        standardChart.Color = color;
+        splomChart.Color = color;
     }
 
     public void ScatterplotMatrixSizeSlider(float value)
     {
-        scatterplotMatrix.ScatterplotMatrixSize = (int)value;
+        splomChart.ScatterplotMatrixSize = (int)value;
     }
 
     public void FacetSizeSlider(float value)
     {
-        facet.FacetSize = (int)value;
+        standardChart.FacetSize = (int)value;
     }
 }

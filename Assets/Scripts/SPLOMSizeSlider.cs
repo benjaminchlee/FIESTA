@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using VRTK;
@@ -13,6 +14,8 @@ public class SPLOMSizeSlider : MonoBehaviour {
 
     [SerializeField]
     private float startValue;
+    [SerializeField]
+    private TextMeshPro valueLabel;
 
     [Serializable]
     public class ScatterplotMatrixSizeSliderValueChangedEvent : UnityEvent<float> { }
@@ -31,6 +34,11 @@ public class SPLOMSizeSlider : MonoBehaviour {
 
     private void OnSizeSliderValueChanged(object sender, ControllableEventArgs e)
     {
+        if (valueLabel != null)
+        {
+                valueLabel.text = e.value.ToString();
+        }
+
         ScatterplotMatrixSizeSliderValueChanged.Invoke(e.value);
     }
 }
