@@ -37,6 +37,8 @@
         }
 
         void Awake() {
+            DontDestroyOnLoad(this.gameObject);
+            
             VRTK_SDKManager.instance.AddBehaviourToToggleOnLoadedSetupChange(this);
         }
 

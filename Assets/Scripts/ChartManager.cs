@@ -37,11 +37,22 @@ public class ChartManager : MonoBehaviour {
         
     public Chart CreateVisualisation(string name)
     {
-        GameObject vis = new GameObject();
-        vis.name = name;
-        Chart chart = vis.AddComponent<Chart>();
+        GameObject vis;
+        Chart chart;
 
-        chart.Initialise(DataSource);
+        if (PhotonNetwork.connected)
+        {
+            vis = PhotonNetwork.Instantiate("Chart", Vector3.zero, Quaternion.identity, 0);
+            vis.name = name;
+            chart = vis.GetComponent<Chart>();
+        }
+        else
+        {
+            vis = new GameObject(name);
+            chart = vis.AddComponent<Chart>();
+        }
+
+        chart.DataSource = DataSource;
 
         Charts.Add(chart);
         Visualisations.Add(chart.Visualisation);
@@ -51,10 +62,21 @@ public class ChartManager : MonoBehaviour {
 
     public Chart DuplicateVisualisation(Chart dupe)
     {
-        GameObject vis = new GameObject();
-        Chart chart = vis.AddComponent<Chart>();
+        GameObject vis;
+        Chart chart;
 
-        chart.Initialise(DataSource);
+        if (PhotonNetwork.connected)
+        {
+            vis = PhotonNetwork.Instantiate("Chart", Vector3.zero, Quaternion.identity, 0);
+            chart = vis.GetComponent<Chart>();
+        }
+        else
+        {
+            vis = new GameObject();
+            chart = vis.AddComponent<Chart>();
+        }
+
+        chart.DataSource = DataSource;
         chart.VisualisationType = dupe.VisualisationType;
         chart.GeometryType = dupe.GeometryType;
         chart.XDimension = dupe.XDimension;
@@ -85,6 +107,6 @@ public class ChartManager : MonoBehaviour {
         if (Visualisations.Contains(chart.Visualisation))
             Visualisations.Remove(chart.Visualisation);
 
-        Destroy(chart.gameObject);
+        PhotonNetwork.Destroy(chart.gameObject);
     }
 }

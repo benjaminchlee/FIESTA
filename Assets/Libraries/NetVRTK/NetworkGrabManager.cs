@@ -57,7 +57,7 @@
 
         private void InitState(int ownerId) {
             grabOwner = ownerId;
-            io.isGrabbable = (grabOwner == 0);
+            //io.isGrabbable = (grabOwner == 0);
         }
 
         //

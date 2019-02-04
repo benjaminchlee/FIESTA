@@ -11,9 +11,11 @@
         void Awake() {
             if (!PhotonNetwork.connecting && !PhotonNetwork.connected) {
                 PhotonNetwork.autoJoinLobby = false;    // we join randomly. always. no need to join a lobby to get the list of rooms.
-                PhotonNetwork.automaticallySyncScene = false;
+                PhotonNetwork.automaticallySyncScene = true;
                 PhotonNetwork.logLevel = Loglevel;
                 PhotonNetwork.ConnectUsingSettings(gameVersion);
+
+                DontDestroyOnLoad(gameObject);
             }
         }
 

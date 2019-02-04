@@ -21,13 +21,20 @@ using Component = UnityEngine.Component;
 /// </summary>
 public class Chart : Photon.MonoBehaviour
 {
-    private Visualisation visualisation;
+    [SerializeField]
     private GameObject visualisationGameObject;
-    private VRTK_InteractableObject interactableObject;
-    private VRTK_BaseGrabAttach grabAttach;
+    [SerializeField]
+    private Visualisation visualisation;
+    [SerializeField]
     private BoxCollider boxCollider;
+    [SerializeField]
     private BoxCollider raycastCollider;
+    [SerializeField]
     private Rigidbody rigidbody;
+    [SerializeField]
+    private VRTK_InteractableObject interactableObject;
+    [SerializeField]
+    private VRTK_BaseGrabAttach grabAttach;
 
     private Chart[,] splomCharts;  // Stored as 2D array
     private List<Chart> subCharts;  // Stored as 1D array
@@ -67,6 +74,9 @@ public class Chart : Photon.MonoBehaviour
         get { return chartType; }
         set
         {
+            if (value == chartType)
+                return;
+
             chartType = value;
 
             switch (value)
@@ -93,6 +103,9 @@ public class Chart : Photon.MonoBehaviour
         get { return visualisation.geometry; }
         set
         {
+            if (value == GeometryType)
+                return;
+
             visualisation.geometry = value;
             visualisation.updateViewProperties(AbstractVisualisation.PropertyType.GeometryType);
 
@@ -112,6 +125,9 @@ public class Chart : Photon.MonoBehaviour
         get { return visualisation.xDimension.Attribute; }
         set
         {
+            if (value == XDimension)
+                return;
+
             visualisation.xDimension = value;
 
             switch (chartType)
@@ -138,6 +154,9 @@ public class Chart : Photon.MonoBehaviour
         get { return visualisation.yDimension.Attribute; }
         set
         {
+            if (value == YDimension)
+                return;
+
             visualisation.yDimension = value;
 
             switch (chartType)
@@ -163,6 +182,9 @@ public class Chart : Photon.MonoBehaviour
         get { return visualisation.zDimension.Attribute; }
         set
         {
+            if (value == ZDimension)
+                return;
+
             visualisation.zDimension = value;
 
             switch (chartType)
@@ -188,6 +210,9 @@ public class Chart : Photon.MonoBehaviour
         get { return visualisation.colour; }
         set
         {
+            if (value == Color)
+                return;
+
             visualisation.colour = value;
             visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
 
@@ -207,6 +232,9 @@ public class Chart : Photon.MonoBehaviour
         get { return visualisation.size; }
         set
         {
+            if (value == Size)
+                return;
+
             visualisation.size = value;
             visualisation.updateViewProperties(AbstractVisualisation.PropertyType.SizeValues);
 
@@ -226,6 +254,9 @@ public class Chart : Photon.MonoBehaviour
         get { return visualisation.width; }
         set
         {
+            if (value == Width)
+                return;
+
             visualisation.width = value;
             CenterVisualisation();
             SetColliderBounds();
@@ -261,6 +292,9 @@ public class Chart : Photon.MonoBehaviour
         get { return visualisation.height; }
         set
         {
+            if (value == Height)
+                return;
+
             visualisation.height = value;
             CenterVisualisation();
             SetColliderBounds();
@@ -296,6 +330,9 @@ public class Chart : Photon.MonoBehaviour
         get { return visualisation.depth; }
         set
         {
+            if (value == Depth)
+                return;
+
             visualisation.depth = value;
             CenterVisualisation();
             SetColliderBounds();
@@ -342,11 +379,11 @@ public class Chart : Photon.MonoBehaviour
         get { return scatterplotMatrixSize; }
         set
         {
-            if (scatterplotMatrixSize < 2)
-                value = 2;
-            else if (scatterplotMatrixSize > DataSource.DimensionCount)
-                value = DataSource.DimensionCount;
+            value = Mathf.Clamp(value, 2, DataSource.DimensionCount);
 
+            if (value == scatterplotMatrixSize)
+                return;
+            
             if (VisualisationType == AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX)
             {
                 scatterplotMatrixSize = value;
@@ -361,6 +398,9 @@ public class Chart : Photon.MonoBehaviour
         get { return facetDimension; }
         set
         {
+            if (value == facetDimension)
+                return;
+
             facetDimension = value;
 
             if (VisualisationType == AbstractVisualisation.VisualisationTypes.FACET)
@@ -376,77 +416,38 @@ public class Chart : Photon.MonoBehaviour
         get { return facetSize; }
         set
         {
-            if (0 < facetSize)
-            {
-                facetSize = value;
+            value = Mathf.Max(value, 1);
 
-                if (VisualisationType == AbstractVisualisation.VisualisationTypes.FACET)
-                {
-                    AdjustAndUpdateFacet();
-                }
+            if (value == facetSize)
+                return;
+            
+            facetSize = value;
+
+            if (VisualisationType == AbstractVisualisation.VisualisationTypes.FACET)
+            {
+                AdjustAndUpdateFacet();
             }
         }
     }
 
 #endregion
 
-    public void Initialise(CSVDataSource dataSource)
+    private void Awake()
     {
-        gameObject.tag = "Chart";
-
-        visualisationGameObject = new GameObject("Visualisation");
-        visualisationGameObject.transform.SetParent(transform);
-
-        visualisation = visualisationGameObject.AddComponent<Visualisation>();
-
-        DataSource = dataSource;
         displayScreen = GameObject.FindGameObjectWithTag("DisplayScreen").GetComponent<DisplayScreen>();
-        
+
         // Set blank values
         visualisation.colourDimension = "Undefined";
         visualisation.sizeDimension = "Undefined";
         visualisation.linkingDimension = "Undefined";
         visualisation.colorPaletteDimension = "Undefined";
 
-        // Add VRTK interactable scripts
-        interactableObject = gameObject.AddComponent<VRTK_InteractableObject>();
-        interactableObject.isGrabbable = true;
-        grabAttach = gameObject.AddComponent<VRTK_ChildOfControllerGrabAttach>();
-        interactableObject.grabAttachMechanicScript = grabAttach;
-        interactableObject.grabAttachMechanicScript.precisionGrab = true;
-
-        // Add Photon scripts for networking
-        PhotonView photonView = gameObject.AddComponent<PhotonView>();
-        photonView.viewID = PhotonNetwork.AllocateViewID();
-        photonView.synchronization = ViewSynchronization.UnreliableOnChange;
-
-        NetworkObject networkObject = gameObject.AddComponent<NetworkObject>();
-        networkObject.parent = true;
-        networkObject.onChangeOnly = false;
-
-        photonView.ObservedComponents = new List<Component>() {networkObject, this};
-
         // Subscribe to events
         interactableObject.InteractableObjectGrabbed += ChartGrabbed;
         interactableObject.InteractableObjectUngrabbed += ChartUngrabbed;
 
-        // Add collider and ignore raycasts (child object will handle raycasts)
-        boxCollider = gameObject.AddComponent<BoxCollider>();
-        boxCollider.isTrigger = true;
-        gameObject.layer = 2;
-
-        // Add collider to be used for raycasting
-        GameObject go = new GameObject("RaycastCollider");
-        go.tag = "ChartRaycastCollider";
-        go.transform.SetParent(transform);
-        raycastCollider = go.AddComponent<BoxCollider>();
-        raycastCollider.isTrigger = true;
-        interactableObject.ignoredColliders = new Collider[] { raycastCollider };
-
-        // Configure rigidbody
-        rigidbody = gameObject.AddComponent<Rigidbody>();
-        rigidbody.useGravity = false;
-        rigidbody.isKinematic = true;
+        if (DataSource == null)
+            DataSource = ChartManager.Instance.DataSource;
     }
 
     private void SetAsScatterplot()
@@ -820,6 +821,7 @@ public class Chart : Photon.MonoBehaviour
 
             if (speed > 2.5f)
             {
+                rigidbody.isKinematic = false;
                 rigidbody.useGravity = true;
                 isThrowing = true;
                 deletionTimer = 0;
@@ -916,9 +918,9 @@ public class Chart : Photon.MonoBehaviour
         string z = visualisation.zDimension.Attribute;
         
         // Calculate size
-        float xSize = (x != "Undefined") ? width + 0.15f : 0.1f;
-        float ySize = (y != "Undefined") ? height + 0.15f : 0.1f;
-        float zSize = (z != "Undefined") ? depth + 0.15f : 0.1f;
+        float xSize = (x != "Undefined") ? width + width * 0.15f : 0.1f;
+        float ySize = (y != "Undefined") ? height + height * 0.15f : 0.1f;
+        float zSize = (z != "Undefined") ? depth + depth * 0.15f : 0.1f;
         
         boxCollider.size = new Vector3(xSize, ySize, zSize);
         raycastCollider.size = new Vector3(xSize, ySize, 0.01f);
@@ -1013,6 +1015,7 @@ public class Chart : Photon.MonoBehaviour
             YDimension = (string) stream.ReceiveNext();
             ZDimension = (string) stream.ReceiveNext();
             Color col = new Color((float)stream.ReceiveNext(), (float)stream.ReceiveNext(), (float)stream.ReceiveNext(), (float)stream.ReceiveNext());
+            Color = col;
             Size = (float) stream.ReceiveNext();
             Width = (float) stream.ReceiveNext();
             Height = (float) stream.ReceiveNext();

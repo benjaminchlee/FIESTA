@@ -15,7 +15,7 @@ public enum WorkScreenDimension
     COLORBY
 }
 
-public class WorkScreen : MonoBehaviour
+public class WorkScreen : Photon.MonoBehaviour
 {
     private DataSource dataSource;
 
@@ -48,31 +48,47 @@ public class WorkScreen : MonoBehaviour
         if (facetButtons == null)
             facetButtons = new List<GameObject>();
 
-        // Configure standard scatterplot/standardChart
-        standardChart = ChartManager.Instance.CreateVisualisation("WorkscreenFacet");
-        standardChart.VisualisationType = AbstractVisualisation.VisualisationTypes.FACET;
-        standardChart.GeometryType = AbstractVisualisation.GeometryType.Points;
-        standardChart.Color = Color.white;
-        standardChart.XDimension = dataSource[0].Identifier;
-        standardChart.YDimension = dataSource[0].Identifier;
-        //standardChart.FacetDimension = "mpg";
-        //standardChart.FacetSize = 5;
-        standardChart.Width = standardTransform.localScale.x;
-        standardChart.Height = standardTransform.localScale.y;
-        standardChart.Depth = standardTransform.localScale.z;
-        standardChart.transform.position = standardTransform.position;
-        standardChart.transform.rotation = standardTransform.rotation;
-        
-        // Configure scatterplot matrix
-        splomChart = ChartManager.Instance.CreateVisualisation("WorkscreenScatterplotMatrix");
-        splomChart.VisualisationType = AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX;
-        splomChart.GeometryType = AbstractVisualisation.GeometryType.Points;
-        splomChart.transform.position = splomTransform.position;
-        splomChart.transform.rotation = splomTransform.rotation;
-        splomChart.Width = splomTransform.localScale.x;
-        splomChart.Height = splomTransform.localScale.y;
-        splomChart.Depth = splomTransform.localScale.z;
-        
+        if (PhotonNetwork.isMasterClient)
+        {
+            // Configure standard scatterplot/standardChart
+            standardChart = ChartManager.Instance.CreateVisualisation("WorkscreenStandardChart");
+            standardChart.VisualisationType = AbstractVisualisation.VisualisationTypes.FACET;
+            standardChart.GeometryType = AbstractVisualisation.GeometryType.Points;
+            standardChart.Color = Color.white;
+            standardChart.XDimension = dataSource[0].Identifier;
+            standardChart.YDimension = dataSource[0].Identifier;
+            //standardChart.FacetDimension = "mpg";
+            //standardChart.FacetSize = 5;
+            standardChart.Width = standardTransform.localScale.x;
+            standardChart.Height = standardTransform.localScale.y;
+            standardChart.Depth = standardTransform.localScale.z;
+            standardChart.transform.position = standardTransform.position;
+            standardChart.transform.rotation = standardTransform.rotation;
+
+            // Configure scatterplot matrix
+            splomChart = ChartManager.Instance.CreateVisualisation("WorkscreenSPLOMChart");
+            splomChart.VisualisationType = AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX;
+            splomChart.GeometryType = AbstractVisualisation.GeometryType.Points;
+            splomChart.Size = 0.3f;
+            splomChart.transform.position = splomTransform.position;
+            splomChart.transform.rotation = splomTransform.rotation;
+            splomChart.Width = splomTransform.localScale.x;
+            splomChart.Height = splomTransform.localScale.y;
+            splomChart.Depth = splomTransform.localScale.z;
+
+            ShowStandard();
+
+            // Send Photon View IDs to all clients using buffer
+            photonView.RPC("SetPrototypeIds", PhotonTargets.OthersBuffered, standardChart.photonView.viewID, splomChart.photonView.viewID);
+        }
+    }
+
+    [PunRPC]
+    private void SetPrototypeIds(int standardChartId, int splomChartId)
+    {
+        standardChart = PhotonView.Find(standardChartId).gameObject.GetComponent<Chart>();
+        splomChart = PhotonView.Find(splomChartId).gameObject.GetComponent<Chart>();
+
         ShowStandard();
     }
 
@@ -95,8 +111,13 @@ public class WorkScreen : MonoBehaviour
 
     private void ToggleState(bool sp, bool spm, bool f)
     {
+        standardChart.photonView.RequestOwnership();
+        splomChart.photonView.RequestOwnership();
+
         standardChart.transform.position = (sp || f) ? standardTransform.position : new Vector3(9999, 9999, 9999);
         splomChart.transform.position = spm ? splomTransform.position : new Vector3(99999, 9999, 9999);
+        standardChart.transform.rotation = standardTransform.rotation;
+        splomChart.transform.rotation = splomTransform.rotation;
         
         foreach (GameObject button in standardButtons.Concat(splomButtons).Concat(facetButtons))
         {
@@ -140,44 +161,61 @@ public class WorkScreen : MonoBehaviour
 
     public void SizeSliderValueChanged(float value)
     {
-        standardChart.Size = value;
-        splomChart.Size = value;
+        if (standardChart != null && splomChart != null)
+        {
+            standardChart.Size = value;
+            splomChart.Size = value;
+        }
     }
 
     public void RedSliderValueChanged(float value)
     {
-        Color color = standardChart.Color;
-        color.r = value;
+        if (standardChart != null && splomChart != null)
+        {
+            Color color = standardChart.Color;
+            color.r = value;
 
-        standardChart.Color = color;
-        splomChart.Color = color;
+            standardChart.Color = color;
+            splomChart.Color = color;
+        }
     }
 
     public void GreenSliderValueChanged(float value)
     {
-        Color color = standardChart.Color;
-        color.g = value;
-        
-        standardChart.Color = color;
-        splomChart.Color = color;
+        if (standardChart != null && splomChart != null)
+        {
+            Color color = standardChart.Color;
+            color.g = value;
+
+            standardChart.Color = color;
+            splomChart.Color = color;
+        }
     }
 
     public void BlueSliderValueChanged(float value)
     {
-        Color color = standardChart.Color;
-        color.b = value;
+        if (standardChart != null && splomChart != null)
+        {
+            Color color = standardChart.Color;
+            color.b = value;
 
-        standardChart.Color = color;
-        splomChart.Color = color;
+            standardChart.Color = color;
+            splomChart.Color = color;
+        }
     }
 
     public void ScatterplotMatrixSizeSlider(float value)
     {
-        splomChart.ScatterplotMatrixSize = (int)value;
+        if (standardChart != null && splomChart != null)
+        {
+            splomChart.ScatterplotMatrixSize = (int)value;
+        }
     }
 
     public void FacetSizeSlider(float value)
     {
-        standardChart.FacetSize = (int)value;
+        if (standardChart != null && splomChart != null)
+        {
+        }
     }
 }

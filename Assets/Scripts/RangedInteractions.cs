@@ -6,7 +6,6 @@ using TMPro;
 using UnityEngine;
 using Util;
 using VRTK;
-using Vuforia;
 
 public class RangedInteractions : VRTK_StraightPointerRenderer {
 

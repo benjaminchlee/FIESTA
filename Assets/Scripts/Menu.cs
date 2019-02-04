@@ -47,7 +47,7 @@ public class Menu : MonoBehaviour {
         List<string> dimensions = GetAttributesList();
 
         if (dimension == WorkScreenDimension.FACETBY)
-            dimensions.Add("None");
+            dimensions.Insert(0, "None");
 
         foreach (string dimensionName in dimensions)
         {
