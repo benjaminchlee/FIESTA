@@ -233,7 +233,7 @@ namespace IATK
                                 }
                                 else
                                 {
-                                    viewList[i].SetSizeChannel(Enumerable.Repeat(1f, visualisationReference.dataSource[0].Data.Length).ToArray());
+                                    viewList[i].SetSizeChannel(Enumerable.Repeat(0f, visualisationReference.dataSource[0].Data.Length).ToArray());
                                 }
                             }
                             creationConfiguration.SizeDimension = visualisationReference.sizeDimension;       
@@ -341,8 +341,8 @@ namespace IATK
                         break;
                 }
 
-            if (visualisationReference.geometry != GeometryType.Undefined)// || visualisationType == VisualisationTypes.PARALLEL_COORDINATES)
-                SerializeViewConfiguration(creationConfiguration);
+            //if (visualisationReference.geometry != GeometryType.Undefined)// || visualisationType == VisualisationTypes.PARALLEL_COORDINATES)
+            //    SerializeViewConfiguration(creationConfiguration);
 
             //Update any label on the corresponding axes
             UpdateVisualisationAxes(propertyType);
