@@ -512,6 +512,11 @@ public class Chart : Photon.MonoBehaviour
     /// </summary>
     private void AdjustScatterplotMatrixSize()
     {
+        if (!photonView.isMine)
+        {
+            return;
+        }
+
         // Create scatterplot matrix gameobjects
         int nbDimensions = DataSource.DimensionCount;
 
@@ -554,7 +559,7 @@ public class Chart : Photon.MonoBehaviour
                             subChart.transform.SetParent(transform);
                             splomCharts[i, j] = subChart;
 
-                            GameObject go = Instantiate((GameObject)Resources.Load("SPLOMButton"));
+                            GameObject go = PhotonNetwork.Instantiate("SPLOMButton", Vector3.zero, Quaternion.identity, 0);
                             SPLOMButton button = go.GetComponent<SPLOMButton>();
                             button.SPLOMButtonClicked.AddListener(ScatterplotMatrixDimensionChanged);
                             button.Text = DataSource[i].Identifier;
@@ -607,6 +612,11 @@ public class Chart : Photon.MonoBehaviour
     /// </summary>
     private void ResizeAndPositionScatterplotMatrix()
     {
+        if (!photonView.isMine)
+        {
+            return;
+        }
+
         if (chartType == AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX && splomCharts != null)
         {
             for (int i = 0; i < scatterplotMatrixSize; i++)
@@ -650,6 +660,11 @@ public class Chart : Photon.MonoBehaviour
     /// <param name="button"></param>
     private void ScatterplotMatrixDimensionChanged(SPLOMButton button)
     {
+        if (!photonView.isMine)
+        {
+            return;
+        }
+
         // Find which index the button belongs to (along the diagonal)
         int index = Array.IndexOf(splomButtons, button);
 
@@ -674,6 +689,11 @@ public class Chart : Photon.MonoBehaviour
 
     private void AdjustAndUpdateFacet()
     {
+        if (!photonView.isMine)
+        {
+            return;
+        }
+
         for (int i = 0; i < facetSize; i++)
         {
             Chart subChart = subCharts.ElementAtOrDefault(i);
@@ -712,7 +732,7 @@ public class Chart : Photon.MonoBehaviour
         // Destroy all previous labels (lazy)
         foreach (GameObject label in facetLabels)
         {
-            Destroy(label);
+            PhotonNetwork.Destroy(label);
         }
 
         // Position the charts
@@ -743,16 +763,13 @@ public class Chart : Photon.MonoBehaviour
                     subChart.transform.rotation = transform.rotation;
 
                     // Create and position labels
-                    GameObject labelHolder = new GameObject();
+                    GameObject labelHolder = PhotonNetwork.Instantiate("Label", Vector3.zero, Quaternion.identity, 0);
                     facetLabels.Add(labelHolder);
                     labelHolder.transform.SetParent(transform);
                     labelHolder.transform.localPosition = new Vector3(x, y + yDelta * 0.9f, 0);
                     labelHolder.transform.rotation = transform.rotation;
 
-                    TextMeshPro label = labelHolder.AddComponent<TextMeshPro>();
-                    label.fontSize = 0.25f;
-                    label.alignment = TextAlignmentOptions.Center;
-
+                    TextMeshPro label = labelHolder.GetComponent<TextMeshPro>();
                     string range1 = DataSource.getOriginalValue(index / (float) facetSize, FacetDimension).ToString();
                     string range2 = DataSource.getOriginalValue((index + 1) / (float) facetSize, FacetDimension).ToString();
                     label.text = range1 + " ... " + range2;
@@ -1006,6 +1023,7 @@ public class Chart : Photon.MonoBehaviour
             stream.SendNext(ScatterplotMatrixSize);
             stream.SendNext(FacetDimension);
             stream.SendNext(FacetSize);
+            stream.SendNext(isPrototype);
         }
         else
         {
@@ -1024,6 +1042,7 @@ public class Chart : Photon.MonoBehaviour
             ScatterplotMatrixSize = (int) stream.ReceiveNext();
             FacetDimension = (string) stream.ReceiveNext();
             FacetSize = (int) stream.ReceiveNext();
+            isPrototype = (bool) stream.ReceiveNext();
         }
     }
 }

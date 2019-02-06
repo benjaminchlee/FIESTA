@@ -6,7 +6,7 @@ using IATK;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-public enum WorkScreenDimension
+public enum DashboardDimension
 {
     X,
     Y,
@@ -15,13 +15,13 @@ public enum WorkScreenDimension
     COLORBY
 }
 
-public class WorkScreen : Photon.MonoBehaviour
+public class Dashboard : Photon.MonoBehaviour
 {
     private DataSource dataSource;
-
-    private Chart standardChart;
-    private Chart splomChart;
-
+    
+    public Chart standardChart;
+    public Chart splomChart;
+    
     [SerializeField]
     private Transform standardTransform;
     [SerializeField]
@@ -39,6 +39,12 @@ public class WorkScreen : Photon.MonoBehaviour
         if (dataSource == null)
             dataSource = ChartManager.Instance.DataSource;
 
+        if (standardChart == null)
+            standardChart = transform.Find("StandardChart").GetComponent<Chart>();
+
+        if (splomChart == null)
+            splomChart = transform.Find("SPLOMChart").GetComponent<Chart>();
+
         if (standardButtons == null)
             standardButtons = new List<GameObject>();
 
@@ -48,10 +54,11 @@ public class WorkScreen : Photon.MonoBehaviour
         if (facetButtons == null)
             facetButtons = new List<GameObject>();
 
-        if (PhotonNetwork.isMasterClient)
+        if (photonView.isMine)
         {
             // Configure standard scatterplot/standardChart
-            standardChart = ChartManager.Instance.CreateVisualisation("WorkscreenStandardChart");
+            standardChart.DataSource = ChartManager.Instance.DataSource;
+            ChartManager.Instance.RegisterVisualisation(standardChart);
             standardChart.VisualisationType = AbstractVisualisation.VisualisationTypes.FACET;
             standardChart.GeometryType = AbstractVisualisation.GeometryType.Points;
             standardChart.Color = Color.white;
@@ -66,7 +73,8 @@ public class WorkScreen : Photon.MonoBehaviour
             standardChart.transform.rotation = standardTransform.rotation;
 
             // Configure scatterplot matrix
-            splomChart = ChartManager.Instance.CreateVisualisation("WorkscreenSPLOMChart");
+            splomChart.DataSource = ChartManager.Instance.DataSource;
+            ChartManager.Instance.RegisterVisualisation(splomChart);
             splomChart.VisualisationType = AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX;
             splomChart.GeometryType = AbstractVisualisation.GeometryType.Points;
             splomChart.Size = 0.3f;
@@ -78,19 +86,19 @@ public class WorkScreen : Photon.MonoBehaviour
 
             ShowStandard();
 
-            // Send Photon View IDs to all clients using buffer
-            photonView.RPC("SetPrototypeIds", PhotonTargets.OthersBuffered, standardChart.photonView.viewID, splomChart.photonView.viewID);
+            //// Send Photon View IDs to all clients using buffer
+            //photonView.RPC("SetPrototypeIds", PhotonTargets.OthersBuffered, standardChart.photonView.viewID, splomChart.photonView.viewID);
         }
     }
 
-    [PunRPC]
-    private void SetPrototypeIds(int standardChartId, int splomChartId)
-    {
-        standardChart = PhotonView.Find(standardChartId).gameObject.GetComponent<Chart>();
-        splomChart = PhotonView.Find(splomChartId).gameObject.GetComponent<Chart>();
+    //[PunRPC]
+    //private void SetPrototypeIds(int standardChartId, int splomChartId)
+    //{
+    //    standardChart = PhotonView.Find(standardChartId).gameObject.GetComponent<Chart>();
+    //    splomChart = PhotonView.Find(splomChartId).gameObject.GetComponent<Chart>();
 
-        ShowStandard();
-    }
+    //    ShowStandard();
+    //}
 
     public void ShowStandard()
     {
@@ -111,8 +119,7 @@ public class WorkScreen : Photon.MonoBehaviour
 
     private void ToggleState(bool sp, bool spm, bool f)
     {
-        standardChart.photonView.RequestOwnership();
-        splomChart.photonView.RequestOwnership();
+        SetChartOwnership();
 
         standardChart.transform.position = (sp || f) ? standardTransform.position : new Vector3(9999, 9999, 9999);
         splomChart.transform.position = spm ? splomTransform.position : new Vector3(99999, 9999, 9999);
@@ -128,23 +135,25 @@ public class WorkScreen : Photon.MonoBehaviour
         }
     }
 
-    public void DimensionChanged(WorkScreenDimension dimension, string dimensionName)
+    public void DimensionChanged(DashboardDimension dimension, string dimensionName)
     {
+        SetChartOwnership();
+
         switch (dimension)
         {
-            case WorkScreenDimension.X:
+            case DashboardDimension.X:
                 standardChart.XDimension = dimensionName;
                 break;
 
-            case WorkScreenDimension.Y:
+            case DashboardDimension.Y:
                 standardChart.YDimension = dimensionName;
                 break;
 
-            case WorkScreenDimension.Z:
+            case DashboardDimension.Z:
                 standardChart.ZDimension = dimensionName;
                 break;
 
-            case WorkScreenDimension.FACETBY:
+            case DashboardDimension.FACETBY:
                 if (dimensionName == "None")
                 {
                     ShowStandard();
@@ -159,10 +168,13 @@ public class WorkScreen : Photon.MonoBehaviour
         }
     }
 
+
     public void SizeSliderValueChanged(float value)
     {
         if (standardChart != null && splomChart != null)
         {
+            SetChartOwnership();
+
             standardChart.Size = value;
             splomChart.Size = value;
         }
@@ -172,6 +184,8 @@ public class WorkScreen : Photon.MonoBehaviour
     {
         if (standardChart != null && splomChart != null)
         {
+            SetChartOwnership();
+
             Color color = standardChart.Color;
             color.r = value;
 
@@ -184,6 +198,8 @@ public class WorkScreen : Photon.MonoBehaviour
     {
         if (standardChart != null && splomChart != null)
         {
+            SetChartOwnership();
+
             Color color = standardChart.Color;
             color.g = value;
 
@@ -196,6 +212,8 @@ public class WorkScreen : Photon.MonoBehaviour
     {
         if (standardChart != null && splomChart != null)
         {
+            SetChartOwnership();
+
             Color color = standardChart.Color;
             color.b = value;
 
@@ -208,6 +226,8 @@ public class WorkScreen : Photon.MonoBehaviour
     {
         if (standardChart != null && splomChart != null)
         {
+            SetChartOwnership();
+
             splomChart.ScatterplotMatrixSize = (int)value;
         }
     }
@@ -216,6 +236,15 @@ public class WorkScreen : Photon.MonoBehaviour
     {
         if (standardChart != null && splomChart != null)
         {
+            SetChartOwnership();
+
+            standardChart.FacetSize = (int)value;
         }
+    }
+
+    private void SetChartOwnership()
+    {
+        standardChart.photonView.RequestOwnership();
+        splomChart.photonView.RequestOwnership();
     }
 }

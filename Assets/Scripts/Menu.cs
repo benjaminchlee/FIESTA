@@ -10,7 +10,7 @@ using UnityEngine.UI;
 public class Menu : MonoBehaviour {
 
     [SerializeField]
-    private WorkScreenDimension dimension;
+    private DashboardDimension dimension;
     [SerializeField]
     private CSVDataSource dataSource;
     [SerializeField]
@@ -19,7 +19,7 @@ public class Menu : MonoBehaviour {
     private float spacing = 0.02f;
 
     [Serializable]
-    public class DimensionChangedEvent : UnityEvent<WorkScreenDimension, string> { }
+    public class DimensionChangedEvent : UnityEvent<DashboardDimension, string> { }
     public DimensionChangedEvent DimensionChanged;
 
     private int selectedIndex;
@@ -36,6 +36,9 @@ public class Menu : MonoBehaviour {
 
     private void Start()
     {
+        if (dataSource == null)
+            dataSource = ChartManager.Instance.DataSource;
+
         buttons = new List<MenuButton>();
         isOpen = false;
 
@@ -46,7 +49,7 @@ public class Menu : MonoBehaviour {
     {
         List<string> dimensions = GetAttributesList();
 
-        if (dimension == WorkScreenDimension.FACETBY)
+        if (dimension == DashboardDimension.FACETBY)
             dimensions.Insert(0, "None");
 
         foreach (string dimensionName in dimensions)

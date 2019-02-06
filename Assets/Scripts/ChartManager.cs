@@ -34,7 +34,12 @@ public class ChartManager : MonoBehaviour {
         Charts = new List<Chart>();
         Visualisations = new List<Visualisation>();
     }
-        
+
+    private void Start()
+    {
+        PhotonNetwork.Instantiate("Dashboard", Vector3.zero, Quaternion.identity, 0);
+    }
+
     public Chart CreateVisualisation(string name)
     {
         GameObject vis;
@@ -53,9 +58,7 @@ public class ChartManager : MonoBehaviour {
         }
 
         chart.DataSource = DataSource;
-
-        Charts.Add(chart);
-        Visualisations.Add(chart.Visualisation);
+        RegisterVisualisation(chart);
 
         return chart;
     }
@@ -93,19 +96,33 @@ public class ChartManager : MonoBehaviour {
         vis.transform.rotation = dupe.transform.rotation;
         vis.transform.localScale = dupe.transform.localScale;
 
-        Charts.Add(chart);
-        Visualisations.Add(chart.Visualisation);
+        RegisterVisualisation(chart);
 
         return chart;
     }
 
-    public void RemoveVisualisation(Chart chart)
+    public void RegisterVisualisation(Chart chart)
+    {
+        if (chart.DataSource == null)
+            chart.DataSource = DataSource;
+
+        if (!Charts.Contains(chart))
+            Charts.Add(chart);
+        if (!Visualisations.Contains(chart.Visualisation))
+            Visualisations.Add(chart.Visualisation);
+    }
+
+    public void DeregisterVisualisation(Chart chart)
     {
         if (Charts.Contains(chart))
             Charts.Remove(chart);
-
         if (Visualisations.Contains(chart.Visualisation))
             Visualisations.Remove(chart.Visualisation);
+    }
+
+    public void RemoveVisualisation(Chart chart)
+    {
+        DeregisterVisualisation(chart);
 
         PhotonNetwork.Destroy(chart.gameObject);
     }

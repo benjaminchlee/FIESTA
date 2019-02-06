@@ -8,7 +8,7 @@ using VRTK;
 using VRTK.Controllables;
 using VRTK.Controllables.PhysicsBased;
 
-public class WorkScreenSlider : MonoBehaviour {
+public class DashboardSlider : MonoBehaviour {
 
     private VRTK_PhysicsSlider physicsSlider;
 
@@ -20,16 +20,16 @@ public class WorkScreenSlider : MonoBehaviour {
     private bool labelAsPercentage = false;
 
     [Serializable]
-    public class WorkShelfSliderValueChangedEvent : UnityEvent<float> { }
+    public class DashboardSliderValueChangedEvent : UnityEvent<float> { }
 
-    public WorkShelfSliderValueChangedEvent WorkShelfSliderValueChanged;
+    public DashboardSliderValueChangedEvent DashboardSliderValueChanged;
 
     private void Start()
     {
         physicsSlider = GetComponent<VRTK_PhysicsSlider>();
 
         physicsSlider.ValueChanged += OnSliderValueChanged;
-
+        
         physicsSlider.SetValue((startValue - physicsSlider.stepValueRange.minimum) / (physicsSlider.stepValueRange.maximum - physicsSlider.stepValueRange.minimum) * physicsSlider.maximumLength);
     }
 
@@ -43,6 +43,8 @@ public class WorkScreenSlider : MonoBehaviour {
                 valueLabel.text = e.value.ToString();
         }
 
-        WorkShelfSliderValueChanged.Invoke(e.value);
+        //physicsSlider.SetValue((e.value - physicsSlider.stepValueRange.minimum) / (physicsSlider.stepValueRange.maximum - physicsSlider.stepValueRange.minimum) * physicsSlider.maximumLength);
+
+        DashboardSliderValueChanged.Invoke(e.value);
     }
 }
