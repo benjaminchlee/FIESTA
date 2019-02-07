@@ -89,9 +89,9 @@ public class Menu : MonoBehaviour {
         {
             buttons[i].gameObject.SetActive(true);
 
-            Vector3 targetPos = buttons[i].transform.position;
+            Vector3 targetPos = buttons[i].transform.localPosition;
             targetPos.y -= (i * (height + spacing));
-            buttons[i].AnimateTowards(targetPos, 0.5f);
+            buttons[i].AnimateTowards(targetPos, 0.5f, true);
         }
     }
 
@@ -99,7 +99,7 @@ public class Menu : MonoBehaviour {
     {
         for (int i = 0; i < buttons.Count; i++)
         {
-            buttons[i].AnimateTowards(transform.position, 0.5f, (i != selectedIndex));
+            buttons[i].AnimateTowards(Vector3.zero, 0.5f, true, (i != selectedIndex));
         }
     }
 

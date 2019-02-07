@@ -33,9 +33,13 @@ public class Dashboard : Photon.MonoBehaviour
     private List<GameObject> facetButtons;
     [SerializeField]
     private List<GameObject> splomButtons;
-    
+
+    private PhotonPlayer originalOwner;
+
     private void Start()
     {
+        originalOwner = photonView.owner;
+
         if (dataSource == null)
             dataSource = ChartManager.Instance.DataSource;
 
@@ -85,26 +89,19 @@ public class Dashboard : Photon.MonoBehaviour
             splomChart.Depth = splomTransform.localScale.z;
 
             ShowStandard();
-
-            //// Send Photon View IDs to all clients using buffer
-            //photonView.RPC("SetPrototypeIds", PhotonTargets.OthersBuffered, standardChart.photonView.viewID, splomChart.photonView.viewID);
         }
     }
 
-    //[PunRPC]
-    //private void SetPrototypeIds(int standardChartId, int splomChartId)
-    //{
-    //    standardChart = PhotonView.Find(standardChartId).gameObject.GetComponent<Chart>();
-    //    splomChart = PhotonView.Find(splomChartId).gameObject.GetComponent<Chart>();
-
-    //    ShowStandard();
-    //}
+    private bool IsOriginalOwner()
+    {
+        return (originalOwner.ID == PhotonNetwork.player.ID);
+    }
 
     public void ShowStandard()
     {
         ToggleState(true, false, false);
 
-        standardChart.FacetSize = 1;
+        FacetSizeValueChanged(1);
     }
 
     public void ShowSPLOM()
@@ -117,134 +114,224 @@ public class Dashboard : Photon.MonoBehaviour
         ToggleState(true, false, true);
     }
 
+    [PunRPC]
     private void ToggleState(bool sp, bool spm, bool f)
     {
-        SetChartOwnership();
+        if (standardChart.photonView.isMine)
+        {
+            standardChart.transform.position = (sp || f) ? standardTransform.position : new Vector3(9999, 9999, 9999);
+            splomChart.transform.position = spm ? splomTransform.position : new Vector3(99999, 9999, 9999);
+            standardChart.transform.rotation = standardTransform.rotation;
+            splomChart.transform.rotation = splomTransform.rotation;
+        }
+        else
+        {
+            photonView.RPC("ToggleState", originalOwner, sp, spm, f);
+        }
 
-        standardChart.transform.position = (sp || f) ? standardTransform.position : new Vector3(9999, 9999, 9999);
-        splomChart.transform.position = spm ? splomTransform.position : new Vector3(99999, 9999, 9999);
-        standardChart.transform.rotation = standardTransform.rotation;
-        splomChart.transform.rotation = splomTransform.rotation;
-        
+        // This will get called twice but too lazy to fix
+        photonView.RPC("ToggleButtons", PhotonTargets.All, sp, spm, f);
+    }
+
+    [PunRPC]
+    private void ToggleButtons(bool sp, bool spm, bool f)
+    {
         foreach (GameObject button in standardButtons.Concat(splomButtons).Concat(facetButtons))
         {
             bool isActive = (sp && standardButtons.Contains(button)) ||
-                            (spm && splomButtons.Contains(button)) || 
+                            (spm && splomButtons.Contains(button)) ||
                             (f && facetButtons.Contains(button));
             button.SetActive(isActive);
         }
     }
 
+    [PunRPC]
     public void DimensionChanged(DashboardDimension dimension, string dimensionName)
     {
-        SetChartOwnership();
-
-        switch (dimension)
+        if (IsOriginalOwner())
         {
-            case DashboardDimension.X:
-                standardChart.XDimension = dimensionName;
-                break;
+            ResetChartOwnership();
 
-            case DashboardDimension.Y:
-                standardChart.YDimension = dimensionName;
-                break;
+            switch (dimension)
+            {
+                case DashboardDimension.X:
+                    standardChart.XDimension = dimensionName;
+                    break;
 
-            case DashboardDimension.Z:
-                standardChart.ZDimension = dimensionName;
-                break;
+                case DashboardDimension.Y:
+                    standardChart.YDimension = dimensionName;
+                    break;
 
-            case DashboardDimension.FACETBY:
-                if (dimensionName == "None")
-                {
-                    ShowStandard();
-                    standardChart.FacetSize = 1;
-                }
-                else
-                {
-                    ShowFacet();
-                    standardChart.FacetDimension = dimensionName;
-                }
-                break;
+                case DashboardDimension.Z:
+                    standardChart.ZDimension = dimensionName;
+                    break;
+
+                case DashboardDimension.FACETBY:
+                    if (dimensionName == "None")
+                    {
+                        ShowStandard();
+                        standardChart.FacetSize = 1;
+                    }
+                    else
+                    {
+                        ShowFacet();
+                        standardChart.FacetDimension = dimensionName;
+                    }
+                    break;
+            }
+        }
+        else
+        {
+            photonView.RPC("DimensionChanged", originalOwner, dimension, dimensionName);
         }
     }
-
-
+    
+    [PunRPC]
     public void SizeSliderValueChanged(float value)
     {
         if (standardChart != null && splomChart != null)
         {
-            SetChartOwnership();
+            // If the current client owns the charts, change their values
+            if (IsOriginalOwner())
+            {
+                ResetChartOwnership();
 
-            standardChart.Size = value;
-            splomChart.Size = value;
+                standardChart.Size = value;
+                splomChart.Size = value;
+            }
+            // Otherwise, inform the original owner
+            else
+            {
+                photonView.RPC("SizeSliderValueChanged", originalOwner, value);
+            }
         }
     }
 
+    [PunRPC]
     public void RedSliderValueChanged(float value)
     {
         if (standardChart != null && splomChart != null)
         {
-            SetChartOwnership();
+            if (IsOriginalOwner())
+            {
+                ResetChartOwnership();
 
-            Color color = standardChart.Color;
-            color.r = value;
+                Color color = standardChart.Color;
+                color.r = value;
 
-            standardChart.Color = color;
-            splomChart.Color = color;
+                standardChart.Color = color;
+                splomChart.Color = color;
+            }
+            else
+            {
+                photonView.RPC("RedSliderValueChanged", originalOwner, value);
+            }
         }
     }
 
+    [PunRPC]
     public void GreenSliderValueChanged(float value)
     {
         if (standardChart != null && splomChart != null)
         {
-            SetChartOwnership();
+            if (IsOriginalOwner())
+            {
+                ResetChartOwnership();
 
-            Color color = standardChart.Color;
-            color.g = value;
+                Color color = standardChart.Color;
+                color.g = value;
 
-            standardChart.Color = color;
-            splomChart.Color = color;
+                standardChart.Color = color;
+                splomChart.Color = color;
+            }
+            else
+            {
+                photonView.RPC("GreenSliderValueChanged", originalOwner, value);
+            }
         }
     }
 
+    [PunRPC]
     public void BlueSliderValueChanged(float value)
     {
         if (standardChart != null && splomChart != null)
         {
-            SetChartOwnership();
+            if (IsOriginalOwner())
+            {
+                ResetChartOwnership();
 
-            Color color = standardChart.Color;
-            color.b = value;
+                Color color = standardChart.Color;
+                color.b = value;
 
-            standardChart.Color = color;
-            splomChart.Color = color;
+                standardChart.Color = color;
+                splomChart.Color = color;
+            }
+            else
+            {
+                photonView.RPC("BlueSliderValueChanged", originalOwner, value);
+            }
         }
     }
 
-    public void ScatterplotMatrixSizeSlider(float value)
+    [PunRPC]
+    public void ScatterplotMatrixSizeValueChanged(int value)
     {
         if (standardChart != null && splomChart != null)
         {
-            SetChartOwnership();
+            if (IsOriginalOwner())
+            {
+                ResetChartOwnership();
 
-            splomChart.ScatterplotMatrixSize = (int)value;
+                splomChart.ScatterplotMatrixSize = value;
+            }
+            else
+            {
+                photonView.RPC("ScatterplotMatrixSizeValueChanged", originalOwner, value);
+            }
         }
     }
 
-    public void FacetSizeSlider(float value)
+    [PunRPC]
+    public void FacetSizeValueChanged(int value)
     {
         if (standardChart != null && splomChart != null)
         {
-            SetChartOwnership();
+            if (IsOriginalOwner())
+            {
+                ResetChartOwnership();
 
-            standardChart.FacetSize = (int)value;
+                standardChart.FacetSize = value;
+            }
+            else
+            {
+                photonView.RPC("FacetSizeValueChanged", originalOwner, value);
+            }
         }
     }
 
-    private void SetChartOwnership()
+    /// <summary>
+    /// Resets the ownership of all the subcharts back to the original owner of the dashboard (as that client is the one which
+    /// has the proper links and references to the subcharts
+    /// </summary>
+    private void ResetChartOwnership()
     {
-        standardChart.photonView.RequestOwnership();
-        splomChart.photonView.RequestOwnership();
+        if (IsOriginalOwner())
+        {
+            // Transfer ownership of all of its children
+            PhotonView[] photonViews = standardChart.GetComponentsInChildren<PhotonView>();
+            foreach (PhotonView pv in photonViews)
+            {
+                if (!pv.isMine)
+                    pv.TransferOwnership(PhotonNetwork.player);
+            }
+
+            //splomChart.photonView.TransferOwnership(PhotonNetwork.player);
+            photonViews = splomChart.GetComponentsInChildren<PhotonView>();
+            foreach (PhotonView pv in photonViews)
+            {
+                if (!pv.isMine)
+                    pv.TransferOwnership(PhotonNetwork.player);
+            }
+        }
     }
 }

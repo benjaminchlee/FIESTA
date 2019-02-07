@@ -11,6 +11,7 @@ using VRTK.Controllables.PhysicsBased;
 public class DashboardSlider : MonoBehaviour {
 
     private VRTK_PhysicsSlider physicsSlider;
+    private VRTK_InteractableObject interactableObject;
 
     [SerializeField]
     private float startValue;
@@ -24,27 +25,41 @@ public class DashboardSlider : MonoBehaviour {
 
     public DashboardSliderValueChangedEvent DashboardSliderValueChanged;
 
+    private float previousValue;
+
     private void Start()
     {
         physicsSlider = GetComponent<VRTK_PhysicsSlider>();
+        interactableObject = GetComponent<VRTK_InteractableObject>();
 
         physicsSlider.ValueChanged += OnSliderValueChanged;
+        interactableObject.InteractableObjectUngrabbed += OnSliderUngrabbed;
         
         physicsSlider.SetValue((startValue - physicsSlider.stepValueRange.minimum) / (physicsSlider.stepValueRange.maximum - physicsSlider.stepValueRange.minimum) * physicsSlider.maximumLength);
+
+        previousValue = startValue;
     }
 
     private void OnSliderValueChanged(object sender, ControllableEventArgs e)
     {
-        if (valueLabel != null)
+        if (previousValue != e.value)
         {
-            if (labelAsPercentage)
-                valueLabel.text = (e.value * 100) + "%";
-            else
-                valueLabel.text = e.value.ToString();
+            if (valueLabel != null)
+            {
+                if (labelAsPercentage)
+                    valueLabel.text = (e.value * 100) + "%";
+                else
+                    valueLabel.text = e.value.ToString();
+            }
+
+            DashboardSliderValueChanged.Invoke(e.value);
+
+            previousValue = e.value;
         }
+    }
 
-        //physicsSlider.SetValue((e.value - physicsSlider.stepValueRange.minimum) / (physicsSlider.stepValueRange.maximum - physicsSlider.stepValueRange.minimum) * physicsSlider.maximumLength);
-
-        DashboardSliderValueChanged.Invoke(e.value);
+    private void OnSliderUngrabbed(object sender, InteractableObjectEventArgs e)
+    {
+        physicsSlider.SetValue(physicsSlider.GetValue());
     }
 }

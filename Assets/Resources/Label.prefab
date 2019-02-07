@@ -23,6 +23,8 @@ GameObject:
   - component: {fileID: 23138038713414570}
   - component: {fileID: 222097876201128378}
   - component: {fileID: 114481234733900434}
+  - component: {fileID: 114194949114628788}
+  - component: {fileID: 114895457991997998}
   - component: {fileID: 114328613350681300}
   m_Layer: 0
   m_Name: Label
@@ -73,6 +75,25 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1679794619791828}
   m_Mesh: {fileID: 0}
+--- !u!114 &114194949114628788
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1679794619791828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af018577f438cf542b899ec9138bf9e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parent: 1
+  position: 2
+  rotation: 2
+  scale: 0
+  velocity: 1
+  angularVelocity: 1
+  useLocalValues: 1
+  onChangeOnly: 1
 --- !u!114 &114328613350681300
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -201,17 +222,30 @@ MonoBehaviour:
   group: 0
   OwnerShipWasTransfered: 0
   prefixBackup: -1
-  synchronization: 0
+  synchronization: 3
   onSerializeTransformOption: 3
   onSerializeRigidBodyOption: 2
   ownershipTransfer: 0
   ObservedComponents:
-  - {fileID: 0}
+  - {fileID: 114194949114628788}
+  - {fileID: 114895457991997998}
   ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
   instantiationId: -1
   currentMasterID: -1
   isRuntimeInstantiated: 0
+--- !u!114 &114895457991997998
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1679794619791828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5e225dcd46362a4ea24d69bba9090ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  textMesh: {fileID: 114328613350681300}
 --- !u!222 &222097876201128378
 CanvasRenderer:
   m_ObjectHideFlags: 1

@@ -33,9 +33,12 @@ public class MenuButton : MonoBehaviour {
         interactableObject.InteractableObjectUsed += OnButtonClicked;
     }
 
-    public void AnimateTowards(Vector3 targetPos, float duration, bool toDisable = false)
+    public void AnimateTowards(Vector3 targetPos, float duration, bool isLocalSpace = false, bool toDisable = false)
     {
-        transform.DOMove(targetPos, duration).SetEase(Ease.OutCirc).OnComplete(() => gameObject.SetActive(!toDisable));
+        if (isLocalSpace)
+            transform.DOLocalMove(targetPos, duration).SetEase(Ease.OutCirc).OnComplete(() => gameObject.SetActive(!toDisable));
+        else
+            transform.DOMove(targetPos, duration).SetEase(Ease.OutCirc).OnComplete(() => gameObject.SetActive(!toDisable));
     }
 
     private void OnButtonClicked(object sender, InteractableObjectEventArgs e)

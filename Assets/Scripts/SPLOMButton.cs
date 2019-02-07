@@ -6,28 +6,20 @@ using UnityEngine;
 using UnityEngine.Events;
 using VRTK;
 
-public class SPLOMButton : MonoBehaviour {
+public class SPLOMButton : Photon.MonoBehaviour
+{
 
-    [SerializeField]
-    private TextMeshPro textMesh;
-
-    [Serializable]
-    public class SPLOMButtonClickedEvent : UnityEvent<SPLOMButton> { }
-    public SPLOMButtonClickedEvent SPLOMButtonClicked;
-
+    [SerializeField] private TextMeshPro textMesh;
+    private VRTK_InteractableObject interactableObject;
     private List<string> dimensions;
+    public int parentSplomPhotonID;
 
     public string Text
     {
         get { return textMesh.text; }
-        set
-        {
-            textMesh.text = value;
-        }
+        set { textMesh.text = value; }
     }
-
-    private VRTK_InteractableObject interactableObject;
-
+    
     private void Start()
     {
         if (textMesh == null)
@@ -46,7 +38,8 @@ public class SPLOMButton : MonoBehaviour {
 
         textMesh.text = dimensions[index];
 
-        SPLOMButtonClicked.Invoke(this);
+        PhotonView pv = PhotonView.Find(parentSplomPhotonID);
+        pv.RPC("ScatterplotMatrixDimensionChanged", pv.owner, photonView.viewID, Text);
     }
 
     private List<string> GetAttributesList()
@@ -56,6 +49,21 @@ public class SPLOMButton : MonoBehaviour {
         {
             dimensions.Add(ChartManager.Instance.DataSource[i].Identifier);
         }
+
         return dimensions;
+    }
+
+    void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.isWriting)
+        {
+            stream.SendNext(Text);
+            stream.SendNext(parentSplomPhotonID);
+        }
+        else
+        {
+            Text = (string) stream.ReceiveNext();
+            parentSplomPhotonID = (int) stream.ReceiveNext();
+        }
     }
 }

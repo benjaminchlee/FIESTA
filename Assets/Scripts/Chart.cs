@@ -13,6 +13,7 @@ using System.Xml.Serialization;
 using DG.Tweening;
 using NetBase;
 using TMPro;
+using UnityEditor;
 using UnityEditorInternal.VersionControl;
 using Component = UnityEngine.Component;
 
@@ -33,8 +34,6 @@ public class Chart : Photon.MonoBehaviour
     private Rigidbody rigidbody;
     [SerializeField]
     private VRTK_InteractableObject interactableObject;
-    [SerializeField]
-    private VRTK_BaseGrabAttach grabAttach;
 
     private Chart[,] splomCharts;  // Stored as 2D array
     private List<Chart> subCharts;  // Stored as 1D array
@@ -47,6 +46,7 @@ public class Chart : Photon.MonoBehaviour
     private bool isThrowing = false;
     private bool isTouchingDisplayScreen = false;
 
+    private Vector3 originalWorldPos;
     private Vector3 originalPos;
     private Quaternion originalRot;
 
@@ -96,6 +96,12 @@ public class Chart : Photon.MonoBehaviour
                     break;
             }
         }
+    }
+
+    [PunRPC]
+    private void PropagateVisualisationType(int visualisationType)
+    {
+        VisualisationType = (AbstractVisualisation.VisualisationTypes) visualisationType;
     }
 
     public AbstractVisualisation.GeometryType GeometryType
@@ -368,9 +374,27 @@ public class Chart : Photon.MonoBehaviour
         get { return visualisation.attributeFilters; }
         set
         {
-            visualisation.attributeFilters = value;
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.AttributeFiltering);
+            // TODO: ONLY WORKS WITH ONE FILTER
+            AttributeFilter af = value[0];
+
+            photonView.RPC("PropagateAttributeFilters", PhotonTargets.AllBuffered, af.Attribute, af.minFilter, af.maxFilter, af.minScale, af.maxScale);
         }
+    }
+
+    [PunRPC]
+    private void PropagateAttributeFilters(string attribute, float minFilter, float maxFilter, float minScale, float maxScale)
+    {
+        AttributeFilter af = new AttributeFilter()
+        {
+            Attribute = attribute,
+            minFilter = minFilter,
+            maxFilter = maxFilter,
+            minScale = minScale,
+            maxScale = maxScale
+        };
+
+        visualisation.attributeFilters = new[] {af};
+        visualisation.updateViewProperties(AbstractVisualisation.PropertyType.AttributeFiltering);
     }
 
     private int scatterplotMatrixSize = 3;
@@ -430,8 +454,56 @@ public class Chart : Photon.MonoBehaviour
         }
     }
 
-#endregion
+    public bool XAxisVisibility
+    {
+        get
+        {
+            return (visualisation.theVisualizationObject.X_AXIS != null &&
+                    visualisation.theVisualizationObject.X_AXIS.activeSelf);
+        }
+        set
+        {
+            if (value == XAxisVisibility || visualisation.theVisualizationObject.X_AXIS == null)
+                return;
 
+            visualisation.theVisualizationObject.X_AXIS.SetActive(value);
+        }
+    }
+
+    public bool YAxisVisibility
+    {
+        get
+        {
+            return (visualisation.theVisualizationObject.Y_AXIS != null &&
+                    visualisation.theVisualizationObject.Y_AXIS.activeSelf);
+        }
+        set
+        {
+            if (value == YAxisVisibility || visualisation.theVisualizationObject.Y_AXIS == null)
+                return;
+
+            visualisation.theVisualizationObject.Y_AXIS.SetActive(value);
+        }
+    }
+
+    public bool ZAxisVisibility
+    {
+        get
+        {
+            return (visualisation.theVisualizationObject.Z_AXIS != null &&
+                    visualisation.theVisualizationObject.Z_AXIS.activeSelf);
+        }
+        set
+        {
+            if (value == ZAxisVisibility || visualisation.theVisualizationObject.Z_AXIS == null)
+                return;
+
+            visualisation.theVisualizationObject.Z_AXIS.SetActive(value);
+        }
+    }
+
+    #endregion
+    
     private void Awake()
     {
         displayScreen = GameObject.FindGameObjectWithTag("DisplayScreen").GetComponent<DisplayScreen>();
@@ -553,6 +625,7 @@ public class Chart : Photon.MonoBehaviour
                         {
                             subChart = ChartManager.Instance.CreateVisualisation(DataSource[i].Identifier + ", " + DataSource[j].Identifier);
                             // Get the x and y dimension from the splom button if it exists, otherwise use default
+                            subChart.GeometryType = AbstractVisualisation.GeometryType.Undefined;
                             subChart.XDimension = (splomButtons[i] != null) ? splomButtons[i].Text : DataSource[i].Identifier;
                             subChart.YDimension = (splomButtons[j] != null) ? splomButtons[j].Text : DataSource[j].Identifier;
                             subChart.GetComponent<Collider>().enabled = false;
@@ -561,7 +634,7 @@ public class Chart : Photon.MonoBehaviour
 
                             GameObject go = PhotonNetwork.Instantiate("SPLOMButton", Vector3.zero, Quaternion.identity, 0);
                             SPLOMButton button = go.GetComponent<SPLOMButton>();
-                            button.SPLOMButtonClicked.AddListener(ScatterplotMatrixDimensionChanged);
+                            button.parentSplomPhotonID = photonView.viewID;
                             button.Text = DataSource[i].Identifier;
                             splomButtons[i] = button;
                             go.transform.SetParent(transform);
@@ -599,7 +672,7 @@ public class Chart : Photon.MonoBehaviour
         {
             if (splomButtons[i] != null)
             {
-                Destroy(splomButtons[i].gameObject);
+                PhotonNetwork.Destroy(splomButtons[i].gameObject);
                 splomButtons[i] = null;
             }
         }
@@ -658,12 +731,16 @@ public class Chart : Photon.MonoBehaviour
     /// Readjust the dimensions of the scatterplot matrix
     /// </summary>
     /// <param name="button"></param>
-    private void ScatterplotMatrixDimensionChanged(SPLOMButton button)
+    [PunRPC]
+    public void ScatterplotMatrixDimensionChanged(int splomButtonPhotonID, string text)
     {
         if (!photonView.isMine)
         {
             return;
         }
+
+        // Find the original button
+        SPLOMButton button = PhotonView.Find(splomButtonPhotonID).GetComponent<SPLOMButton>();
 
         // Find which index the button belongs to (along the diagonal)
         int index = Array.IndexOf(splomButtons, button);
@@ -671,18 +748,28 @@ public class Chart : Photon.MonoBehaviour
         // Change y-axis of charts along SPLOM's horizontal
         for (int i = 0; i < scatterplotMatrixSize; i++)
         {
-            if (splomCharts[i, index].tag == "Chart")
+            Chart chart = splomCharts[i, index];
+
+            if (chart.CompareTag("Chart"))
             {
-                splomCharts[i, index].GetComponent<Chart>().YDimension = button.Text;
+                if (!chart.photonView.isMine)
+                    chart.photonView.TransferOwnership(PhotonNetwork.player);
+
+                chart.GetComponent<Chart>().YDimension = text;
             }
         }
 
         // Change x-axis of charts along SPLOM's vertical
         for (int i = 0; i < scatterplotMatrixSize; i++)
         {
-            if (splomCharts[index, i].tag == "Chart")
+            Chart chart = splomCharts[index, i];
+
+            if (chart.CompareTag("Chart"))
             {
-                splomCharts[index, i].GetComponent<Chart>().XDimension = button.Text;
+                if (!chart.photonView.isMine)
+                    chart.photonView.TransferOwnership(PhotonNetwork.player);
+
+                chart.GetComponent<Chart>().XDimension = text;
             }
         }
     }
@@ -709,23 +796,19 @@ public class Chart : Photon.MonoBehaviour
                 subChart.YDimension = YDimension;
                 subChart.Color = Color;
                 subChart.SetAsPrototype();
-
-                // Create attribute filters for each chart
-                AttributeFilter af = new AttributeFilter();
-                subChart.AttributeFilters = new AttributeFilter[] {af};
-
+                
                 subChart.transform.SetParent(transform);
                 subCharts.Add(subChart);
             }
 
             // Set ranges for the chart
-            AttributeFilter filter = subChart.AttributeFilters[0];
+            AttributeFilter filter = new AttributeFilter();;
             filter.Attribute = facetDimension;
             filter.minFilter = 0;
             filter.maxFilter = 1;
             filter.minScale = i / (float)facetSize;
             filter.maxScale = (i + 1) / (float)facetSize;
-            subChart.AttributeFilters[0] = filter;
+            subChart.AttributeFilters = new AttributeFilter[] {filter};
             subChart.visualisation.updateViewProperties(AbstractVisualisation.PropertyType.AttributeFiltering);
         }
 
@@ -769,13 +852,11 @@ public class Chart : Photon.MonoBehaviour
                     labelHolder.transform.localPosition = new Vector3(x, y + yDelta * 0.9f, 0);
                     labelHolder.transform.rotation = transform.rotation;
 
-                    TextMeshPro label = labelHolder.GetComponent<TextMeshPro>();
+                    NetworkedLabel label = labelHolder.GetComponent<NetworkedLabel>();
                     string range1 = DataSource.getOriginalValue(index / (float) facetSize, FacetDimension).ToString();
                     string range2 = DataSource.getOriginalValue((index + 1) / (float) facetSize, FacetDimension).ToString();
-                    label.text = range1 + " ... " + range2;
-
-                    RectTransform container = labelHolder.GetComponent<RectTransform>();
-                    container.sizeDelta = new Vector2(w, 0.1f);
+                    label.SetText(range1 + " ... " + range2);
+                    label.SetRectTransform(new Vector2(w, 0.1f));
 
                     // Hide the axis for all but the charts along the edge
                     bool isAlongLeft = (j == 0);
@@ -811,8 +892,9 @@ public class Chart : Photon.MonoBehaviour
     {
         if (isPrototype)
         {
-            originalPos = transform.position;
-            originalRot = transform.rotation;
+            originalWorldPos = transform.position;
+            originalPos = transform.localPosition;
+            originalRot = transform.localRotation;
         }
 
         rigidbody.isKinematic = false;
@@ -828,7 +910,7 @@ public class Chart : Photon.MonoBehaviour
         {
             rigidbody.isKinematic = true;
 
-            AnimateTowards(originalPos, originalRot, 0.2f);
+            AnimateTowards(originalPos, originalRot, 0.4f);
         }
         else
         {
@@ -867,7 +949,7 @@ public class Chart : Photon.MonoBehaviour
     {
         if (isPrototype && interactableObject.IsGrabbed())
         {
-            if (Vector3.Distance(transform.position, originalPos) > 0.25f)
+            if (Vector3.Distance(transform.position, originalWorldPos) > 0.25f)
             {
                 // Create a duplicate of this visualisation
                 Chart dupe = ChartManager.Instance.DuplicateVisualisation(this);
@@ -906,8 +988,7 @@ public class Chart : Photon.MonoBehaviour
     {
         return isPrototype;
     }
-
-
+    
     private void ForceViewScale()
     {
         foreach (View view in visualisation.theVisualizationObject.viewList)
@@ -995,11 +1076,23 @@ public class Chart : Photon.MonoBehaviour
     public void AnimateTowards(Vector3 targetPos, Quaternion targetRot, float duration, bool toDestroy = false)
     {
         if (toDestroy)
-            rigidbody.DOMove(targetPos, duration).SetEase(Ease.OutQuint).OnComplete(() => ChartManager.Instance.RemoveVisualisation(this));
+            transform.DOMove(targetPos, duration).SetEase(Ease.OutQuint).OnComplete(() => ChartManager.Instance.RemoveVisualisation(this));
         else
-            rigidbody.DOMove(targetPos, duration).SetEase(Ease.OutQuint);
+            transform.DOLocalMove(targetPos, duration).SetEase(Ease.OutQuint).OnComplete(() => photonView.RPC("ForcePosition", photonView.owner, targetPos, targetRot));
 
-        rigidbody.DORotate(targetRot.eulerAngles, duration).SetEase(Ease.OutQuint);
+        transform.DOLocalRotate(targetRot.eulerAngles, duration).SetEase(Ease.OutQuint);
+    }
+
+    /// <summary>
+    /// Called when the animation is finished. Used to ensure that the chart returns back to its original position should its owner change mid-animation
+    /// </summary>
+    /// <param name="targetPos"></param>
+    /// <param name="targetRot"></param>
+    [PunRPC]
+    private void ForcePosition(Vector3 targetPos, Quaternion targetRot)
+    {
+        transform.localPosition = targetPos;
+        transform.localRotation = targetRot;
     }
 
     void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
@@ -1019,11 +1112,14 @@ public class Chart : Photon.MonoBehaviour
             stream.SendNext(Width);
             stream.SendNext(Height);
             stream.SendNext(Depth);
-            //stream.SendNext(AttributeFilters);
             stream.SendNext(ScatterplotMatrixSize);
             stream.SendNext(FacetDimension);
             stream.SendNext(FacetSize);
             stream.SendNext(isPrototype);
+            stream.SendNext(XAxisVisibility);
+            stream.SendNext(YAxisVisibility);
+            stream.SendNext(ZAxisVisibility);
+            stream.SendNext(GetComponent<Collider>().enabled);
         }
         else
         {
@@ -1038,11 +1134,14 @@ public class Chart : Photon.MonoBehaviour
             Width = (float) stream.ReceiveNext();
             Height = (float) stream.ReceiveNext();
             Depth = (float) stream.ReceiveNext();
-            //AttributeFilters = (AttributeFilters[]) stream.ReceiveNext();
             ScatterplotMatrixSize = (int) stream.ReceiveNext();
             FacetDimension = (string) stream.ReceiveNext();
             FacetSize = (int) stream.ReceiveNext();
             isPrototype = (bool) stream.ReceiveNext();
+            XAxisVisibility = (bool) stream.ReceiveNext();
+            YAxisVisibility = (bool) stream.ReceiveNext();
+            ZAxisVisibility = (bool) stream.ReceiveNext();
+            GetComponent<Collider>().enabled = (bool) stream.ReceiveNext();
         }
     }
 }

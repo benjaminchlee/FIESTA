@@ -29,6 +29,8 @@
         void OnEnable() {
             io.InteractableObjectGrabbed += HandleGrab;
             io.InteractableObjectUngrabbed += HandleUngrab;
+            io.InteractableObjectUsed += HandleGrab;
+            io.InteractableObjectUnused += HandleUngrab;
             if (nref.IsPhotonView) {
                 InitState(nref.GetPhotonView().ownerId);
             }

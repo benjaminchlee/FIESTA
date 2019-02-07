@@ -178,7 +178,7 @@ MonoBehaviour:
   parent: 1
   position: 2
   rotation: 2
-  scale: 0
+  scale: 1
   velocity: 1
   angularVelocity: 1
   useLocalValues: 1
@@ -221,6 +221,7 @@ MonoBehaviour:
   ownershipTransfer: 0
   ObservedComponents:
   - {fileID: 114285878939752714}
+  - {fileID: 114919706049667408}
   ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
   instantiationId: -1

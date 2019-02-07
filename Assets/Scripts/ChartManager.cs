@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using UnityEngine;
 using IATK;
+using VRTK;
 
 public class ChartManager : MonoBehaviour {
 
@@ -37,7 +38,11 @@ public class ChartManager : MonoBehaviour {
 
     private void Start()
     {
-        PhotonNetwork.Instantiate("Dashboard", Vector3.zero, Quaternion.identity, 0);
+        Transform headset = VRTK_DeviceFinder.HeadsetTransform();
+        Vector3 pos = headset.TransformPoint(Vector3.forward * 0.5f);
+        Quaternion rot = headset.rotation;
+
+        PhotonNetwork.Instantiate("Dashboard", pos, rot, 0);
     }
 
     public Chart CreateVisualisation(string name)

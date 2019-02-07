@@ -45,4 +45,36 @@ MonoBehaviour:
   - SpawnAvatar
   - TaggedPlayer
   - SetPrototypeIds
+  - RedSliderValueChanged
+  - SetSize
+  - SizeSliderValueChanged
+  - BlueSliderValueChanged
+  - DimensionChanged
+  - FacetSizeSlider
+  - GreenSliderValueChanged
+  - ScatterplotMatrixSizeSlider
+  - ToggleButtons
+  - ToggleState
+  - ForcePosition
+  - ScatterplotMatrixDimensionChanged
+  - FacetSizeValueChanged
+  - ScatterplotMatrixSizeValueChanged
+  - SetText
+  - PropagateAttributeFilters
+  - PropagateColor
+  - PropagateDepth
+  - PropagateFacetDimension
+  - PropagateFacetSize
+  - PropagateGeometryType
+  - PropagateHeight
+  - PropagateScatterplotMatrixSize
+  - PropagateSize
+  - PropagateVisualisationType
+  - PropagateWidth
+  - PropagateXAxisVisibility
+  - PropagateXDimension
+  - PropagateYAxisVisibility
+  - PropagateYDimension
+  - PropagateZAxisVisibility
+  - PropagateZDimension
   DisableAutoOpenWizard: 1
