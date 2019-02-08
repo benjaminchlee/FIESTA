@@ -1,4 +1,6 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
+using UnityEngine.Events;
 
 namespace PlayoVR {
     using UnityEngine;
@@ -9,7 +11,7 @@ namespace PlayoVR {
         [Tooltip("The maximum number of players per room. When a room is full, it can't be joined by new players, and so new room will be created")]
         public byte MaxPlayersPerRoom = 4;
         public PhotonLogLevel Loglevel = PhotonLogLevel.Informational;
-
+        
         void Awake() {
             if (!PhotonNetwork.connecting && !PhotonNetwork.connected) {
                 string userId = GUID.Generate().ToString();

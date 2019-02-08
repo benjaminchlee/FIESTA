@@ -21,8 +21,8 @@ public class InteractionsManager : MonoBehaviour {
     [SerializeField] [Tooltip("The script that manages the interactions close to the wall.")]
     private CloseInteractionsManager closeInteractionsScript;
 
-    public GameObject leftController;
-    public GameObject rightController;
+    private GameObject leftController;
+    private GameObject rightController;
 
     private Rigidbody leftRigidbody;
     private Rigidbody rightRigidbody;
@@ -80,11 +80,17 @@ public class InteractionsManager : MonoBehaviour {
 
     private void Start()
     {
-        //leftController = VRTK_DeviceFinder.GetControllerLeftHand();
-        //rightController = VRTK_DeviceFinder.GetControllerRightHand();
+        leftController = VRTK_DeviceFinder.GetControllerLeftHand();
+        rightController = VRTK_DeviceFinder.GetControllerRightHand();
 
         leftRigidbody = leftController.GetComponent<Rigidbody>();
         rightRigidbody = rightController.GetComponent<Rigidbody>();
+
+        if (spinMenuScript == null)
+            spinMenuScript = FindObjectOfType<SpinMenu>();
+
+        if (rangedInteractionsScript == null)
+            rangedInteractionsScript = FindObjectOfType<RangedInteractions>();
     }
 
     private void Update()
@@ -272,8 +278,8 @@ public class InteractionsManager : MonoBehaviour {
     /// <returns>The distance between the DisplayScreen and the HMD, or infinity if the headset does not exist</returns>
     private float CalculateHeadDistance()
     {
-        if (Camera.main != null)
-            return Vector3.Distance(screen.GetComponent<Collider>().ClosestPointOnBounds(Camera.main.transform.position), Camera.main.transform.position);
+        if (VRTK_DeviceFinder.HeadsetTransform() != null)
+            return Vector3.Distance(screen.GetComponent<Collider>().ClosestPointOnBounds(VRTK_DeviceFinder.HeadsetTransform().position), VRTK_DeviceFinder.HeadsetTransform().position);
         else
             return Mathf.Infinity;
     }
@@ -284,10 +290,13 @@ public class InteractionsManager : MonoBehaviour {
     /// <returns>The distance between the DisplayScreen and the left controller</returns>
     private float CalculateLeftControllerDistance()
     {
-        Vector3 closestPointOnScreen = screen.GetComponent<Collider>().ClosestPointOnBounds(leftController.transform.position);
-        Vector3 closestPointOnController = leftRigidbody.ClosestPointOnBounds(closestPointOnScreen);
+        if (leftController == null)
+            return Mathf.Infinity;
 
-        return Vector3.Distance(closestPointOnScreen, closestPointOnController);
+        Vector3 closestPointOnScreen = screen.GetComponent<Collider>().ClosestPointOnBounds(leftController.transform.position);
+        //Vector3 closestPointOnController = leftRigidbody.ClosestPointOnBounds(closestPointOnScreen);
+
+        return Vector3.Distance(closestPointOnScreen, leftController.transform.position);
     }
 
     /// <summary>
@@ -296,10 +305,13 @@ public class InteractionsManager : MonoBehaviour {
     /// <returns>The distance between the DisplayScreen and the right controller</returns>
     private float CalculateRightControllerDistance()
     {
-        Vector3 closestPointOnScreen = screen.GetComponent<Collider>().ClosestPointOnBounds(rightController.transform.position);
-        Vector3 closestPointOnController = rightRigidbody.ClosestPointOnBounds(closestPointOnScreen);
+        if (rightController == null)
+            return Mathf.Infinity;
 
-        return Vector3.Distance(closestPointOnScreen, closestPointOnController);
+        Vector3 closestPointOnScreen = screen.GetComponent<Collider>().ClosestPointOnBounds(rightController.transform.position);
+        //Vector3 closestPointOnController = rightRigidbody.ClosestPointOnBounds(closestPointOnScreen);
+
+        return Vector3.Distance(closestPointOnScreen, rightController.transform.position);
     }
 
     /// <summary>

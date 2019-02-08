@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Util;
 using VRTK;
 
@@ -106,9 +107,12 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     private bool isEnabled = false;
     private bool isControllerSelecting = true;
 
-    [Header("IATK")]
-    [SerializeField] [Tooltip("The brushing and linking script from IATK.")]
+    /// <summary>
+    /// Brushing and linking variables
+    /// </summary>
     private BrushingAndLinking brushingAndLinking;
+    private Transform brushingInput1;
+    private Transform brushingInput2;
 
     /// <summary>
     /// The state of interaction the user is currently in. Note that this scope only extends to that of touchpad interactions, and not
@@ -163,16 +167,33 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         controllerEvents.GripUnclicked += OnGripEnd;
 
         vrtkPointer = GetComponent<VRTK_Pointer>();
-
-        // Instantiate ranged brush
-        rangedBrush = Instantiate(brushPrefab);
-        rangedBrush.SetActive(false);
-
+        
         // Instantiate rectangle selection transforms
         rectangleTransform1 = new GameObject().transform;
         rectangleTransform2 = new GameObject().transform;
+
+        // Keep pointer on scene change
+        DontDestroyOnLoad(actualCursor.transform.root.gameObject);
+        DontDestroyOnLoad(actualTracer.transform.root.gameObject);
+        SceneManager.sceneLoaded += InstantiatePhotonObjects;
     }
-    
+
+    private void InstantiatePhotonObjects(Scene arg0, LoadSceneMode arg1)
+    {
+        if (arg0.name == "MainScene")
+        {
+            // Instantiate ranged brush
+            rangedBrush = PhotonNetwork.Instantiate("BrushSphere", Vector3.zero, Quaternion.identity, 0);
+            rangedBrush.SetActive(false);
+
+            // Create brushing and linking object
+            GameObject bal = PhotonNetwork.Instantiate("BrushingAndLinking", Vector3.zero, Quaternion.identity, 0);
+            brushingAndLinking = bal.GetComponent<BrushingAndLinking>();
+            brushingInput1 = brushingAndLinking.input1;
+            brushingInput2 = brushingAndLinking.input2;
+        }
+    }
+
     public void Enable()
     {
         isEnabled = true;
@@ -592,9 +613,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     {
         SetInteractionState(InteractionState.RangedBrushing);
 
-        brushingAndLinking.input1 = rangedBrush.transform;
-        brushingAndLinking.input2 = rangedBrush.transform;
-        brushingAndLinking.brushButtonController = true;
+        brushingInput1.position = rangedBrush.transform.position;
 
         if (IsSelecting)
             brushingAndLinking.SELECTION_TYPE = BrushingAndLinking.SelectionType.ADDITIVE;
@@ -614,11 +633,16 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 rangedBrush.SetActive(true);
 
             rangedBrush.transform.position = hit.point;
+            brushingInput1.position = hit.point;
+            brushingAndLinking.brushButtonController = true;
         }
         else
         {
             if (rangedBrush.activeSelf)
+            {
                 rangedBrush.SetActive(false);
+                brushingAndLinking.brushButtonController = false;
+            }
         }
 
         if (IsValidCollision())

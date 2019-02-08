@@ -713,7 +713,6 @@ MonoBehaviour:
   rangedPullCompleteThreshold: 0.2
   detailsOnDemandGameObject: {fileID: 0}
   detailsOnDemandTextMesh: {fileID: 0}
-  brushingAndLinking: {fileID: 0}
 --- !u!114 &99129227
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3050,6 +3049,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MaxPlayersPerRoom: 4
   Loglevel: 1
+  PhotonRoomJoined:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 99129226}
+        m_MethodName: InstantiatePhotonObjects
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_TypeName: PlayoVR.NetworkConnectManager+PhotonRoomJoinedEvent, Assembly-CSharp,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 --- !u!114 &802063917
 MonoBehaviour:
   m_ObjectHideFlags: 0

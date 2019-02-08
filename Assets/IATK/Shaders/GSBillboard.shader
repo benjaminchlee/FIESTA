@@ -77,7 +77,8 @@ Shader "IATK/OutlineDots"
 					float3	normal : NORMAL;
 					float2  tex0 : TEXCOORD0;
 					float4  color : COLOR;
-					float	isBrushed : FLOAT;
+					float	isBrushed : FLOAT0;
+					float	isSharedBrushed : FLOAT1;
 				};
 
 				struct FS_INPUT
@@ -85,7 +86,8 @@ Shader "IATK/OutlineDots"
 					float4	pos : POSITION;
 					float2  tex0 : TEXCOORD0;
 					float4  color : COLOR;
-					float	isBrushed : FLOAT;
+					float	isBrushed : FLOAT0;
+					float	isSharedBrushed : FLOAT1;
 					float3	normal : NORMAL;
 				};
 
@@ -165,6 +167,7 @@ Shader "IATK/OutlineDots"
 					float4 brushValue = tex2Dlod(_BrushedTexture, float4(indexUV, 0.0, 0.0));
 
 					output.isBrushed = brushValue.r;
+					output.isSharedBrushed = brushValue.g;
 
 					float size = lerp(v.uv_MainTex.w, v.uv_MainTex.y, _TweenSize);
 					float3 pos = lerp(v.normal, v.position, _Tween);
@@ -225,6 +228,7 @@ Shader "IATK/OutlineDots"
 					FS_INPUT pIn;
 					
 					pIn.isBrushed = p[0].isBrushed;
+					pIn.isSharedBrushed = p[0].isSharedBrushed;
 					pIn.color = p[0].color;
 					pIn.normal = p[0].normal;
 
@@ -256,6 +260,10 @@ Shader "IATK/OutlineDots"
 					FS_OUTPUT o;
 					if (input.isBrushed > 0 && showBrush > 0.0) {
 						float4 col = float4(brushColor.r, brushColor.g, brushColor.b, input.color.a);
+						
+						if (input.isSharedBrushed > 0)
+							col.g = 0.0;
+
 						o.color = tex2D(_MainTex, input.tex0.xy) * col;
 					}
 					

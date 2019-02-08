@@ -6,23 +6,23 @@ using System.Diagnostics;
 using UnityEditor;
 using System;
 using System.Linq;
+using System.Security.Policy;
+using UnityEngine.Experimental.PlayerLoop;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using Debug = UnityEngine.Debug;
 
-public class BrushingAndLinking : MonoBehaviour
+public class BrushingAndLinking : Photon.PunBehaviour
 {
 
-    [SerializeField]
-    public ComputeShader computeShader;
+    [SerializeField] public ComputeShader computeShader;
     ComputeBuffer buffer;
 
     ComputeBuffer brushedIndicesBuffer;
 
     ComputeBuffer filteredIndicesBuffer;
 
-    [SerializeField]
-    public Material myRenderMaterial;
+    [SerializeField] public Material myRenderMaterial;
 
     RenderTexture brushedIndicesTexture;
 
@@ -31,38 +31,28 @@ public class BrushingAndLinking : MonoBehaviour
 
     GameObject viewHolder;
     int texSize;
-    
-    [SerializeField]
-    public List<Visualisation> brushingVisualisations;
 
-    [SerializeField]
-    public List<Visualisation> brushedVisualisations;
+    [SerializeField] public List<Visualisation> brushingVisualisations;
 
-    [SerializeField]
-    public List<LinkingVisualisations> brushedLinkingVisualisations;
+    [SerializeField] public List<Visualisation> brushedVisualisations;
 
-    [SerializeField]
-    public bool showBrush = false;
+    [SerializeField] public List<LinkingVisualisations> brushedLinkingVisualisations;
 
-    [SerializeField]
-    public Color brushColor = Color.red;
+    [SerializeField] public bool showBrush = false;
 
-    [SerializeField]
-    [Range(1f, 10f)]
-    public float brushSizeFactor = 1f;
+    [SerializeField] public bool shareBrushing = false;
 
-    [SerializeField]
-    public Transform input1;
+    [SerializeField] public Color brushColor = Color.red;
 
-    [SerializeField]
-    public Transform input2;
+    [SerializeField] [Range(1f, 10f)] public float brushSizeFactor = 1f;
 
-    [SerializeField]
-    [Range(0f, 1f)]
-    public float radiusSphere;
+    [SerializeField] public Transform input1;
 
-    [SerializeField]
-    public bool brushButtonController;
+    [SerializeField] public Transform input2;
+
+    [SerializeField] [Range(0f, 1f)] public float radiusSphere;
+
+    [SerializeField] public bool brushButtonController;
 
     public struct VecIndexPair
     {
@@ -70,7 +60,11 @@ public class BrushingAndLinking : MonoBehaviour
         public int index;
     }
 
-    public enum BrushType { SPHERE = 0, BOX = 1 };
+    public enum BrushType
+    {
+        SPHERE = 0,
+        BOX = 1
+    };
 
     public BrushType BRUSH_TYPE;
 
@@ -85,7 +79,7 @@ public class BrushingAndLinking : MonoBehaviour
 
     int computeTextureSize(int sizeDatast)
     {
-        return NextPowerOf2((int)Mathf.Sqrt((float)sizeDatast));
+        return NextPowerOf2((int) Mathf.Sqrt((float) sizeDatast));
     }
 
     public Material debugObjectTexture;
@@ -121,6 +115,7 @@ public class BrushingAndLinking : MonoBehaviour
                             brushingVisualisations.Add(col.gameObject.GetComponent<Chart>().Visualisation);
                         }
                     }
+
                     break;
 
                 case BrushType.BOX:
@@ -131,11 +126,13 @@ public class BrushingAndLinking : MonoBehaviour
         if (brushingVisualisations.Count != 0 && !activated)
         {
             InitialiseShaders();
-            InitialiseBuffersAndTextures(brushingVisualisations[0].theVisualizationObject.viewList[0].BigMesh.getBigMeshVertices());
+            InitialiseBuffersAndTextures(brushingVisualisations[0].theVisualizationObject.viewList[0].BigMesh
+                .getBigMeshVertices());
             activated = true;
         }
 
-        if (brushingVisualisations.Count != 0 && (brushButtonController) && input1 != null && input2 != null)// && brushedVisualisations.Count>0)
+        if (brushingVisualisations.Count != 0 && (brushButtonController) && input1 != null && input2 != null
+        ) // && brushedVisualisations.Count>0)
         {
             updateBrushTexture();
 
@@ -167,7 +164,7 @@ public class BrushingAndLinking : MonoBehaviour
         for (int i = 0; i < data.Length; i++)
             brushIni[i] = -1;
         brushedIndicesBuffer.SetData(brushIni);
-  
+
         filteredIndicesBuffer = new ComputeBuffer(data.Length, 4);
         filteredIndicesBuffer.SetData(new float[data.Length]);
 
@@ -183,8 +180,8 @@ public class BrushingAndLinking : MonoBehaviour
 
         computeShader.SetTexture(kernelHandleBrushTexture, "Result", brushedIndicesTexture);
         computeShader.SetTexture(kernelHandleBrushArrayIndices, "Result", brushedIndicesTexture);
-        
-        setSize((float)texSize);
+
+        setSize((float) texSize);
     }
 
     /// <summary>
@@ -210,7 +207,8 @@ public class BrushingAndLinking : MonoBehaviour
             pos++;
             number = number >> 1;
         }
-        return (int)Mathf.Pow(2, pos);
+
+        return (int) Mathf.Pow(2, pos);
     }
 
     /// <summary>
@@ -224,7 +222,7 @@ public class BrushingAndLinking : MonoBehaviour
     }
 
     float time = 0f;
-    
+
     /// <summary>
     /// reads the brushed indices
     /// </summary>
@@ -237,7 +235,7 @@ public class BrushingAndLinking : MonoBehaviour
     {
         buffer.SetData(visualisation.theVisualizationObject.viewList[0].BigMesh.getBigMeshVertices());
         computeShader.SetBuffer(kernelHandleBrushTexture, "dataBuffer", buffer);
-        
+
         filteredIndicesBuffer.SetData(visualisation.theVisualizationObject.viewList[0].GetFilterChannel());
         computeShader.SetBuffer(kernelHandleBrushTexture, "filteredIndices", filteredIndicesBuffer);
     }
@@ -247,12 +245,13 @@ public class BrushingAndLinking : MonoBehaviour
     /// </summary>
     /// Texture2D bla 
     Texture2D cachedTexture;
+
     public void updateBrushTexture()
     {
         //bla.ReadPixels(new Rect(),0,0).
         //set brushgin mode
-        computeShader.SetInt("BrushMode", (int)(BRUSH_TYPE));
-        computeShader.SetInt("SelectionMode", (int)(SELECTION_TYPE));
+        computeShader.SetInt("BrushMode", (int) (BRUSH_TYPE));
+        computeShader.SetInt("SelectionMode", (int) (SELECTION_TYPE));
 
         Vector3 projectedPointer1;
         Vector3 projectedPointer2;
@@ -264,7 +263,8 @@ public class BrushingAndLinking : MonoBehaviour
             switch (BRUSH_TYPE)
             {
                 case BrushType.SPHERE:
-                    projectedPointer1 = brushingVisualisation.transform.InverseTransformPoint(input1.transform.position);
+                    projectedPointer1 =
+                        brushingVisualisation.transform.InverseTransformPoint(input1.transform.position);
                     //  Vector3 
                     computeShader.SetFloat("pointer1x", projectedPointer1.x);
                     computeShader.SetFloat("pointer1y", projectedPointer1.y);
@@ -272,8 +272,10 @@ public class BrushingAndLinking : MonoBehaviour
 
                     break;
                 case BrushType.BOX:
-                    projectedPointer1 = brushingVisualisation.transform.InverseTransformPoint(input1.transform.position);
-                    projectedPointer2 = brushingVisualisation.transform.InverseTransformPoint(input2.transform.position);
+                    projectedPointer1 =
+                        brushingVisualisation.transform.InverseTransformPoint(input1.transform.position);
+                    projectedPointer2 =
+                        brushingVisualisation.transform.InverseTransformPoint(input2.transform.position);
 
                     //  Vector3 
                     computeShader.SetFloat("pointer1x", projectedPointer1.x);
@@ -302,25 +304,33 @@ public class BrushingAndLinking : MonoBehaviour
             computeShader.SetFloat("_MaxY", brushingVisualisation.yDimension.maxFilter);
             computeShader.SetFloat("_MinZ", brushingVisualisation.zDimension.minFilter);
             computeShader.SetFloat("_MaxZ", brushingVisualisation.zDimension.maxFilter);
-            
+
             computeShader.SetFloat("RadiusSphere", radiusSphere);
 
             computeShader.SetFloat("width", brushingVisualisation.width);
             computeShader.SetFloat("height", brushingVisualisation.height);
             computeShader.SetFloat("depth", brushingVisualisation.depth);
 
+            // Set whether or not the brushing is currently being shared
+            computeShader.SetBool("shareBrushing", shareBrushing);
+
             //run the compute shader with all the filtering parameters
             computeShader.Dispatch(kernelHandleBrushTexture, Mathf.Max(texSize / 32, 1), Mathf.Max(texSize / 32, 1), 1);
 
-            brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial.SetTexture("_BrushedTexture", brushedIndicesTexture);
-            brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial.SetFloat("_DataWidth", texSize);
-            brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial.SetFloat("_DataHeight", texSize);
-            brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial.SetFloat("showBrush", Convert.ToSingle(showBrush));
-            brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial.SetColor("brushColor", brushColor);
+            brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial
+                .SetTexture("_BrushedTexture", brushedIndicesTexture);
+            brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial
+                .SetFloat("_DataWidth", texSize);
+            brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial
+                .SetFloat("_DataHeight", texSize);
+            brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial
+                .SetFloat("showBrush", Convert.ToSingle(showBrush));
+            brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial
+                .SetColor("brushColor", brushColor);
         }
 
         //foreach (var bv in brushedVisualisations)// visualisationsMaterials)
-        foreach (var bv in ChartManager.Instance.Visualisations)// visualisationsMaterials)
+        foreach (var bv in ChartManager.Instance.Visualisations) // visualisationsMaterials)
         {
             foreach (var v in bv.theVisualizationObject.viewList)
             {
@@ -348,7 +358,7 @@ public class BrushingAndLinking : MonoBehaviour
         //  if (brushIni[0] > 0f) print("Selected");
         //getDetailsOnDemand();
         //debugObjectTexture.SetTexture("_MainTex", brushedIndicesTexture);
-            
+
     }
 
     public void getDetailsOnDemand()
@@ -365,34 +375,12 @@ public class BrushingAndLinking : MonoBehaviour
                 //    .ToList();
                 brushedIndices = result.ToList();
             }
-            
+
             // Dispatch again
-            computeShader.Dispatch(kernelHandleBrushArrayIndices, Mathf.CeilToInt(brushedIndicesBuffer.count / 8f), 1, 1);
+            computeShader.Dispatch(kernelHandleBrushArrayIndices, Mathf.CeilToInt(brushedIndicesBuffer.count / 16f), 1,
+                1);
             detailsOnDemandRequest = AsyncGPUReadback.Request(brushedIndicesBuffer);
         }
-
-//        computeShader.Dispatch(kernelHandleBrushArrayIndices, 8, 1, 1);
-
-//        brushedIndicesBuffer.GetData(brushIni);
-//        brushedData.Clear();
-
-//        for (int i = 0; i < brushIni.Length; i++)
-//        {
-//            if (brushIni[i] > 0)
-//            {
-//                float xbrushedValue = brushingVisualisation.dataSource[brushingVisualisation.xDimension.Attribute].Data[i];
-//                float ybrushedValue = brushingVisualisation.dataSource[brushingVisualisation.xDimension.Attribute].Data[i];
-//                float zbrushedValue = brushingVisualisation.dataSource[brushingVisualisation.xDimension.Attribute].Data[i];
-
-//                /*brushedData.Add*/
-//                print(
-//brushingVisualisation.dataSource.getOriginalValue(xbrushedValue, brushingVisualisation.xDimension.Attribute) +
-//" " +
-//brushingVisualisation.dataSource.getOriginalValue(ybrushedValue, brushingVisualisation.yDimension.Attribute) +
-//" " +
-//brushingVisualisation.dataSource.getOriginalValue(zbrushedValue, brushingVisualisation.zDimension.Attribute));
-//            }
-//        }
     }
 
     /// <summary>
@@ -420,4 +408,30 @@ public class BrushingAndLinking : MonoBehaviour
         //Visualisation.OnUpdateViewAction -= Visualisation_OnUpdateViewAction;
     }
 
+
+    void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.isWriting)
+        { 
+            stream.SendNext(brushButtonController);
+            stream.SendNext(shareBrushing);
+            stream.SendNext(radiusSphere);
+            stream.SendNext(BRUSH_TYPE);
+            stream.SendNext(SELECTION_TYPE);
+        }
+        else
+        {
+            bool isBrushing = (bool) stream.ReceiveNext();
+            shareBrushing = (bool) stream.ReceiveNext();
+            radiusSphere = (float) stream.ReceiveNext();
+            BRUSH_TYPE = (BrushType) stream.ReceiveNext();
+            SELECTION_TYPE = (SelectionType) stream.ReceiveNext();
+
+            // Only turn on the brush if the client who owns it is also sharing the brush
+            if (isBrushing && shareBrushing)
+                brushButtonController = true;
+            else
+                brushButtonController = false;
+        }
+    }
 }
