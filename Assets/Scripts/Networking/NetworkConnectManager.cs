@@ -1,4 +1,6 @@
-﻿namespace PlayoVR {
+﻿using UnityEditor;
+
+namespace PlayoVR {
     using UnityEngine;
 
     public class NetworkConnectManager : Photon.PunBehaviour {
@@ -10,6 +12,8 @@
 
         void Awake() {
             if (!PhotonNetwork.connecting && !PhotonNetwork.connected) {
+                string userId = GUID.Generate().ToString();
+                PhotonNetwork.AuthValues = new AuthenticationValues(userId);
                 PhotonNetwork.autoJoinLobby = false;    // we join randomly. always. no need to join a lobby to get the list of rooms.
                 PhotonNetwork.automaticallySyncScene = true;
                 PhotonNetwork.logLevel = Loglevel;
