@@ -3034,7 +3034,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c0779623ef0268a44bd7d1c4fdbf039b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerAvatar: {fileID: 1726192666091044, guid: e81441fe7b997994583545a83df0537b,
+  localAvatar: {fileID: 1350726364497882, guid: fac1b965264891b48a48fa683230043f,
+    type: 2}
+  remoteAvatar: {fileID: 1591226083005062, guid: a91def31a0f48704588cd358c0429120,
     type: 2}
 --- !u!114 &802063916
 MonoBehaviour:
@@ -3049,22 +3051,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MaxPlayersPerRoom: 4
   Loglevel: 1
-  PhotonRoomJoined:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 99129226}
-        m_MethodName: InstantiatePhotonObjects
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-    m_TypeName: PlayoVR.NetworkConnectManager+PhotonRoomJoinedEvent, Assembly-CSharp,
-      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 --- !u!114 &802063917
 MonoBehaviour:
   m_ObjectHideFlags: 0
