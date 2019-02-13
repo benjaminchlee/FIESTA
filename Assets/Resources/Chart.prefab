@@ -55,7 +55,8 @@ GameObject:
   - component: {fileID: 114875411689588714}
   - component: {fileID: 114609601322864650}
   - component: {fileID: 114612606458983580}
-  - component: {fileID: 114528597838708270}
+  - component: {fileID: 114363276070180692}
+  - component: {fileID: 114598296305606736}
   - component: {fileID: 65813355719547148}
   - component: {fileID: 54442511978225792}
   - component: {fileID: 114789789716681966}
@@ -146,6 +147,27 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &114363276070180692
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1915828861394738}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a1ebaa51525b734287157cb3f53f958, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  precisionGrab: 1
+  rightSnapHandle: {fileID: 0}
+  leftSnapHandle: {fileID: 0}
+  throwVelocityWithAttachDistance: 0
+  throwMultiplier: 1
+  onGrabCollisionDelay: 0
+  detachDistance: 1
+  velocityLimit: Infinity
+  angularVelocityLimit: Infinity
+  maxDistanceDelta: 10
 --- !u!114 &114448939477221588
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -163,24 +185,6 @@ MonoBehaviour:
   raycastCollider: {fileID: 65089290071917586}
   rigidbody: {fileID: 54442511978225792}
   interactableObject: {fileID: 114612606458983580}
-  grabAttach: {fileID: 114528597838708270}
---- !u!114 &114528597838708270
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1915828861394738}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5ec2ac476f2fc9a45a4e69712580a603, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  precisionGrab: 1
-  rightSnapHandle: {fileID: 0}
-  leftSnapHandle: {fileID: 0}
-  throwVelocityWithAttachDistance: 0
-  throwMultiplier: 1
-  onGrabCollisionDelay: 0
 --- !u!114 &114554798384195276
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -266,6 +270,17 @@ MonoBehaviour:
   colorPaletteDimension: 
   theVisualizationObject: {fileID: 0}
   uid: d19d80b4
+--- !u!114 &114598296305606736
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1915828861394738}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18055ba762aa3994f9c10208cd088bc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114609601322864650
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -307,7 +322,7 @@ MonoBehaviour:
   validDrop: 1
   grabOverrideButton: 0
   allowedGrabControllers: 0
-  grabAttachMechanicScript: {fileID: 114528597838708270}
+  grabAttachMechanicScript: {fileID: 114363276070180692}
   secondaryGrabActionScript: {fileID: 0}
   isUsable: 0
   holdButtonToUse: 1

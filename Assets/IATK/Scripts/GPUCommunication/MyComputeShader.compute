@@ -193,19 +193,26 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 			if (Brush(BrushMode, filteredPosition))
 			{
 				switch (SelectionMode) {
-				case 0:
-				case 1:
-					if (shareBrushing)
-						Result[id.xy] = float4(1.0, 1.0, 0.0, 1.0); // brushed (shared)
-					else {
-						if (Result[id.xy].y != 1.0) // if not already shared brushed
-							Result[id.xy] = float4(1.0, 0.0, 0.0, 1.0); // brushed
-					}
-					break;
-
-				case 2:
-					Result[id.xy] = float4(0.0, 0.0, 0.0, 1.0); // not brushed
-					break;
+					// free selection
+					case 0:
+					// additive selection
+					case 1:
+						if (shareBrushing)
+							Result[id.xy] = float4(1.0, 1.0, 0.0, 1.0); // brushed (shared)
+						else {
+							if (Result[id.xy].y != 1.0) // if not already shared brushed
+								Result[id.xy] = float4(1.0, 0.0, 0.0, 1.0); // brushed
+						}
+						break;
+					// subtractive selection
+					case 2:
+						if (shareBrushing)
+							Result[id.xy] = float4(0.0, 0.0, 0.0, 1.0); // not brushed
+						else {
+							if (Result[id.xy].y != 1.0) // if not already shared brushed
+								Result[id.xy] = float4(0.0, 0.0, 0.0, 1.0); // not brushed
+						}
+						break;
 				}
 			}
 			else

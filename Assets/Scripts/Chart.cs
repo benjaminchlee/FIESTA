@@ -42,6 +42,8 @@ public class Chart : Photon.MonoBehaviour
 
     private DisplayScreen displayScreen;
 
+    private Vector3 previousPosition;
+    private Vector3 currentVelocity;
     private bool isPrototype = false;
     private bool isThrowing = false;
     private bool isTouchingDisplayScreen = false;
@@ -897,6 +899,7 @@ public class Chart : Photon.MonoBehaviour
             originalRot = transform.localRotation;
         }
 
+        previousPosition = transform.position;
         rigidbody.isKinematic = false;
         InteractionsManager.Instance.GrabbingStarted();  // TODO: FIX
     }
@@ -920,8 +923,9 @@ public class Chart : Photon.MonoBehaviour
 
             if (speed > 2.5f)
             {
-                rigidbody.isKinematic = false;
                 rigidbody.useGravity = true;
+                rigidbody.isKinematic = false;
+                rigidbody.velocity = currentVelocity;
                 isThrowing = true;
                 deletionTimer = 0;
             }
@@ -947,16 +951,18 @@ public class Chart : Photon.MonoBehaviour
 
     private void Update()
     {
-        if (isPrototype && interactableObject.IsGrabbed())
+        if (interactableObject.IsGrabbed())
         {
-            if (Vector3.Distance(transform.position, originalWorldPos) > 0.25f)
+            currentVelocity = rigidbody.velocity;
+
+            if (isPrototype && Vector3.Distance(transform.position, originalWorldPos) > 0.25f)
             {
                 // Create a duplicate of this visualisation
                 Chart dupe = ChartManager.Instance.DuplicateVisualisation(this);
 
                 VRTK_InteractTouch interactTouch = interactableObject.GetGrabbingObject().GetComponent<VRTK_InteractTouch>();
                 VRTK_InteractGrab interactGrab = interactableObject.GetGrabbingObject().GetComponent<VRTK_InteractGrab>();
-                
+
                 // Drop this visualisation (it wil return automatically)
                 interactGrab.ForceRelease();
 

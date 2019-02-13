@@ -11,16 +11,14 @@ public class Billboard : MonoBehaviour {
     private bool yAxisLocked = false;
     [SerializeField] [Tooltip("Lock the rotation around the z axis.")]
     private bool zAxisLocked = false;
-
-    private Quaternion startRotation;
-
-    private void Start()
-    {
-        startRotation = transform.rotation;
-    }
-
+    [SerializeField] [Tooltip("Look at in the opposite direction.")]
+    private bool flipDirection = false;
+    
     private void Update () {
-        transform.LookAt(VRTK_DeviceFinder.HeadsetCamera());
+        if (!flipDirection)
+            transform.LookAt(VRTK_DeviceFinder.HeadsetCamera());
+        else
+            transform.LookAt(2 * transform.position - VRTK_DeviceFinder.HeadsetCamera().position);
 
         float x = xAxisLocked ? transform.rotation.x : transform.rotation.eulerAngles.x;
         float y = yAxisLocked ? transform.rotation.y : transform.rotation.eulerAngles.y;

@@ -14,6 +14,11 @@
         private bool sceneLoaded = false;
         private bool connected = false;
 
+        [SerializeField]
+        private string name;
+        [SerializeField]
+        private Color color;
+
         void Awake() {
             if (localAvatar == null) {
                 Debug.LogError("AvatarSpawnManager is missing a reference to the local avatar prefab!");
@@ -82,31 +87,23 @@
 
                     player = Instantiate(localAvatar) as GameObject;
 
-                    // Now that there's a local avatar, hide the controller models
-                    Renderer[] renderers = VRTK_DeviceFinder.GetModelAliasController(VRTK_DeviceFinder.GetControllerLeftHand()).GetComponentsInChildren<Renderer>();
-
-                    foreach (Renderer r in renderers)
-                        r.enabled = false;
-                    
-                    renderers = VRTK_DeviceFinder.GetModelAliasController(VRTK_DeviceFinder.GetControllerRightHand()).GetComponentsInChildren<Renderer>();
-
-                    foreach (Renderer r in renderers)
-                        r.enabled = false;
-
-                    //// Disable existing colliders
-                    //Collider[] cols = VRTK_DeviceFinder.GetControllerLeftHand().transform.Find("[VRTK][AUTOGEN][Controller][CollidersContainer]").gameObject.GetComponentsInChildren<Collider>();
-                    //foreach (Collider col in cols)
-                    //    col.enabled = false;
-                    //cols = VRTK_DeviceFinder.GetControllerRightHand().transform.Find("[VRTK][AUTOGEN][Controller][CollidersContainer]").gameObject.GetComponentsInChildren<Collider>();
-                    //foreach (Collider col in cols)
-                    //    col.enabled = false;
-
                     // Set the new colliders
+                    // TODO: Improve
                     GameObject leftHand = player.transform.Find("hand_left").gameObject;
-                    VRTK_DeviceFinder.GetControllerLeftHand().GetComponent<VRTK_InteractTouch>().customColliderContainer = leftHand;
+                    leftHand.transform.SetParent(VRTK_DeviceFinder.GetControllerLeftHand().transform);
+                    VRTK_InteractTouch leftTouch = VRTK_DeviceFinder.GetControllerLeftHand().GetComponent<VRTK_InteractTouch>();
+                    leftTouch.customColliderContainer = leftHand;
+                    LockPosition leftLock = leftHand.AddComponent<LockPosition>();
+                    leftLock.isWorldSpace = false;
+                    leftLock.SetPosition(new Vector3(0.025f, 0, -0.04f), Quaternion.identity);
 
                     GameObject rightHand = player.transform.Find("hand_right").gameObject;
-                    VRTK_DeviceFinder.GetControllerRightHand().GetComponent<VRTK_InteractTouch>().customColliderContainer = rightHand;
+                    rightHand.transform.SetParent(VRTK_DeviceFinder.GetControllerRightHand().transform);
+                    VRTK_InteractTouch rightTouch = VRTK_DeviceFinder.GetControllerRightHand().GetComponent<VRTK_InteractTouch>();
+                    rightTouch.customColliderContainer = rightHand;
+                    LockPosition rightLock = rightHand.AddComponent<LockPosition>();
+                    rightLock.isWorldSpace = false;
+                    rightLock.SetPosition(new Vector3(-0.025f, 0, -0.04f), Quaternion.identity);
                 }
                 else
                 {
@@ -123,6 +120,13 @@
                     {
                         photonView.viewID = newViewId;
                         photonView.TransferOwnership(senderId);
+                    }
+
+                    if (photonView.isMine)
+                    {
+                        AvatarCustomiser avatarCustomiser = player.GetComponent<AvatarCustomiser>();
+                        avatarCustomiser.photonView.RPC("SetColor", PhotonTargets.AllBuffered, color.r, color.g, color.b);
+                        avatarCustomiser.photonView.RPC("SetName", PhotonTargets.AllBuffered, name);
                     }
                 }
             }

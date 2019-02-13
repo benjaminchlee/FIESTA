@@ -66,8 +66,7 @@ public class SpinMenu : MonoBehaviour {
     public void Enable()
     {
         isEnabled = true;
-
-
+        
         RetractButtons();
     }
 

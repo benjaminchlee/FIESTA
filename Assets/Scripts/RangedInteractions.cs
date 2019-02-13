@@ -23,6 +23,10 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     private Sprite rectangleSelectionSprite;
     [SerializeField] [Tooltip("The sprite used to represent the ranged interaction tool.")]
     private Sprite rangedInteractionSprite;
+    [SerializeField] [Tooltip("The sprite used to represent the private brush tool.")]
+    private Sprite privateBrushSprite;
+    [SerializeField] [Tooltip("The sprite used to represent the shared brush tool.")]
+    private Sprite sharedBrushSprite;
 
     [Header("Ranged Brush Parameters")]
     [SerializeField] [Tooltip("The prefab of the brush to use.")]
@@ -115,6 +119,11 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     private Transform brushingInput2;
 
     /// <summary>
+    /// Networked objects
+    /// </summary>
+    private GameObject tracer;
+
+    /// <summary>
     /// The state of interaction the user is currently in. Note that this scope only extends to that of touchpad interactions, and not
     /// to other forms of interaction
     /// </summary>
@@ -184,13 +193,21 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         {
             // Instantiate ranged brush
             rangedBrush = PhotonNetwork.Instantiate("BrushSphere", Vector3.zero, Quaternion.identity, 0);
-            rangedBrush.SetActive(false);
+            rangedBrush.transform.position = Vector3.one * 9999f;
 
             // Create brushing and linking object
             GameObject bal = PhotonNetwork.Instantiate("BrushingAndLinking", Vector3.zero, Quaternion.identity, 0);
             brushingAndLinking = bal.GetComponent<BrushingAndLinking>();
             brushingInput1 = brushingAndLinking.input1;
             brushingInput2 = brushingAndLinking.input2;
+
+            // Instantiate tracer
+            tracer = PhotonNetwork.Instantiate("Tracer", Vector3.zero, Quaternion.identity, 0);
+            // Hide the mesh for the owner
+            tracer.GetComponent<Renderer>().enabled = false;
+            tracer.transform.localScale = Vector3.zero;
+
+            actualTracer.GetComponentInParent<VRTK_TransformFollow>().moment = VRTK_TransformFollow.FollowMoment.OnUpdate;
         }
     }
 
@@ -228,7 +245,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     public void InteractionToolChanged(string interactionType)
     {
         // Only change the tool that is used if the active state is a default one
-        if (new string[] { "none", "rangedbrush", "lassoselection", "rectangleselection", "rangedinteraction" }.Contains(activeState.ToString().ToLower()))
+        //if (new string[] { "none", "rangedbrush", "lassoselection", "rectangleselection", "rangedinteraction" }.Contains(activeState.ToString().ToLower()))
+        if (!IsInteracting())
         {
             switch (interactionType.ToLower())
             {
@@ -250,6 +268,16 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
                 case "rangedinteraction":
                     SetInteractionState(InteractionState.RangedInteraction);
+                    break;
+
+                case "privaterangedbrush":
+                    brushingAndLinking.shareBrushing = false;
+                    SetInteractionState(InteractionState.RangedBrush);
+                    break;
+
+                case "sharedrangedbrush":
+                    brushingAndLinking.shareBrushing = true;
+                    SetInteractionState(InteractionState.RangedBrush);
                     break;
             }
         }
@@ -281,7 +309,11 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 break;
 
             case InteractionState.RangedBrush:
-                selectedInteractionRenderer.sprite = rangedBrushSprite;
+                // TODO: make a bit cleaner
+                if (brushingAndLinking.shareBrushing)
+                    selectedInteractionRenderer.sprite = sharedBrushSprite;
+                else
+                    selectedInteractionRenderer.sprite = privateBrushSprite;
                 tracerVisibility = VisibilityStates.AlwaysOn;
                 break;
 
@@ -560,14 +592,33 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     }
     */
 
+    private void Update()
+    {
+        if (tracer != null)
+        {
+            if (IsTracerVisible())
+            {
+                // Set the size of the tracer accordingly
+                tracer.transform.position = actualTracer.transform.position;
+                tracer.transform.rotation = actualTracer.transform.rotation;
+                tracer.transform.localScale = actualTracer.transform.localScale;
+            }
+            else
+            {
+                // Hide the networked tracer by scaling it to zero
+                tracer.transform.localScale = Vector3.zero;
+            }
+        }
+    }
+
     protected override void FixedUpdate()
     {
         base.FixedUpdate();
 
         if (IsTracerVisible())
         {
+            // Disable the ability to grab objects directly with the pointer if this is pointing at a chart
             RaycastHit hit = GetDestinationHit();
-
             if (objectInteractor != null)
             {
                 objectInteractor.GetComponentInChildren<SphereCollider>().radius = 0.00000001f;
@@ -629,20 +680,14 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         GameObject collidedObject = GetCollidedObject(out hit);
         if (collidedObject != null)
         {
-            if (!rangedBrush.activeSelf)
-                rangedBrush.SetActive(true);
-
             rangedBrush.transform.position = hit.point;
             brushingInput1.position = hit.point;
             brushingAndLinking.brushButtonController = true;
         }
         else
         {
-            if (rangedBrush.activeSelf)
-            {
-                rangedBrush.SetActive(false);
-                brushingAndLinking.brushButtonController = false;
-            }
+            rangedBrush.transform.position = Vector3.one * 9999f;
+            brushingAndLinking.brushButtonController = false;
         }
 
         if (IsValidCollision())
@@ -657,7 +702,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
         brushingAndLinking.brushButtonController = false;
 
-        rangedBrush.SetActive(false);
+        rangedBrush.transform.position = Vector3.one * 9999f;
     }
 
     private void LassoSelectionTriggerStart(ControllerInteractionEventArgs e)
