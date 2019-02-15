@@ -2476,8 +2476,8 @@ MonoBehaviour:
   - {fileID: 633370365}
   cancelButton: {fileID: 633370365}
   topPosition: {x: 0, y: 0.06, z: -0.0525}
-  startAngle: -80
-  intervalAngle: 55
+  startAngle: -60
+  intervalAngle: 60
   buttonDistance: 0.15
   animationDuration: 0.1
   unselectedColor: {r: 0, g: 0, b: 0, a: 1}

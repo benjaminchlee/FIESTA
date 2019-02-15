@@ -695,7 +695,7 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RenderingLayerMask: 4294967295
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 1a07b7001bc5dbc4dbd048338a0e3f6f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -729,8 +729,8 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1227811078}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.587, y: 1.1079999, z: 1.583}
-  m_LocalScale: {x: 1.92, y: 1.08, z: 1}
+  m_LocalPosition: {x: 0, y: 1.2, z: 1}
+  m_LocalScale: {x: 2.5, y: 2, z: 1}
   m_Children:
   - {fileID: 1827032221}
   m_Father: {fileID: 0}
@@ -937,6 +937,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   localAvatar: {fileID: 0}
   remoteAvatar: {fileID: 0}
+  name: 
+  color: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &1773446100
 MonoBehaviour:
   m_ObjectHideFlags: 0

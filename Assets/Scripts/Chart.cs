@@ -11,6 +11,7 @@ using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Xml.Serialization;
 using DG.Tweening;
+using DG.Tweening.Plugins;
 using NetBase;
 using TMPro;
 using UnityEditor;
@@ -98,12 +99,6 @@ public class Chart : Photon.MonoBehaviour
                     break;
             }
         }
-    }
-
-    [PunRPC]
-    private void PropagateVisualisationType(int visualisationType)
-    {
-        VisualisationType = (AbstractVisualisation.VisualisationTypes) visualisationType;
     }
 
     public AbstractVisualisation.GeometryType GeometryType
@@ -213,6 +208,33 @@ public class Chart : Photon.MonoBehaviour
         }
     }
 
+    public string ColorDimension
+    {
+        get { return visualisation.colourDimension; }
+        set
+        {
+            if (value == ColorDimension)
+                return;
+
+            visualisation.colourDimension = value;
+
+            switch (chartType)
+            {
+                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
+                    break;
+
+                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+                case AbstractVisualisation.VisualisationTypes.FACET:
+                    foreach (Chart chart in subCharts)
+                    {
+                        chart.ColorDimension = value;
+                    }
+                    break;
+            }
+        }
+    }
+
     public Color Color
     {
         get { return visualisation.colour; }
@@ -232,6 +254,63 @@ public class Chart : Photon.MonoBehaviour
                         chart.Color = value;
                     break;
             }
+        }
+    }
+
+    public Gradient Gradient
+    {
+        get { return visualisation.dimensionColour; }
+        set
+        {
+            if (value == Gradient)
+                return;
+
+            visualisation.dimensionColour = value;
+
+            switch (chartType)
+            {
+                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
+
+                    // Update all other scatterplots in other clients, convert to dictionary for serialization
+                    Dictionary<float, float[]> gradientDictionary = new Dictionary<float, float[]>();
+                    foreach (GradientColorKey colorKey in value.colorKeys)
+                    {
+                        gradientDictionary[colorKey.time] = new[] { colorKey.color.r, colorKey.color.g, colorKey.color.b };
+                    }
+                    photonView.RPC("PropagateGradient", PhotonTargets.OthersBuffered, gradientDictionary);
+                    break;
+
+                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+                case AbstractVisualisation.VisualisationTypes.FACET:
+                    foreach (Chart chart in subCharts)
+                        chart.Gradient = value;
+                    break;
+            }
+        }
+    }
+
+    [PunRPC]
+    private void PropagateGradient(Dictionary<float, float[]> gradientDictionary)
+    {
+        // Create color keys from received dictionary
+        List<GradientColorKey> colorKeys = new List<GradientColorKey>();
+
+        foreach (float time in gradientDictionary.Keys)
+        {
+            Color color = new Color(gradientDictionary[time][0], gradientDictionary[time][1], gradientDictionary[time][2]);
+
+            GradientColorKey colorKey = new GradientColorKey(color, time);
+            colorKeys.Add(colorKey);
+        }
+
+        Gradient gradient = new Gradient();
+        gradient.colorKeys = colorKeys.ToArray();
+
+        visualisation.dimensionColour = gradient;
+        if (chartType == AbstractVisualisation.VisualisationTypes.SCATTERPLOT)
+        {
+            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
         }
     }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using DG.Tweening.Plugins;
 using IATK;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -178,6 +179,19 @@ public class Dashboard : Photon.MonoBehaviour
                         standardChart.FacetDimension = dimensionName;
                     }
                     break;
+
+                case DashboardDimension.COLORBY:
+                    if (dimensionName == "None")
+                    {
+                        standardChart.ColorDimension = "Undefined";
+                        splomChart.ColorDimension = "Undefined";
+                    }
+                    else
+                    {
+                        standardChart.ColorDimension = dimensionName;
+                        splomChart.ColorDimension = dimensionName;
+                    }
+                    break;
             }
         }
         else
@@ -189,126 +203,209 @@ public class Dashboard : Photon.MonoBehaviour
     [PunRPC]
     public void SizeSliderValueChanged(float value)
     {
-        if (standardChart != null && splomChart != null)
+        // If the current client owns the charts, change their values
+        if (IsOriginalOwner())
         {
-            // If the current client owns the charts, change their values
-            if (IsOriginalOwner())
-            {
-                ResetChartOwnership();
+            ResetChartOwnership();
 
-                standardChart.Size = value;
-                splomChart.Size = value;
-            }
-            // Otherwise, inform the original owner
-            else
-            {
-                photonView.RPC("SizeSliderValueChanged", originalOwner, value);
-            }
+            standardChart.Size = value;
+            splomChart.Size = value;
+        }
+        // Otherwise, inform the original owner
+        else
+        {
+            photonView.RPC("SizeSliderValueChanged", originalOwner, value);
         }
     }
 
     [PunRPC]
     public void RedSliderValueChanged(float value)
     {
-        if (standardChart != null && splomChart != null)
+        if (IsOriginalOwner())
         {
-            if (IsOriginalOwner())
-            {
-                ResetChartOwnership();
+            ResetChartOwnership();
 
-                Color color = standardChart.Color;
-                color.r = value;
+            Color color = standardChart.Color;
+            color.r = value;
 
-                standardChart.Color = color;
-                splomChart.Color = color;
-            }
-            else
-            {
-                photonView.RPC("RedSliderValueChanged", originalOwner, value);
-            }
+            standardChart.Color = color;
+            splomChart.Color = color;
+        }
+        else
+        {
+            photonView.RPC("RedSliderValueChanged", originalOwner, value);
         }
     }
 
     [PunRPC]
     public void GreenSliderValueChanged(float value)
     {
-        if (standardChart != null && splomChart != null)
+        if (IsOriginalOwner())
         {
-            if (IsOriginalOwner())
-            {
-                ResetChartOwnership();
+            ResetChartOwnership();
 
-                Color color = standardChart.Color;
-                color.g = value;
+            Color color = standardChart.Color;
+            color.g = value;
 
-                standardChart.Color = color;
-                splomChart.Color = color;
-            }
-            else
-            {
-                photonView.RPC("GreenSliderValueChanged", originalOwner, value);
-            }
+            standardChart.Color = color;
+            splomChart.Color = color;
+        }
+        else
+        {
+            photonView.RPC("GreenSliderValueChanged", originalOwner, value);
         }
     }
 
     [PunRPC]
     public void BlueSliderValueChanged(float value)
     {
-        if (standardChart != null && splomChart != null)
+        if (IsOriginalOwner())
         {
-            if (IsOriginalOwner())
-            {
-                ResetChartOwnership();
+            ResetChartOwnership();
 
-                Color color = standardChart.Color;
-                color.b = value;
+            Color color = standardChart.Color;
+            color.b = value;
 
-                standardChart.Color = color;
-                splomChart.Color = color;
-            }
-            else
-            {
-                photonView.RPC("BlueSliderValueChanged", originalOwner, value);
-            }
+            standardChart.Color = color;
+            splomChart.Color = color;
+        }
+        else
+        {
+            photonView.RPC("BlueSliderValueChanged", originalOwner, value);
+        }
+    }
+
+    [PunRPC]
+    public void HueSliderValueChanged(float value)
+    {
+        if (IsOriginalOwner())
+        {
+            ResetChartOwnership();
+
+            // Convert RGB to HSV, set hue, then convert back to RGB
+            Color color = standardChart.Color;
+            float h, s, v;
+            Color.RGBToHSV(color, out h, out s, out v);
+            color = Color.HSVToRGB(value, s, v);
+
+            standardChart.Color = color;
+            splomChart.Color = color;
+        }
+        else
+        {
+            photonView.RPC("HueSliderValueChanged", originalOwner, value);
+        }
+    }
+
+    public void ColorPickerValueChanged(Color value)
+    {
+        if (IsOriginalOwner())
+        {
+            ResetChartOwnership();
+
+            standardChart.Color = value;
+            splomChart.Color = value;
+        }
+        else
+        {
+            photonView.RPC("ColorPickerValueChanged", originalOwner, value.r, value.g, value.b);
+        }
+    }
+
+    [PunRPC]
+    public void ColorPickerValueChanged(float r, float g, float b)
+    {
+        if (IsOriginalOwner())
+        {
+            ResetChartOwnership();
+
+            Color color = new Color(r, g, b, 1);
+
+            standardChart.Color = color;
+            splomChart.Color = color;
         }
     }
 
     [PunRPC]
     public void ScatterplotMatrixSizeValueChanged(int value)
     {
-        if (standardChart != null && splomChart != null)
+        if (IsOriginalOwner())
         {
-            if (IsOriginalOwner())
-            {
-                ResetChartOwnership();
+            ResetChartOwnership();
 
-                splomChart.ScatterplotMatrixSize = value;
-            }
-            else
-            {
-                photonView.RPC("ScatterplotMatrixSizeValueChanged", originalOwner, value);
-            }
+            splomChart.ScatterplotMatrixSize = value;
+        }
+        else
+        {
+            photonView.RPC("ScatterplotMatrixSizeValueChanged", originalOwner, value);
         }
     }
 
     [PunRPC]
     public void FacetSizeValueChanged(int value)
     {
-        if (standardChart != null && splomChart != null)
+        if (IsOriginalOwner())
         {
-            if (IsOriginalOwner())
-            {
-                ResetChartOwnership();
+            ResetChartOwnership();
 
-                standardChart.FacetSize = value;
-            }
-            else
-            {
-                photonView.RPC("FacetSizeValueChanged", originalOwner, value);
-            }
+            standardChart.FacetSize = value;
+        }
+        else
+        {
+            photonView.RPC("FacetSizeValueChanged", originalOwner, value);
         }
     }
 
+    public void ColorGradientChanged(Gradient gradient)
+    {
+        if (IsOriginalOwner())
+        {
+            ResetChartOwnership();
+
+            standardChart.Gradient = gradient;
+            splomChart.Gradient = gradient;
+        }
+        else
+        {
+            Dictionary<float, float[]> gradientDictionary = new Dictionary<float, float[]>();
+            foreach (GradientColorKey colorKey in gradient.colorKeys)
+            {
+                gradientDictionary[colorKey.time] = new[] { colorKey.color.r, colorKey.color.g, colorKey.color.b };
+            }
+
+            photonView.RPC("ColorGradientChanged", originalOwner, gradientDictionary);
+        }
+    }
+
+    /// <summary>
+    /// Sets the gradient of the charts. This overload uses a converted gradient in the form of a dictionary for serialization
+    /// </summary>
+    /// <param name="gradientDictionary"></param>
+    [PunRPC]
+    private void ColorGradientChanged(Dictionary<float, float[]> gradientDictionary)
+    {
+        if (IsOriginalOwner())
+        {
+            // Create color keys from received dictionary
+            List<GradientColorKey> colorKeys = new List<GradientColorKey>();
+
+            foreach (float time in gradientDictionary.Keys)
+            {
+                Color color = new Color(gradientDictionary[time][0], gradientDictionary[time][1], gradientDictionary[time][2]);
+
+                GradientColorKey colorKey = new GradientColorKey(color, time);
+                colorKeys.Add(colorKey);
+            }
+
+            Gradient gradient = new Gradient();
+            gradient.colorKeys = colorKeys.ToArray();
+
+            ResetChartOwnership();
+
+            standardChart.Gradient = gradient;
+            splomChart.Gradient = gradient;
+        }
+    }
     /// <summary>
     /// Resets the ownership of all the subcharts back to the original owner of the dashboard (as that client is the one which
     /// has the proper links and references to the subcharts

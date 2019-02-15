@@ -39,10 +39,47 @@ public class ChartManager : MonoBehaviour {
     private void Start()
     {
         Transform headset = VRTK_DeviceFinder.HeadsetTransform();
-        Vector3 pos = headset.TransformPoint(Vector3.forward * 0.5f);
-        Quaternion rot = headset.rotation;
 
-        PhotonNetwork.Instantiate("Dashboard", pos, rot, 0);
+        if (PhotonNetwork.connected)
+        {
+            int id = PhotonNetwork.player.ID;
+
+            Vector3 pos;
+            Quaternion rot;
+
+            switch (id)
+            {
+                case 1:
+                    pos = new Vector3(1f, 1.5f, 0f);
+                    rot = Quaternion.Euler(0f, 90f, 0f);
+                    break;
+
+                case 2:
+                    pos = new Vector3(0f, 1.5f, -1f);
+                    rot = Quaternion.Euler(0f, 180f, 0f);
+                    break;
+
+                case 3:
+                    pos = new Vector3(-1f, 1.5f, 0f);
+                    rot = Quaternion.Euler(0f, -90f, 0f);
+                    break;
+
+                default:
+                    pos = headset.TransformPoint(Vector3.forward * 0.5f);
+                    rot = headset.rotation;
+                    break;
+            }
+
+            PhotonNetwork.Instantiate("Dashboard", pos, rot, 0);
+        }
+        else
+        {
+            Vector3 pos = headset.TransformPoint(Vector3.forward * 0.5f);
+            Quaternion rot = headset.rotation;
+
+            PhotonNetwork.Instantiate("Dashboard", pos, rot, 0);
+        }
+
     }
 
     public Chart CreateVisualisation(string name)

@@ -17,6 +17,8 @@ public class Menu : MonoBehaviour {
     private GameObject menuButtonPrefab;
     [SerializeField]
     private float spacing = 0.02f;
+    [SerializeField]
+    private bool includeNoneButton = false;
 
     [Serializable]
     public class DimensionChangedEvent : UnityEvent<DashboardDimension, string> { }
@@ -49,7 +51,7 @@ public class Menu : MonoBehaviour {
     {
         List<string> dimensions = GetAttributesList();
 
-        if (dimension == DashboardDimension.FACETBY)
+        if (includeNoneButton)
             dimensions.Insert(0, "None");
 
         foreach (string dimensionName in dimensions)
