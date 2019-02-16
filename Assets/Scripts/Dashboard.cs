@@ -13,16 +13,29 @@ public enum DashboardDimension
     Y,
     Z,
     FACETBY,
-    COLORBY
+    COLORBY,
+    SIZEBY
+}
+
+public enum DashboardPage
+{
+    MAIN = 0,
+    STANDARD = 1,
+    SPLOM = 2,
+    DIMENSIONS = 3,
+    SIZE = 4,
+    COLOR = 5,
+    FACET = 6
 }
 
 public class Dashboard : Photon.MonoBehaviour
 {
     private DataSource dataSource;
-    
+    private PhotonPlayer originalOwner;
+
     public Chart standardChart;
     public Chart splomChart;
-    
+
     [SerializeField]
     private Transform standardTransform;
     [SerializeField]
@@ -31,12 +44,32 @@ public class Dashboard : Photon.MonoBehaviour
     [SerializeField]
     private List<GameObject> standardButtons;
     [SerializeField]
-    private List<GameObject> facetButtons;
-    [SerializeField]
     private List<GameObject> splomButtons;
+    [SerializeField]
+    private List<GameObject> dimensionsButtons;
+    [SerializeField]
+    private List<GameObject> sizeButtons;
+    [SerializeField]
+    private List<GameObject> colorButtons;
+    [SerializeField]
+    private List<GameObject> facetButtons;
 
-    private PhotonPlayer originalOwner;
+    [SerializeField]
+    private List<GameObject> specialDimensionsButtons;
+    [SerializeField]
+    private List<GameObject> specialSizeButtons;
+    [SerializeField]
+    private List<GameObject> specialColorButtons;
+    [SerializeField]
+    private List<GameObject> specialColorButtons2;
+    [SerializeField]
+    private List<GameObject> specialFacetButtons;
 
+    private List<GameObject> allButtons;
+
+    private DashboardPage activePage;
+    private DashboardPage activeChart;
+    
     private void Start()
     {
         originalOwner = photonView.owner;
@@ -44,20 +77,16 @@ public class Dashboard : Photon.MonoBehaviour
         if (dataSource == null)
             dataSource = ChartManager.Instance.DataSource;
 
-        if (standardChart == null)
-            standardChart = transform.Find("StandardChart").GetComponent<Chart>();
-
-        if (splomChart == null)
-            splomChart = transform.Find("SPLOMChart").GetComponent<Chart>();
-
-        if (standardButtons == null)
-            standardButtons = new List<GameObject>();
-
-        if (splomButtons == null)
-            splomButtons = new List<GameObject>();
-        
-        if (facetButtons == null)
-            facetButtons = new List<GameObject>();
+        allButtons = standardButtons.Union(splomButtons)
+            .Union(dimensionsButtons)
+            .Union(sizeButtons)
+            .Union(colorButtons)
+            .Union(facetButtons)
+            //.Union(specialDimensionsButtons)
+            //.Union(specialSizeButtons)
+            //.Union(specialColorButtons)
+            //.Union(specialFacetButtons)
+            .ToList();
 
         if (photonView.isMine)
         {
@@ -69,8 +98,7 @@ public class Dashboard : Photon.MonoBehaviour
             standardChart.Color = Color.white;
             standardChart.XDimension = dataSource[0].Identifier;
             standardChart.YDimension = dataSource[0].Identifier;
-            //standardChart.FacetDimension = "mpg";
-            //standardChart.FacetSize = 5;
+            standardChart.FacetSize = 1;
             standardChart.Width = standardTransform.localScale.x;
             standardChart.Height = standardTransform.localScale.y;
             standardChart.Depth = standardTransform.localScale.z;
@@ -89,63 +117,162 @@ public class Dashboard : Photon.MonoBehaviour
             splomChart.Height = splomTransform.localScale.y;
             splomChart.Depth = splomTransform.localScale.z;
 
-            ShowStandard();
+            ChangePage(DashboardPage.STANDARD);
         }
     }
 
     private bool IsOriginalOwner()
     {
+        if (originalOwner == null)
+            return (photonView.owner.ID == PhotonNetwork.player.ID);
+
         return (originalOwner.ID == PhotonNetwork.player.ID);
     }
 
-    public void ShowStandard()
+    /// <summary>
+    /// An overload to allow for enums to be passed via the inspector
+    /// </summary>
+    /// <param name="page"></param>
+    public void ChangePage(int page)
     {
-        ToggleState(true, false, false);
-
-        FacetSizeValueChanged(1);
+        ChangePage((DashboardPage)page);
     }
 
-    public void ShowSPLOM()
+    public void ChangePage(DashboardPage page)
     {
-        ToggleState(false, true, false);
-    }
+        switch (page)
+        {
+            case DashboardPage.MAIN:
+                // Change the page to either the standard or splom one, depending on the active chart
+                ChangePage((activeChart == DashboardPage.STANDARD) ? DashboardPage.STANDARD : DashboardPage.SPLOM);
+                break;
 
-    public void ShowFacet()
+            case DashboardPage.STANDARD:
+            case DashboardPage.SPLOM:
+                photonView.RPC("ToggleCharts", PhotonTargets.All, page);
+                photonView.RPC("ToggleButtons", PhotonTargets.All, page);
+                break;
+
+            case DashboardPage.DIMENSIONS:
+            case DashboardPage.SIZE:
+            case DashboardPage.COLOR:
+            case DashboardPage.FACET:
+                photonView.RPC("ToggleButtons", PhotonTargets.All, page);
+                break;
+        }
+    }
+    
+    public void ChangeSpecialPage(DashboardPage page, bool activate)
     {
-        ToggleState(true, false, true);
+        photonView.RPC("ToggleSpecialButtons", PhotonTargets.All, (int)page, activate);
     }
 
     [PunRPC]
-    private void ToggleState(bool sp, bool spm, bool f)
+    private void ToggleCharts(DashboardPage page)
     {
-        if (standardChart.photonView.isMine)
+        switch (page)
         {
-            standardChart.transform.position = (sp || f) ? standardTransform.position : new Vector3(9999, 9999, 9999);
-            splomChart.transform.position = spm ? splomTransform.position : new Vector3(99999, 9999, 9999);
-            standardChart.transform.rotation = standardTransform.rotation;
-            splomChart.transform.rotation = splomTransform.rotation;
-        }
-        else
-        {
-            photonView.RPC("ToggleState", originalOwner, sp, spm, f);
+            case DashboardPage.STANDARD:
+                standardChart.transform.position = standardTransform.position;
+                standardChart.transform.rotation = standardTransform.rotation;
+                splomChart.transform.position = Vector3.one * 9999;
+                break;
+
+            case DashboardPage.SPLOM:
+                standardChart.transform.position = Vector3.one * 9999;
+                splomChart.transform.position = splomTransform.position;
+                splomChart.transform.rotation = splomTransform.rotation;
+                break;
+
+            default:
+                return;
         }
 
-        // This will get called twice but too lazy to fix
-        photonView.RPC("ToggleButtons", PhotonTargets.All, sp, spm, f);
+        activeChart = page;
     }
 
     [PunRPC]
-    private void ToggleButtons(bool sp, bool spm, bool f)
+    private void ToggleButtons(DashboardPage page)
     {
-        foreach (GameObject button in standardButtons.Concat(splomButtons).Concat(facetButtons))
+        switch (page)
         {
-            bool isActive = (sp && standardButtons.Contains(button)) ||
-                            (spm && splomButtons.Contains(button)) ||
-                            (f && facetButtons.Contains(button));
-            button.SetActive(isActive);
+            case DashboardPage.STANDARD:
+                EnableAndDisableButtons(standardButtons);
+                break;
+
+            case DashboardPage.SPLOM:
+                EnableAndDisableButtons(splomButtons);
+                break;
+
+            case DashboardPage.DIMENSIONS:
+                EnableAndDisableButtons(dimensionsButtons);
+                break;
+
+            case DashboardPage.SIZE:
+                EnableAndDisableButtons(sizeButtons);
+                break;
+
+            case DashboardPage.COLOR:
+                EnableAndDisableButtons(colorButtons);
+                break;
+
+            case DashboardPage.FACET:
+                EnableAndDisableButtons(facetButtons);
+                break;
+        }
+
+        activePage = page;
+    }
+    
+    /// <summary>
+    /// This is called by the respective buttons/menus in their on enable functions
+    /// </summary>
+    /// <param name="page"></param>
+    /// <param name="activate"></param>
+    [PunRPC]
+    private void ToggleSpecialButtons(DashboardPage page, bool activate)
+    {
+        switch (page)
+        {
+            case DashboardPage.DIMENSIONS:
+                foreach (GameObject button in specialDimensionsButtons)
+                    button.SetActive(activate);
+                break;
+
+            case DashboardPage.SIZE:
+                foreach (GameObject button in specialSizeButtons)
+                    button.SetActive(activate);
+                break;
+
+            case DashboardPage.COLOR:
+                foreach (GameObject button in specialColorButtons)
+                    button.SetActive(activate);
+                foreach (GameObject button in specialColorButtons2)
+                    button.SetActive(!activate);
+                break;
+
+            case DashboardPage.FACET:
+                foreach (GameObject button in specialFacetButtons)
+                    button.SetActive(activate);
+                break;
         }
     }
 
+    private void EnableAndDisableButtons(List<GameObject> buttonsToEnable)
+    {
+        foreach (GameObject button in allButtons)
+        {
+            if (buttonsToEnable.Contains(button))
+            {
+                button.SetActive(true);
+            }
+            else
+            {
+                button.SetActive(false);
+            }
+        }
+    }
+    
     [PunRPC]
     public void DimensionChanged(DashboardDimension dimension, string dimensionName)
     {
@@ -168,29 +295,24 @@ public class Dashboard : Photon.MonoBehaviour
                     break;
 
                 case DashboardDimension.FACETBY:
-                    if (dimensionName == "None")
+                    if (dimensionName == "Undefined")
                     {
-                        ShowStandard();
                         standardChart.FacetSize = 1;
                     }
                     else
                     {
-                        ShowFacet();
                         standardChart.FacetDimension = dimensionName;
                     }
                     break;
 
                 case DashboardDimension.COLORBY:
-                    if (dimensionName == "None")
-                    {
-                        standardChart.ColorDimension = "Undefined";
-                        splomChart.ColorDimension = "Undefined";
-                    }
-                    else
-                    {
-                        standardChart.ColorDimension = dimensionName;
-                        splomChart.ColorDimension = dimensionName;
-                    }
+                    standardChart.ColorDimension = dimensionName;
+                    splomChart.ColorDimension = dimensionName;
+                    break;
+
+                case DashboardDimension.SIZEBY:
+                    standardChart.SizeDimension = dimensionName;
+                    splomChart.SizeDimension = dimensionName;
                     break;
             }
         }
@@ -217,86 +339,7 @@ public class Dashboard : Photon.MonoBehaviour
             photonView.RPC("SizeSliderValueChanged", originalOwner, value);
         }
     }
-
-    [PunRPC]
-    public void RedSliderValueChanged(float value)
-    {
-        if (IsOriginalOwner())
-        {
-            ResetChartOwnership();
-
-            Color color = standardChart.Color;
-            color.r = value;
-
-            standardChart.Color = color;
-            splomChart.Color = color;
-        }
-        else
-        {
-            photonView.RPC("RedSliderValueChanged", originalOwner, value);
-        }
-    }
-
-    [PunRPC]
-    public void GreenSliderValueChanged(float value)
-    {
-        if (IsOriginalOwner())
-        {
-            ResetChartOwnership();
-
-            Color color = standardChart.Color;
-            color.g = value;
-
-            standardChart.Color = color;
-            splomChart.Color = color;
-        }
-        else
-        {
-            photonView.RPC("GreenSliderValueChanged", originalOwner, value);
-        }
-    }
-
-    [PunRPC]
-    public void BlueSliderValueChanged(float value)
-    {
-        if (IsOriginalOwner())
-        {
-            ResetChartOwnership();
-
-            Color color = standardChart.Color;
-            color.b = value;
-
-            standardChart.Color = color;
-            splomChart.Color = color;
-        }
-        else
-        {
-            photonView.RPC("BlueSliderValueChanged", originalOwner, value);
-        }
-    }
-
-    [PunRPC]
-    public void HueSliderValueChanged(float value)
-    {
-        if (IsOriginalOwner())
-        {
-            ResetChartOwnership();
-
-            // Convert RGB to HSV, set hue, then convert back to RGB
-            Color color = standardChart.Color;
-            float h, s, v;
-            Color.RGBToHSV(color, out h, out s, out v);
-            color = Color.HSVToRGB(value, s, v);
-
-            standardChart.Color = color;
-            splomChart.Color = color;
-        }
-        else
-        {
-            photonView.RPC("HueSliderValueChanged", originalOwner, value);
-        }
-    }
-
+    
     public void ColorPickerValueChanged(Color value)
     {
         if (IsOriginalOwner())
@@ -367,13 +410,17 @@ public class Dashboard : Photon.MonoBehaviour
         }
         else
         {
-            Dictionary<float, float[]> gradientDictionary = new Dictionary<float, float[]>();
+            List<float> gradientList = new List<float>();
+
             foreach (GradientColorKey colorKey in gradient.colorKeys)
             {
-                gradientDictionary[colorKey.time] = new[] { colorKey.color.r, colorKey.color.g, colorKey.color.b };
+                gradientList.Add(colorKey.time);
+                gradientList.Add(colorKey.color.r);
+                gradientList.Add(colorKey.color.g);
+                gradientList.Add(colorKey.color.b);
             }
 
-            photonView.RPC("ColorGradientChanged", originalOwner, gradientDictionary);
+            photonView.RPC("ColorGradientChanged", originalOwner, gradientList);
         }
     }
 
@@ -382,18 +429,18 @@ public class Dashboard : Photon.MonoBehaviour
     /// </summary>
     /// <param name="gradientDictionary"></param>
     [PunRPC]
-    private void ColorGradientChanged(Dictionary<float, float[]> gradientDictionary)
+    private void ColorGradientChanged(float[] gradientArray)
     {
         if (IsOriginalOwner())
         {
-            // Create color keys from received dictionary
+            // Create colorkeys from received array
             List<GradientColorKey> colorKeys = new List<GradientColorKey>();
 
-            foreach (float time in gradientDictionary.Keys)
+            for (int i = 0; i < gradientArray.Length; i += 4)
             {
-                Color color = new Color(gradientDictionary[time][0], gradientDictionary[time][1], gradientDictionary[time][2]);
+                Color color = new Color(gradientArray[i + 1], gradientArray[i + 2], gradientArray[i + 3]);
 
-                GradientColorKey colorKey = new GradientColorKey(color, time);
+                GradientColorKey colorKey = new GradientColorKey(color, gradientArray[i]);
                 colorKeys.Add(colorKey);
             }
 

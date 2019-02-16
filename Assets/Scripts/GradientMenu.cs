@@ -30,7 +30,7 @@ public class GradientMenu : MonoBehaviour {
     public class GradientChangedEvent : UnityEvent<Gradient> { }
     public GradientChangedEvent GradientChanged;
 
-    private void Start()
+    private void Awake()
     {
         gradientButtons = new List<GradientButton>();
 
@@ -56,6 +56,14 @@ public class GradientMenu : MonoBehaviour {
         selectedIndex = 0;
 
         reverseButton.ButtonClicked.AddListener(ReverseButtonClicked);
+    }
+
+    private void OnEnable()
+    {
+        if (!isReversed)
+            GradientChanged.Invoke(gradientButtons[selectedIndex].Gradient);
+        else
+            GradientChanged.Invoke(ReverseGradient(gradientButtons[selectedIndex].Gradient));
     }
 
     private void OpenButtons()

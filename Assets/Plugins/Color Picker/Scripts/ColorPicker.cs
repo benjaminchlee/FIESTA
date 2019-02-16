@@ -14,52 +14,79 @@ public class ColorPicker : MonoBehaviour {
     private SaturationBrightnessPicker saturationBrightnessPicker;
     [SerializeField]
     private Color startColor = Color.white;
+    [SerializeField]
+    private int framesBetweenUpdates = 5;
 
-    public Color currentColor;
+    public float currentHue;
+    public float currentSaturation;
+    public float currentBrightness;
+
+    private int previousEventFrameCount = 0;
+    private bool isEventQueued = false;
 
     private void Start()
     {
         SetColor(startColor);
     }
+    
+    private void Update()
+    {
+        if (isEventQueued && (Time.frameCount - previousEventFrameCount > framesBetweenUpdates))
+        {
+            ColorChanged.Invoke(GetColor());
+            previousEventFrameCount = Time.frameCount;
+            isEventQueued = false;
+        }
+    }
 
     public void SetColor(Color color)
     {
-        currentColor = color;
+        Color.RGBToHSV(color, out currentHue, out currentSaturation, out currentBrightness);
 
-        float h, s, v;
-        Color.RGBToHSV(currentColor, out h, out s, out v);
-        
-        hueSlider.SetHue(h);
-        saturationBrightnessPicker.SetSaturation(s);
-        saturationBrightnessPicker.SetBrightness(v);
-        
-        ColorChanged.Invoke(currentColor);
+        hueSlider.SetHue(currentHue);
+        saturationBrightnessPicker.SetSaturation(currentSaturation);
+        saturationBrightnessPicker.SetBrightness(currentBrightness);
+
+        EmitEvents();
+    }
+
+    public Color GetColor()
+    {
+        return Color.HSVToRGB(currentHue, currentSaturation, currentBrightness);
     }
 
     public void HueChanged(float hue)
     {
-        float h, s, v;
-        Color.RGBToHSV(currentColor, out h, out s, out v);
-        currentColor = Color.HSVToRGB(hue, s, v);
+        currentHue = hue;
 
-        ColorChanged.Invoke(currentColor);
+        EmitEvents();
     }
 
     public void SaturationChanged(float saturation)
     {
-        float h, s, v;
-        Color.RGBToHSV(currentColor, out h, out s, out v);
-        currentColor = Color.HSVToRGB(h, saturation, v);
+        currentSaturation = saturation;
 
-        ColorChanged.Invoke(currentColor);
+        EmitEvents();
     }
 
     public void BrightnessChanged(float brightness)
     {
-        float h, s, v;
-        Color.RGBToHSV(currentColor, out h, out s, out v);
-        currentColor = Color.HSVToRGB(h, s, brightness);
+        currentBrightness = brightness;
 
-        ColorChanged.Invoke(currentColor);
+        EmitEvents();
+    }
+
+    private void EmitEvents()
+    {
+        // Only immediately emit an event if there is no queued event and there has been enough frames since the last update
+        if (!isEventQueued && Time.frameCount - previousEventFrameCount > framesBetweenUpdates)
+        {
+            ColorChanged.Invoke(GetColor());
+            previousEventFrameCount = Time.frameCount;
+        }
+        else
+        {
+            isEventQueued = true;
+        }
     }
 }

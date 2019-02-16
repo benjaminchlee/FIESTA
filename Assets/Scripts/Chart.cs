@@ -272,13 +272,17 @@ public class Chart : Photon.MonoBehaviour
                 case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
                     visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
 
-                    // Update all other scatterplots in other clients, convert to dictionary for serialization
-                    Dictionary<float, float[]> gradientDictionary = new Dictionary<float, float[]>();
+                    // Update all other scatterplots in other clients, convert to array for serialization
+                    List<float> gradientList = new List<float>();
+
                     foreach (GradientColorKey colorKey in value.colorKeys)
                     {
-                        gradientDictionary[colorKey.time] = new[] { colorKey.color.r, colorKey.color.g, colorKey.color.b };
+                        gradientList.Add(colorKey.time);
+                        gradientList.Add(colorKey.color.r);
+                        gradientList.Add(colorKey.color.g);
+                        gradientList.Add(colorKey.color.b);
                     }
-                    photonView.RPC("PropagateGradient", PhotonTargets.OthersBuffered, gradientDictionary);
+                    photonView.RPC("PropagateGradient", PhotonTargets.Others, gradientList.ToArray());
                     break;
 
                 case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
@@ -291,19 +295,20 @@ public class Chart : Photon.MonoBehaviour
     }
 
     [PunRPC]
-    private void PropagateGradient(Dictionary<float, float[]> gradientDictionary)
+    private void PropagateGradient(float[] gradientArray)
     {
-        // Create color keys from received dictionary
+        // Create color keys from received array
+        // Values are in order time, r, g, b
         List<GradientColorKey> colorKeys = new List<GradientColorKey>();
 
-        foreach (float time in gradientDictionary.Keys)
+        for (int i = 0; i < gradientArray.Length; i += 4)
         {
-            Color color = new Color(gradientDictionary[time][0], gradientDictionary[time][1], gradientDictionary[time][2]);
+            Color color = new Color(gradientArray[i + 1], gradientArray[i + 2], gradientArray[i + 3]);
 
-            GradientColorKey colorKey = new GradientColorKey(color, time);
+            GradientColorKey colorKey = new GradientColorKey(color, gradientArray[i]);
             colorKeys.Add(colorKey);
         }
-
+        
         Gradient gradient = new Gradient();
         gradient.colorKeys = colorKeys.ToArray();
 
@@ -311,6 +316,33 @@ public class Chart : Photon.MonoBehaviour
         if (chartType == AbstractVisualisation.VisualisationTypes.SCATTERPLOT)
         {
             visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
+        }
+    }
+
+    public string SizeDimension
+    {
+        get { return visualisation.sizeDimension; }
+        set
+        {
+            if (value == SizeDimension)
+                return;
+
+            visualisation.sizeDimension = value;
+
+            switch (chartType)
+            {
+                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Size);
+                    break;
+
+                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+                case AbstractVisualisation.VisualisationTypes.FACET:
+                    foreach (Chart chart in subCharts)
+                    {
+                        chart.SizeDimension = value;
+                    }
+                    break;
+            }
         }
     }
 
@@ -455,10 +487,13 @@ public class Chart : Photon.MonoBehaviour
         get { return visualisation.attributeFilters; }
         set
         {
+            if (value == null || value.Length == 0)
+                return;
+
             // TODO: ONLY WORKS WITH ONE FILTER
             AttributeFilter af = value[0];
 
-            photonView.RPC("PropagateAttributeFilters", PhotonTargets.AllBuffered, af.Attribute, af.minFilter, af.maxFilter, af.minScale, af.maxScale);
+            photonView.RPC("PropagateAttributeFilters", PhotonTargets.All, af.Attribute, af.minFilter, af.maxFilter, af.minScale, af.maxScale);
         }
     }
 
@@ -694,7 +729,11 @@ public class Chart : Photon.MonoBehaviour
                             // Get the x and y dimension from the splom button if it exists, otherwise use default
                             subChart.XDimension = (splomButtons[i] != null) ? splomButtons[i].Text : DataSource[i].Identifier;
                             subChart.YDimension = (splomButtons[j] != null) ? splomButtons[j].Text : DataSource[j].Identifier;
+                            subChart.ColorDimension = ColorDimension;
                             subChart.Color = Color;
+                            subChart.Gradient = Gradient;
+                            subChart.SizeDimension = SizeDimension;
+                            subChart.Size = Size;
                             subChart.SetAsPrototype();
 
                             splomCharts[i, j] = subChart;
@@ -1189,10 +1228,12 @@ public class Chart : Photon.MonoBehaviour
             stream.SendNext(XDimension);
             stream.SendNext(YDimension);
             stream.SendNext(ZDimension);
+            stream.SendNext(ColorDimension);
             stream.SendNext(Color.r);
             stream.SendNext(Color.g);
             stream.SendNext(Color.b);
             stream.SendNext(Color.a);
+            stream.SendNext(SizeDimension);
             stream.SendNext(Size);
             stream.SendNext(Width);
             stream.SendNext(Height);
@@ -1208,25 +1249,27 @@ public class Chart : Photon.MonoBehaviour
         }
         else
         {
-            VisualisationType = (AbstractVisualisation.VisualisationTypes) stream.ReceiveNext();
-            GeometryType = (AbstractVisualisation.GeometryType) stream.ReceiveNext();
-            XDimension = (string) stream.ReceiveNext();
-            YDimension = (string) stream.ReceiveNext();
-            ZDimension = (string) stream.ReceiveNext();
+            VisualisationType = (AbstractVisualisation.VisualisationTypes)stream.ReceiveNext();
+            GeometryType = (AbstractVisualisation.GeometryType)stream.ReceiveNext();
+            XDimension = (string)stream.ReceiveNext();
+            YDimension = (string)stream.ReceiveNext();
+            ZDimension = (string)stream.ReceiveNext();
+            ColorDimension = (string)stream.ReceiveNext();
             Color col = new Color((float)stream.ReceiveNext(), (float)stream.ReceiveNext(), (float)stream.ReceiveNext(), (float)stream.ReceiveNext());
             Color = col;
-            Size = (float) stream.ReceiveNext();
-            Width = (float) stream.ReceiveNext();
-            Height = (float) stream.ReceiveNext();
-            Depth = (float) stream.ReceiveNext();
-            ScatterplotMatrixSize = (int) stream.ReceiveNext();
-            FacetDimension = (string) stream.ReceiveNext();
-            FacetSize = (int) stream.ReceiveNext();
-            isPrototype = (bool) stream.ReceiveNext();
-            XAxisVisibility = (bool) stream.ReceiveNext();
-            YAxisVisibility = (bool) stream.ReceiveNext();
-            ZAxisVisibility = (bool) stream.ReceiveNext();
-            GetComponent<Collider>().enabled = (bool) stream.ReceiveNext();
+            SizeDimension = (string)stream.ReceiveNext();
+            Size = (float)stream.ReceiveNext();
+            Width = (float)stream.ReceiveNext();
+            Height = (float)stream.ReceiveNext();
+            Depth = (float)stream.ReceiveNext();
+            ScatterplotMatrixSize = (int)stream.ReceiveNext();
+            FacetDimension = (string)stream.ReceiveNext();
+            FacetSize = (int)stream.ReceiveNext();
+            isPrototype = (bool)stream.ReceiveNext();
+            XAxisVisibility = (bool)stream.ReceiveNext();
+            YAxisVisibility = (bool)stream.ReceiveNext();
+            ZAxisVisibility = (bool)stream.ReceiveNext();
+            GetComponent<Collider>().enabled = (bool)stream.ReceiveNext();
         }
     }
 }

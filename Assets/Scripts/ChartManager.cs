@@ -127,7 +127,10 @@ public class ChartManager : MonoBehaviour {
         chart.XDimension = dupe.XDimension;
         chart.YDimension = dupe.YDimension;
         chart.ZDimension = dupe.ZDimension;
+        chart.ColorDimension = dupe.ColorDimension;
         chart.Color = dupe.Color;
+        chart.Gradient = dupe.Gradient;
+        chart.SizeDimension = dupe.SizeDimension;
         chart.Size = dupe.Size;
         chart.Width = dupe.Width;
         chart.Height = dupe.Height;

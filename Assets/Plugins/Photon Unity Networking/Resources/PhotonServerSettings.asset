@@ -14,7 +14,7 @@ MonoBehaviour:
   AppID: 505fce9f-dda8-4675-97d6-af620d17592b
   VoiceAppID: 505fce9f-dda8-4675-97d6-af620d17592b
   ChatAppID: 505fce9f-dda8-4675-97d6-af620d17592b
-  HostType: 2
+  HostType: 1
   PreferredRegion: 5
   EnabledRegions: -1
   Protocol: 0
@@ -83,4 +83,6 @@ MonoBehaviour:
   - PropagateGradient
   - HueSliderValueChanged
   - ColorPickerValueChanged
+  - ToggleCharts
+  - ToggleSpecialButtons
   DisableAutoOpenWizard: 1

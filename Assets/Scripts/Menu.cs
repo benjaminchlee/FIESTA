@@ -12,6 +12,8 @@ public class Menu : MonoBehaviour {
     [SerializeField]
     private DashboardDimension dimension;
     [SerializeField]
+    private DashboardPage page;
+    [SerializeField]
     private CSVDataSource dataSource;
     [SerializeField]
     private GameObject menuButtonPrefab;
@@ -19,10 +21,17 @@ public class Menu : MonoBehaviour {
     private float spacing = 0.02f;
     [SerializeField]
     private bool includeNoneButton = false;
+    [SerializeField]
+    private bool hideSpecialButtonsWhenUndefined = false;
 
     [Serializable]
     public class DimensionChangedEvent : UnityEvent<DashboardDimension, string> { }
     public DimensionChangedEvent DimensionChanged;
+
+    [Serializable]
+    public class SpecialButtonsChangedEvent : UnityEvent<DashboardPage, bool> { }
+    public SpecialButtonsChangedEvent SpecialButtonsChanged;
+
 
     private int selectedIndex;
     public string SelectedButton
@@ -111,7 +120,16 @@ public class Menu : MonoBehaviour {
         if (isOpen)
         {
             // Invoke the event telling listeners that the chosen dimension has changed
-            DimensionChanged.Invoke(dimension, button.Text);
+            if (button.Text == "None")
+            {
+                DimensionChanged.Invoke(dimension, "Undefined");
+                SpecialButtonsChanged.Invoke(page, !hideSpecialButtonsWhenUndefined);
+            }
+            else
+            {
+                DimensionChanged.Invoke(dimension, button.Text);
+                SpecialButtonsChanged.Invoke(page, hideSpecialButtonsWhenUndefined);
+            }
             
             // Store the index of the selected option
             selectedIndex = buttons.IndexOf(button);
