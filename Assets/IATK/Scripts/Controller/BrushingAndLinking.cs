@@ -2,15 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Diagnostics;
 using UnityEditor;
 using System;
 using System.Linq;
-using System.Security.Policy;
-using UnityEngine.Experimental.PlayerLoop;
-using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
-using Debug = UnityEngine.Debug;
 
 public class BrushingAndLinking : Photon.PunBehaviour
 {
@@ -24,7 +19,7 @@ public class BrushingAndLinking : Photon.PunBehaviour
 
     [SerializeField] public Material myRenderMaterial;
 
-    RenderTexture brushedIndicesTexture;
+    public RenderTexture BrushedIndicesTexture { get; private set; }
 
     int kernelHandleBrushTexture;
     int kernelHandleBrushArrayIndices;
@@ -32,27 +27,34 @@ public class BrushingAndLinking : Photon.PunBehaviour
     GameObject viewHolder;
     int texSize;
 
-    [SerializeField] public List<Visualisation> brushingVisualisations;
+    [SerializeField]
+    public List<Visualisation> brushingVisualisations;
+    [SerializeField]
+    public List<Visualisation> brushedVisualisations;
+    [SerializeField]
+    public List<LinkingVisualisations> brushedLinkingVisualisations;
 
-    [SerializeField] public List<Visualisation> brushedVisualisations;
+    [SerializeField]
+    public bool showBrush = false;
+    [SerializeField]
+    public bool shareBrushing = false;
+    [SerializeField]
+    public Color privateBrushColor = Color.yellow;
+    [SerializeField]
+    public Color sharedBrushColor = Color.red;
 
-    [SerializeField] public List<LinkingVisualisations> brushedLinkingVisualisations;
+    [SerializeField]
+    [Range(1f, 10f)] public float brushSizeFactor = 1f;
 
-    [SerializeField] public bool showBrush = false;
+    [SerializeField]
+    public Transform input1;
+    [SerializeField]
+    public Transform input2;
 
-    [SerializeField] public bool shareBrushing = false;
-
-    [SerializeField] public Color brushColor = Color.red;
-
-    [SerializeField] [Range(1f, 10f)] public float brushSizeFactor = 1f;
-
-    [SerializeField] public Transform input1;
-
-    [SerializeField] public Transform input2;
-
-    [SerializeField] [Range(0f, 1f)] public float radiusSphere;
-
-    [SerializeField] public bool brushButtonController;
+    [SerializeField] [Range(0f, 1f)]
+    public float radiusSphere;
+    [SerializeField]
+    public bool brushButtonController;
 
     public struct VecIndexPair
     {
@@ -95,7 +97,14 @@ public class BrushingAndLinking : Photon.PunBehaviour
     {
         brushingVisualisations = new List<Visualisation>();
 
-        //InitialiseShaders();
+        SetSharedColorFromAvatar();
+        InitialiseShaders();
+        InitialiseBuffersAndTextures();
+
+        foreach (Chart chart in ChartManager.Instance.Charts)
+            ChartAdded(chart);
+
+        ChartManager.Instance.ChartAdded.AddListener(ChartAdded);
     }
 
     // Update is called once per frame
@@ -111,11 +120,8 @@ public class BrushingAndLinking : Photon.PunBehaviour
                     foreach (Collider col in colliders)
                     {
                         if (col.gameObject.CompareTag("Chart"))
-                        {
                             brushingVisualisations.Add(col.gameObject.GetComponent<Chart>().Visualisation);
-                        }
                     }
-
                     break;
 
                 case BrushType.BOX:
@@ -123,16 +129,7 @@ public class BrushingAndLinking : Photon.PunBehaviour
             }
         }
 
-        if (brushingVisualisations.Count != 0 && !activated)
-        {
-            InitialiseShaders();
-            InitialiseBuffersAndTextures(brushingVisualisations[0].theVisualizationObject.viewList[0].BigMesh
-                .getBigMeshVertices());
-            activated = true;
-        }
-
-        if (brushingVisualisations.Count != 0 && (brushButtonController) && input1 != null && input2 != null
-        ) // && brushedVisualisations.Count>0)
+        if (brushingVisualisations.Count != 0 && (brushButtonController) && input1 != null && input2 != null)
         {
             updateBrushTexture();
 
@@ -145,52 +142,54 @@ public class BrushingAndLinking : Photon.PunBehaviour
     {
         kernelHandleBrushTexture = computeShader.FindKernel("CSMain");
         kernelHandleBrushArrayIndices = computeShader.FindKernel("ComputeBrushedIndicesArray");
-
-        //computeShader.Dispatch(kernelHandleBrushTexture, 32, 32, 1);
-
-        setTexture(brushedIndicesTexture);
     }
 
-    public void InitialiseBuffersAndTextures(Vector3[] data)
+    public void InitialiseBuffersAndTextures()
     {
-        int datasetSize = data.Length;
+        int datasetSize = ChartManager.Instance.DataSource.DataCount;
 
         buffer = new ComputeBuffer(datasetSize, 12);
-        buffer.SetData(data);
+        buffer.SetData(new Vector3[datasetSize]);
         computeShader.SetBuffer(kernelHandleBrushTexture, "dataBuffer", buffer);
 
-        brushedIndicesBuffer = new ComputeBuffer(data.Length, 4);
-        int[] brushIni = new int[data.Length];
-        for (int i = 0; i < data.Length; i++)
+        brushedIndicesBuffer = new ComputeBuffer(datasetSize, 4);
+        int[] brushIni = new int[datasetSize];
+        for (int i = 0; i < datasetSize; i++)
             brushIni[i] = -1;
         brushedIndicesBuffer.SetData(brushIni);
 
-        filteredIndicesBuffer = new ComputeBuffer(data.Length, 4);
-        filteredIndicesBuffer.SetData(new float[data.Length]);
+        filteredIndicesBuffer = new ComputeBuffer(datasetSize, 4);
+        filteredIndicesBuffer.SetData(new float[datasetSize]);
 
         computeShader.SetBuffer(kernelHandleBrushArrayIndices, "dataBuffer", buffer);
         computeShader.SetBuffer(kernelHandleBrushArrayIndices, "brushedIndices", brushedIndicesBuffer);
 
         texSize = computeTextureSize(datasetSize);
-        Debug.Log(texSize);
-        brushedIndicesTexture = new RenderTexture(texSize, texSize, 24);
-        brushedIndicesTexture.enableRandomWrite = true;
-        brushedIndicesTexture.filterMode = FilterMode.Point;
-        brushedIndicesTexture.Create();
 
-        computeShader.SetTexture(kernelHandleBrushTexture, "Result", brushedIndicesTexture);
-        computeShader.SetTexture(kernelHandleBrushArrayIndices, "Result", brushedIndicesTexture);
+        // Find all existing brushing and linking scripts and get any existing RenderTexture
+        BrushingAndLinking[] bals = FindObjectsOfType<BrushingAndLinking>();
+        foreach (BrushingAndLinking bal in bals)
+        {
+            if (bal.BrushedIndicesTexture != null)
+                BrushedIndicesTexture = bal.BrushedIndicesTexture;
+        }
 
-        setSize((float) texSize);
-    }
+        // If no existing RenderTexture was found, create a new one
+        if (BrushedIndicesTexture == null)
+        {
+            BrushedIndicesTexture = new RenderTexture(texSize, texSize, 24);
+            BrushedIndicesTexture.enableRandomWrite = true;
+            BrushedIndicesTexture.filterMode = FilterMode.Point;
+            BrushedIndicesTexture.Create();
+        }
 
-    /// <summary>
-    /// sets the index texture
-    /// </summary>
-    /// <param name="_tex"></param>
-    public void setTexture(Texture _tex)
-    {
-        myRenderMaterial.SetTexture("_MainTex", _tex);
+        myRenderMaterial.SetTexture("_MainTex", BrushedIndicesTexture);
+
+        computeShader.SetTexture(kernelHandleBrushTexture, "Result", BrushedIndicesTexture);
+        computeShader.SetTexture(kernelHandleBrushArrayIndices, "Result", BrushedIndicesTexture);
+        computeShader.SetFloat("_size", (float)texSize);
+        computeShader.SetFloats("brushColor", privateBrushColor.r, privateBrushColor.g, privateBrushColor.b, privateBrushColor.a);
+        computeShader.SetFloats("sharedBrushColor", sharedBrushColor.r, sharedBrushColor.g, sharedBrushColor.b, sharedBrushColor.a);
     }
 
     /// <summary>
@@ -210,27 +209,7 @@ public class BrushingAndLinking : Photon.PunBehaviour
 
         return (int) Mathf.Pow(2, pos);
     }
-
-    /// <summary>
-    /// sets the size of the texture in the compute shader program. this is needed to adress the right uv coordinates
-    /// to store the brushed information corretcly
-    /// </summary>
-    /// <param name="TexSize"></param>
-    public void setSize(float TexSize)
-    {
-        computeShader.SetFloat("_size", TexSize);
-    }
-
-    float time = 0f;
-
-    /// <summary>
-    /// reads the brushed indices
-    /// </summary>
-    public void readBrushTexture()
-    {
-        //Texture2D tex = (brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial.GetTexture("_BrushedTexture") as Texture2D);
-    }
-
+    
     public void UpdateComputeBuffers(Visualisation visualisation)
     {
         buffer.SetData(visualisation.theVisualizationObject.viewList[0].BigMesh.getBigMeshVertices());
@@ -238,6 +217,51 @@ public class BrushingAndLinking : Photon.PunBehaviour
 
         filteredIndicesBuffer.SetData(visualisation.theVisualizationObject.viewList[0].GetFilterChannel());
         computeShader.SetBuffer(kernelHandleBrushTexture, "filteredIndices", filteredIndicesBuffer);
+    }
+
+
+    private void ChartAdded(Chart chart)
+    {
+        if (photonView.isMine)
+        {
+            StartCoroutine(SetChartViewProperties(chart));
+        }
+    }
+
+    /// <summary>
+    /// Waits a frame before setting properties in the charts view. 
+    /// </summary>
+    /// <param name="chart"></param>
+    /// <returns></returns>
+    private IEnumerator SetChartViewProperties(Chart chart)
+    {
+        yield return null;
+
+        foreach (var v in chart.Visualisation.theVisualizationObject.viewList)
+        {
+            v.BigMesh.SharedMaterial.SetTexture("_BrushedTexture", BrushedIndicesTexture);
+            v.BigMesh.SharedMaterial.SetFloat("_DataWidth", texSize);
+            v.BigMesh.SharedMaterial.SetFloat("_DataHeight", texSize);
+            v.BigMesh.SharedMaterial.SetFloat("showBrush", Convert.ToSingle(showBrush));
+            v.BigMesh.SharedMaterial.SetColor("brushColor", privateBrushColor);
+            v.BigMesh.SharedMaterial.SetColor("sharedBrushColor", sharedBrushColor);
+        }
+    }
+
+    /// <summary>
+    /// Sets the color of the shared brush based on the owner's avatar
+    /// </summary>
+    private void SetSharedColorFromAvatar()
+    {
+        AvatarCustomiser[] avs = FindObjectsOfType<AvatarCustomiser>();
+
+        foreach (AvatarCustomiser av in avs)
+        {
+            if (av.photonView.ownerId == photonView.ownerId)
+            {
+                sharedBrushColor = av.Color;
+            }
+        }
     }
 
     /// <summary>
@@ -315,41 +339,28 @@ public class BrushingAndLinking : Photon.PunBehaviour
             computeShader.SetBool("shareBrushing", shareBrushing);
 
             //run the compute shader with all the filtering parameters
-            computeShader.Dispatch(kernelHandleBrushTexture, Mathf.Max(texSize / 32, 1), Mathf.Max(texSize / 32, 1), 1);
+            computeShader.Dispatch(kernelHandleBrushTexture, Mathf.CeilToInt(texSize / 32), Mathf.CeilToInt(texSize / 32), 1);
 
-            brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial
-                .SetTexture("_BrushedTexture", brushedIndicesTexture);
-            brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial
-                .SetFloat("_DataWidth", texSize);
-            brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial
-                .SetFloat("_DataHeight", texSize);
-            brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial
-                .SetFloat("showBrush", Convert.ToSingle(showBrush));
-            brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial
-                .SetColor("brushColor", brushColor);
+            //brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial
+            //    .SetTexture("_BrushedTexture", BrushedIndicesTexture);
+            //brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial
+            //    .SetFloat("_DataWidth", texSize);
+            //brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial
+            //    .SetFloat("_DataHeight", texSize);
+            //brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial
+            //    .SetFloat("showBrush", Convert.ToSingle(showBrush));
+            //brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial
+            //    .SetColor("brushColor", brushColor);
         }
-
-        //foreach (var bv in brushedVisualisations)// visualisationsMaterials)
-        foreach (var bv in ChartManager.Instance.Visualisations) // visualisationsMaterials)
-        {
-            foreach (var v in bv.theVisualizationObject.viewList)
-            {
-                v.BigMesh.SharedMaterial.SetTexture("_BrushedTexture", brushedIndicesTexture);
-                v.BigMesh.SharedMaterial.SetFloat("_DataWidth", texSize);
-                v.BigMesh.SharedMaterial.SetFloat("_DataHeight", texSize);
-                v.BigMesh.SharedMaterial.SetFloat("showBrush", Convert.ToSingle(showBrush));
-                v.BigMesh.SharedMaterial.SetColor("brushColor", brushColor);
-            }
-        }
-
-        foreach (var item in brushedLinkingVisualisations)
-        {
-            item.View.BigMesh.SharedMaterial.SetTexture("_BrushedTexture", brushedIndicesTexture);
-            item.View.BigMesh.SharedMaterial.SetFloat("_DataWidth", texSize);
-            item.View.BigMesh.SharedMaterial.SetFloat("_DataHeight", texSize);
-            item.View.BigMesh.SharedMaterial.SetFloat("showBrush", Convert.ToSingle(showBrush));
-            item.View.BigMesh.SharedMaterial.SetColor("brushColor", brushColor);
-        }
+        
+        //foreach (var item in brushedLinkingVisualisations)
+        //{
+        //    item.View.BigMesh.SharedMaterial.SetTexture("_BrushedTexture", brushedIndicesTexture);
+        //    item.View.BigMesh.SharedMaterial.SetFloat("_DataWidth", texSize);
+        //    item.View.BigMesh.SharedMaterial.SetFloat("_DataHeight", texSize);
+        //    item.View.BigMesh.SharedMaterial.SetFloat("showBrush", Convert.ToSingle(showBrush));
+        //    item.View.BigMesh.SharedMaterial.SetColor("brushColor", brushColor);
+        //}
 
         //cachedTexture = (brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial.GetTexture("_BrushedTexture") as Texture2D);
         //if (cachedTexture.GetPixel(0, 0).r > 0f) print("selected!!");

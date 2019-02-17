@@ -119,21 +119,13 @@ public class CloseInteractionsManager : MonoBehaviour {
     }
 
     private void Start() {
-        //leftController = VRTK_DeviceFinder.GetControllerLeftHand();
-        //rightController = VRTK_DeviceFinder.GetControllerRightHand();
+        leftController = VRTK_DeviceFinder.GetControllerLeftHand();
+        rightController = VRTK_DeviceFinder.GetControllerRightHand();
 
-        leftEvents = leftController.GetComponent<VRTK_ControllerEvents>();
-        rightEvents = rightController.GetComponent<VRTK_ControllerEvents>();
-
-        leftEvents.TriggerClicked += OnLeftTriggerClicked;
-        leftEvents.TriggerUnclicked += OnLeftTriggerUnclicked;
-        rightEvents.TriggerClicked += OnRightTriggerClicked;
-        rightEvents.TriggerUnclicked += OnRightTriggerUnlicked;
-
-        leftEvents.GripClicked += OnLeftGripClicked;
-        leftEvents.GripUnclicked += OnLeftGripUnclicked;
-        rightEvents.GripClicked += OnRightGripClicked;
-        rightEvents.GripUnclicked += OnRightGripUnclicked;
+        if (leftController != null && rightController != null)
+        {
+            RegisterEvents();
+        }
        
 
         // Initialise brush/lasso
@@ -161,8 +153,40 @@ public class CloseInteractionsManager : MonoBehaviour {
         selectionSquare.SetActive(false);
     }
 
+    private void RegisterEvents()
+    {
+        leftEvents = leftController.GetComponent<VRTK_ControllerEvents>();
+        rightEvents = rightController.GetComponent<VRTK_ControllerEvents>();
+
+        leftEvents.TriggerClicked += OnLeftTriggerClicked;
+        leftEvents.TriggerUnclicked += OnLeftTriggerUnclicked;
+        rightEvents.TriggerClicked += OnRightTriggerClicked;
+        rightEvents.TriggerUnclicked += OnRightTriggerUnlicked;
+
+        leftEvents.GripClicked += OnLeftGripClicked;
+        leftEvents.GripUnclicked += OnLeftGripUnclicked;
+        rightEvents.GripClicked += OnRightGripClicked;
+        rightEvents.GripUnclicked += OnRightGripUnclicked;
+    }
+
+
     private void Update()
     {
+        if (leftController == null && rightController == null)
+        {
+            leftController = VRTK_DeviceFinder.GetControllerLeftHand();
+            rightController = VRTK_DeviceFinder.GetControllerRightHand();
+
+            if (leftController != null && rightController != null)
+            {
+                RegisterEvents();
+            }
+            else
+            {
+                return;
+            }
+        }
+
         if (activeState == InteractionState.None)
         {
             // Do not start any new interactions if not enabled

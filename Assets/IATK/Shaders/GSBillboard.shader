@@ -77,8 +77,7 @@ Shader "IATK/OutlineDots"
 					float3	normal : NORMAL;
 					float2  tex0 : TEXCOORD0;
 					float4  color : COLOR;
-					float	isBrushed : FLOAT0;
-					float	isSharedBrushed : FLOAT1;
+					float4  brushedColor : COLOR1;
 				};
 
 				struct FS_INPUT
@@ -86,8 +85,7 @@ Shader "IATK/OutlineDots"
 					float4	pos : POSITION;
 					float2  tex0 : TEXCOORD0;
 					float4  color : COLOR;
-					float	isBrushed : FLOAT0;
-					float	isSharedBrushed : FLOAT1;
+					float4  brushedColor : COLOR1;
 					float3	normal : NORMAL;
 				};
 
@@ -135,7 +133,8 @@ Shader "IATK/OutlineDots"
 				float _DataWidth;
 				float _DataHeight;
 				float showBrush;
-				float4 brushColor;
+				//float4 brushColor;
+				//float4 sharedBrushColor;
 				
 				float _Tween;
 				float _TweenSize;
@@ -162,12 +161,11 @@ Shader "IATK/OutlineDots"
 					float idx = v.uv_MainTex.x;
 					float isFiltered = v.uv_MainTex.z;
 
-					//lookup the texture to see if the vertex is brushed...
+					//lookup the texture to get the color, this color will be used to color the brushed point
 					float2 indexUV = float2((idx % _DataWidth) / _DataWidth, ((idx / _DataWidth) / _DataHeight));
 					float4 brushValue = tex2Dlod(_BrushedTexture, float4(indexUV, 0.0, 0.0));
 
-					output.isBrushed = brushValue.r;
-					output.isSharedBrushed = brushValue.g;
+					output.brushedColor = brushValue;
 
 					float size = lerp(v.uv_MainTex.w, v.uv_MainTex.y, _TweenSize);
 					float3 pos = lerp(v.normal, v.position, _Tween);
@@ -227,9 +225,8 @@ Shader "IATK/OutlineDots"
 		
 					FS_INPUT pIn;
 					
-					pIn.isBrushed = p[0].isBrushed;
-					pIn.isSharedBrushed = p[0].isSharedBrushed;
 					pIn.color = p[0].color;
+					pIn.brushedColor = p[0].brushedColor;
 					pIn.normal = p[0].normal;
 
 					pIn.pos = UnityObjectToClipPos(v[0]);					
@@ -251,24 +248,35 @@ Shader "IATK/OutlineDots"
 					pIn.tex0 = float2(0.0f, 1.0f);
 					pIn.normal = p[0].normal;
 					triStream.Append(pIn);
-					
 				}
 
 				// Fragment Shader -----------------------------------------------
 				FS_OUTPUT FS_Main(FS_INPUT input)
 				{
 					FS_OUTPUT o;
+
+					if (input.brushedColor.w > 0) {
+						o.color = tex2D(_MainTex, input.tex0.xy) * float4(input.brushedColor.r, input.brushedColor.g, input.brushedColor.b, input.color.a);
+					}
+					else
+						o.color = tex2D(_MainTex, input.tex0.xy) * input.color;
+					
+					/*
 					if (input.isBrushed > 0 && showBrush > 0.0) {
-						float4 col = float4(brushColor.r, brushColor.g, brushColor.b, input.color.a);
-						
-						if (input.isSharedBrushed > 0)
-							col.g = 0.0;
+						float4 col;
+
+						if (input.isSharedBrushed > 0) {
+							col = float4(sharedBrushColor.r, sharedBrushColor.g, sharedBrushColor.b, input.color.a);
+						}
+						else {
+							col = float4(brushColor.r, brushColor.g, brushColor.b, input.color.a);
+						}
 
 						o.color = tex2D(_MainTex, input.tex0.xy) * col;
 					}
-					
 					else
 					o.color = tex2D(_MainTex, input.tex0.xy) *input.color;
+					*/
 
 					o.depth = o.color.a > 0.5 ? input.pos.z : 0;
 					return o;
@@ -288,14 +296,14 @@ Shader "IATK/OutlineDots"
 					else
 					{
 						if (dt <= 0.16f)
-						{
+						{/*
 							if (input.isBrushed > 0.0 && showBrush > 0.0)
 								return brushColor;
 							else
 								return float4(input.color.x - dt*0.25,
 											  input.color.y - dt*0.25,
 											  input.color.z - dt*0.25,
-											  input.color.w);
+											  input.color.w);*/
 						}
 						else
 						{
@@ -328,11 +336,11 @@ Shader "IATK/OutlineDots"
 					else
 					{
 						if( dt <= 0.0f)
-						{
+						{/*
 							if(input.isBrushed==1.0)
 							return float4(1.0,0.0,0.0,1.0);
 							else
-							return float4(input.color.x-dt*0.75,input.color.y-dt*0.75,input.color.z-dt*0.75,input.color.w);
+							return float4(input.color.x-dt*0.75,input.color.y-dt*0.75,input.color.z-dt*0.75,input.color.w);*/
 						}
 						else
 						{

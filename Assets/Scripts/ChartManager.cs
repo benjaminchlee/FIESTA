@@ -4,6 +4,8 @@ using System.Security.Cryptography;
 using UnityEngine;
 using IATK;
 using VRTK;
+using UnityEngine.Events;
+using System;
 
 public class ChartManager : MonoBehaviour {
 
@@ -19,6 +21,11 @@ public class ChartManager : MonoBehaviour {
     
     public List<Chart> Charts { get; private set; }
     public List<Visualisation> Visualisations { get; private set; }
+
+    [Serializable]
+    public class ChartAddedEvent : UnityEvent<Chart> { }
+    public ChartAddedEvent ChartAdded;
+
 
     private void Awake()
     {
@@ -101,7 +108,7 @@ public class ChartManager : MonoBehaviour {
 
         chart.DataSource = DataSource;
         RegisterVisualisation(chart);
-
+               
         return chart;
     }
 
@@ -155,6 +162,8 @@ public class ChartManager : MonoBehaviour {
             Charts.Add(chart);
         if (!Visualisations.Contains(chart.Visualisation))
             Visualisations.Add(chart.Visualisation);
+
+        ChartAdded.Invoke(chart);
     }
 
     public void DeregisterVisualisation(Chart chart)

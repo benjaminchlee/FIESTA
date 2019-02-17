@@ -56,6 +56,8 @@ float RadiusSphere;
 int BrushMode;
 int SelectionMode;
 
+float4 brushColor;
+float4 sharedBrushColor;
 bool shareBrushing;
 
 RWStructuredBuffer<float3> dataBuffer;
@@ -131,6 +133,18 @@ bool Brush(int brushType, float3 filteredPosition)
 	}
 }
 
+bool IsEqual(float4 value1, float4 value2, float tolerance) {
+	if (abs(value1.x - value2.x) < tolerance
+		&& abs(value1.y - value2.y) < tolerance
+		&& abs(value1.z - value2.z) < tolerance
+		&& abs(value1.w - value2.w) < tolerance) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
 // TODO
 // brush sphere
 
@@ -197,20 +211,24 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 					case 0:
 					// additive selection
 					case 1:
-						if (shareBrushing)
-							Result[id.xy] = float4(1.0, 1.0, 0.0, 1.0); // brushed (shared)
+						if (!shareBrushing) {
+							if (Result[id.xy].w == 0) {  // only allow the private brush if the point is not already brushed
+								Result[id.xy] = brushColor;
+							}
+						}
 						else {
-							if (Result[id.xy].y != 1.0) // if not already shared brushed
-								Result[id.xy] = float4(1.0, 0.0, 0.0, 1.0); // brushed
+							Result[id.xy] = sharedBrushColor;  // shared brush can override others
 						}
 						break;
 					// subtractive selection
 					case 2:
-						if (shareBrushing)
-							Result[id.xy] = float4(0.0, 0.0, 0.0, 1.0); // not brushed
+						if (!shareBrushing) {
+							if (IsEqual(Result[id.xy], brushColor, 0.001)) {  // private brush can only deselect private brushed points
+								Result[id.xy] = float4(0.0, 0.0, 0.0, 0.0);
+							}
+						}
 						else {
-							if (Result[id.xy].y != 1.0) // if not already shared brushed
-								Result[id.xy] = float4(0.0, 0.0, 0.0, 1.0); // not brushed
+							Result[id.xy] = float4(0.0, 0.0, 0.0, 0.0);  // shared brush can override others
 						}
 						break;
 				}
@@ -218,12 +236,12 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 			else
 			{
 				if (SelectionMode == 0)
-					Result[id.xy] = float4(0.0, 0.0, 0.0, 1.0); // not brushed
+					Result[id.xy] = float4(0.0, 0.0, 0.0, 0.0); // not brushed
 			}
 		}
 		else
 		{
-			Result[id.xy] = float4(0.0, 0.0, 0.0, 1.0); // not brushed
+			Result[id.xy] = float4(0.0, 0.0, 0.0, 0.0); // not brushed
 		}
 	}
 }

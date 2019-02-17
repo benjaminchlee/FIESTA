@@ -9,8 +9,8 @@ public class AvatarCustomiser : Photon.PunBehaviour {
 	public OvrAvatar ovrAvatar;
     public TextMeshPro nameplate;
 
-    private string nameToSet;
-    private Color colorToSet;
+    public string Name { get; private set; }
+    public Color Color { get; private set; }
 
     private bool isDoneLoading = false;
 
@@ -30,7 +30,7 @@ public class AvatarCustomiser : Photon.PunBehaviour {
     [PunRPC]
     public void SetName(string name)
     {
-        nameToSet = name;
+        this.Name = name;
 
         if (isDoneLoading)
         {
@@ -40,7 +40,7 @@ public class AvatarCustomiser : Photon.PunBehaviour {
             nameplate.transform.SetParent(body);
             nameplate.transform.localPosition = Vector3.up * 0.5f;
 
-            nameplate.text = nameToSet;
+            nameplate.text = this.Name;
 
             if (photonView.isMine)
                 nameplate.text = "";
@@ -50,7 +50,7 @@ public class AvatarCustomiser : Photon.PunBehaviour {
     [PunRPC]
     public void SetColor(float r, float g, float b)
     {
-        colorToSet = new Color(r, g, b);
+        Color = new Color(r, g, b);
 
         if (isDoneLoading)
         {
@@ -60,7 +60,7 @@ public class AvatarCustomiser : Photon.PunBehaviour {
                 
                 foreach (SkinnedMeshRenderer renderer in renderers)
                 {
-                    renderer.material.SetColor("_BaseColor", colorToSet);
+                    renderer.material.SetColor("_BaseColor", Color);
                 }
             }
         }
@@ -70,7 +70,7 @@ public class AvatarCustomiser : Photon.PunBehaviour {
     {
         isDoneLoading = true;
 
-        SetColor(colorToSet.r, colorToSet.g, colorToSet.b);
-        SetName(nameToSet);
+        SetColor(Color.r, Color.g, Color.b);
+        SetName(Name);
     }
 }

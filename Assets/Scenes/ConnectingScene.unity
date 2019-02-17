@@ -3040,7 +3040,7 @@ MonoBehaviour:
   remoteAvatar: {fileID: 1591226083005062, guid: a91def31a0f48704588cd358c0429120,
     type: 2}
   name: Test
-  color: {r: 1, g: 0, b: 0, a: 0}
+  color: {r: 1, g: 0, b: 0.5939965, a: 0}
 --- !u!114 &802063916
 MonoBehaviour:
   m_ObjectHideFlags: 0
