@@ -31,6 +31,7 @@ internal static class CustomTypes
         PhotonPeer.RegisterType(typeof(Vector3), (byte)'V', SerializeVector3, DeserializeVector3);
         PhotonPeer.RegisterType(typeof(Quaternion), (byte)'Q', SerializeQuaternion, DeserializeQuaternion);
         PhotonPeer.RegisterType(typeof(PhotonPlayer), (byte)'P', SerializePhotonPlayer, DeserializePhotonPlayer);
+        PhotonPeer.RegisterType(typeof(Color), (byte)'C', SerializeColor, DeserializeColor);
     }
 
 
@@ -173,5 +174,39 @@ internal static class CustomTypes
         }
     }
 
+    public static readonly byte[] memColor = new byte[4 * 4];
+    private static short SerializeColor(StreamBuffer outStream, object customobject)
+    {
+        Color co = (Color)customobject;
+
+        int index = 0;
+        lock (memColor)
+        {
+            byte[] bytes = memVector3;
+            Protocol.Serialize(co.r, bytes, ref index);
+            Protocol.Serialize(co.g, bytes, ref index);
+            Protocol.Serialize(co.b, bytes, ref index);
+            Protocol.Serialize(co.a, bytes, ref index);
+            outStream.Write(bytes, 0, 4 * 4);
+        }
+
+        return 4 * 4;
+    }
+
+    private static object DeserializeColor(StreamBuffer inStream, short length)
+    {
+        Color co = new Color();
+        lock (memColor)
+        {
+            inStream.Read(memColor, 0, 4 * 4);
+            int index = 0;
+            Protocol.Deserialize(out co.r, memColor, ref index);
+            Protocol.Deserialize(out co.g, memColor, ref index);
+            Protocol.Deserialize(out co.b, memColor, ref index);
+            Protocol.Deserialize(out co.a, memColor, ref index);
+        }
+
+        return co;
+    }
     #endregion
 }

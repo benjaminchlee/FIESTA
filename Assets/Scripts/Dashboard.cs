@@ -340,6 +340,7 @@ public class Dashboard : Photon.MonoBehaviour
         }
     }
     
+    [PunRPC]
     public void ColorPickerValueChanged(Color value)
     {
         if (IsOriginalOwner())
@@ -351,21 +352,7 @@ public class Dashboard : Photon.MonoBehaviour
         }
         else
         {
-            photonView.RPC("ColorPickerValueChanged", originalOwner, value.r, value.g, value.b);
-        }
-    }
-
-    [PunRPC]
-    public void ColorPickerValueChanged(float r, float g, float b)
-    {
-        if (IsOriginalOwner())
-        {
-            ResetChartOwnership();
-
-            Color color = new Color(r, g, b, 1);
-
-            standardChart.Color = color;
-            splomChart.Color = color;
+            photonView.RPC("ColorPickerValueChanged", originalOwner, value);
         }
     }
 

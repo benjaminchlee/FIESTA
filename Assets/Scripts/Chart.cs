@@ -1275,10 +1275,7 @@ public class Chart : Photon.MonoBehaviour
             stream.SendNext(YDimension);
             stream.SendNext(ZDimension);
             stream.SendNext(ColorDimension);
-            stream.SendNext(Color.r);
-            stream.SendNext(Color.g);
-            stream.SendNext(Color.b);
-            stream.SendNext(Color.a);
+            stream.SendNext(Color);
             stream.SendNext(SizeDimension);
             stream.SendNext(Size);
             stream.SendNext(Scale);
@@ -1299,8 +1296,7 @@ public class Chart : Photon.MonoBehaviour
             YDimension = (string)stream.ReceiveNext();
             ZDimension = (string)stream.ReceiveNext();
             ColorDimension = (string)stream.ReceiveNext();
-            Color col = new Color((float)stream.ReceiveNext(), (float)stream.ReceiveNext(), (float)stream.ReceiveNext(), (float)stream.ReceiveNext());
-            Color = col;
+            Color = (Color)stream.ReceiveNext();
             SizeDimension = (string)stream.ReceiveNext();
             Size = (float)stream.ReceiveNext();
             Scale = (Vector3)stream.ReceiveNext();
