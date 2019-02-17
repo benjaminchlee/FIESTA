@@ -139,9 +139,7 @@ public class ChartManager : MonoBehaviour {
         chart.Gradient = dupe.Gradient;
         chart.SizeDimension = dupe.SizeDimension;
         chart.Size = dupe.Size;
-        chart.Width = dupe.Width;
-        chart.Height = dupe.Height;
-        chart.Depth = dupe.Depth;
+        chart.Scale = dupe.Scale;
         chart.AttributeFilters = dupe.AttributeFilters;
 
         vis.transform.position = dupe.transform.position;

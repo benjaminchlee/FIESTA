@@ -368,6 +368,59 @@ public class Chart : Photon.MonoBehaviour
         }
     }
 
+    public Vector3 Scale
+    {
+        get { return new Vector3(visualisation.width, visualisation.height, visualisation.depth); }
+        set
+        {
+            if (value == Scale)
+                return;
+
+            visualisation.width = value.x;
+            visualisation.height = value.y;
+            visualisation.depth = value.z;
+
+            CenterVisualisation();
+            SetColliderBounds();
+
+            switch (chartType)
+            {
+                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                    // Update the axes objects with the length
+                    GameObject axis = visualisation.theVisualizationObject.X_AXIS;
+                    if (axis != null)
+                    {
+                        axis.GetComponent<Axis>().Length = value.x;
+                        axis.GetComponent<Axis>().UpdateLength();
+                    }
+                    axis = visualisation.theVisualizationObject.Y_AXIS;
+                    if (axis != null)
+                    {
+                        axis.GetComponent<Axis>().Length = value.y;
+                        axis.GetComponent<Axis>().UpdateLength();
+                    }
+                    axis = visualisation.theVisualizationObject.Z_AXIS;
+                    if (axis != null)
+                    {
+                        axis.GetComponent<Axis>().Length = value.z;
+                        axis.GetComponent<Axis>().UpdateLength();
+                    }
+
+                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
+                    ForceViewScale();
+                    break;
+
+                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+                    ResizeAndPositionScatterplotMatrix();
+                    break;
+
+                case AbstractVisualisation.VisualisationTypes.FACET:
+                    AdjustAndUpdateFacet();
+                    break;
+            }
+        }
+    }
+
     public float Width
     {
         get { return visualisation.width; }
@@ -837,9 +890,7 @@ public class Chart : Photon.MonoBehaviour
                     y = ((Height / 2) - delta) - 2 * delta * j;
 
                     Chart subChart = splomCharts[i, j];
-                    subChart.Width = w * 0.75f;
-                    subChart.Height = h * 0.75f;
-                    subChart.Depth = d * 0.75f;
+                    subChart.Scale = new Vector3(w, h, d) * 0.75f;
                     subChart.transform.localPosition = new Vector3(x, y, 0);
                     subChart.transform.rotation = transform.rotation;
                 }
@@ -960,8 +1011,7 @@ public class Chart : Photon.MonoBehaviour
                     // Position such that subcharts start from 1 etcp from the edge, and are spaced two etcp distances from each other
                     float x = (-(Width / 2) + xDelta) + 2 * xDelta * j;
                     float y = ((Height / 2) - yDelta) - 2 * yDelta * i;
-                    subChart.Width = w * 0.75f;
-                    subChart.Height = h * 0.65f;
+                    subChart.Scale = new Vector3(w * 0.75f, h * 0.65f, 1);
                     subChart.transform.localPosition = new Vector3(x, y, 0);
                     subChart.transform.rotation = transform.rotation;
 
@@ -1117,11 +1167,7 @@ public class Chart : Photon.MonoBehaviour
     {
         foreach (View view in visualisation.theVisualizationObject.viewList)
         {
-            view.transform.localScale = new Vector3(
-                visualisation.width,
-                visualisation.height,
-                visualisation.depth
-            );
+            view.transform.localScale = Scale;
         }
     }
 
@@ -1235,9 +1281,7 @@ public class Chart : Photon.MonoBehaviour
             stream.SendNext(Color.a);
             stream.SendNext(SizeDimension);
             stream.SendNext(Size);
-            stream.SendNext(Width);
-            stream.SendNext(Height);
-            stream.SendNext(Depth);
+            stream.SendNext(Scale);
             stream.SendNext(ScatterplotMatrixSize);
             stream.SendNext(FacetDimension);
             stream.SendNext(FacetSize);
@@ -1259,9 +1303,7 @@ public class Chart : Photon.MonoBehaviour
             Color = col;
             SizeDimension = (string)stream.ReceiveNext();
             Size = (float)stream.ReceiveNext();
-            Width = (float)stream.ReceiveNext();
-            Height = (float)stream.ReceiveNext();
-            Depth = (float)stream.ReceiveNext();
+            Scale = (Vector3)stream.ReceiveNext();
             ScatterplotMatrixSize = (int)stream.ReceiveNext();
             FacetDimension = (string)stream.ReceiveNext();
             FacetSize = (int)stream.ReceiveNext();
