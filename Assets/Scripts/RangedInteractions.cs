@@ -944,6 +944,10 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             {
                 isDraggable = true;
                 rangedPullGameObject = collidedObject;
+
+                // As we will be sending updates on it, we need to take ownership of it
+                rangedPullGameObject.GetComponent<PhotonView>().TransferOwnership(PhotonNetwork.player);
+
                 SetInteractionState(InteractionState.RangedInteracting);
             }
         }
