@@ -55,6 +55,8 @@ public class DashboardSlider : MonoBehaviour {
             DashboardSliderValueChanged.Invoke(e.value);
 
             previousValue = e.value;
+
+            physicsSlider.SetValue(physicsSlider.GetValue());
         }
     }
 

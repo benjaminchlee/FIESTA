@@ -8,6 +8,8 @@ TagManager:
   - DisplayScreen
   - Chart
   - ChartRaycastCollider
+  - MenuButton
+  - PhysicsMenuButton
   layers:
   - Default
   - TransparentFX

@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Util;
 using VRTK;
+using VRTK.Controllables.PhysicsBased;
 
 public class RangedInteractions : VRTK_StraightPointerRenderer {
 
@@ -86,6 +87,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     private Quaternion rangedPullObjectStartRotation;
     private GameObject rangedPullGameObject;
     private bool isPullable;
+    private bool isDraggable;
     private bool pullObjectIsPrototype;
 
     [Header("Details on Demand Parameters")]
@@ -121,7 +123,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     /// <summary>
     /// Networked objects
     /// </summary>
-    private GameObject tracer;
+    private GameObject networkedTracer;
 
     /// <summary>
     /// The state of interaction the user is currently in. Note that this scope only extends to that of touchpad interactions, and not
@@ -202,10 +204,10 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             brushingInput2 = brushingAndLinking.input2;
 
             // Instantiate tracer
-            tracer = PhotonNetwork.Instantiate("Tracer", Vector3.zero, Quaternion.identity, 0);
+            networkedTracer = PhotonNetwork.Instantiate("Tracer", Vector3.zero, Quaternion.identity, 0);
             // Hide the mesh for the owner
-            tracer.GetComponent<Renderer>().enabled = false;
-            tracer.transform.localScale = Vector3.zero;
+            networkedTracer.GetComponent<Renderer>().enabled = false;
+            networkedTracer.transform.localScale = Vector3.zero;
 
             actualTracer.GetComponentInParent<VRTK_TransformFollow>().moment = VRTK_TransformFollow.FollowMoment.OnUpdate;
         }
@@ -385,7 +387,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             RaycastHit pointerCollidedWith;
             GameObject collidedObject = GetCollidedObject(out pointerCollidedWith);
 
-            if (collidedObject != null && (collidedObject.tag == "HtmlElement" || collidedObject.tag == "HtmlAxisElement"))
+            if (collidedObject != null && collidedObject.CompareTag("MenuButton") || collidedObject.CompareTag("PhysicsMenuButton"))
             {
                 previousState = activeState;
                 RangedInteractionTriggerStart(e);
@@ -594,19 +596,19 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
     private void Update()
     {
-        if (tracer != null)
+        if (networkedTracer != null)
         {
             if (IsTracerVisible())
             {
                 // Set the size of the tracer accordingly
-                tracer.transform.position = actualTracer.transform.position;
-                tracer.transform.rotation = actualTracer.transform.rotation;
-                tracer.transform.localScale = actualTracer.transform.localScale;
+                networkedTracer.transform.position = actualTracer.transform.position;
+                networkedTracer.transform.rotation = actualTracer.transform.rotation;
+                networkedTracer.transform.localScale = actualTracer.transform.localScale;
             }
             else
             {
                 // Hide the networked tracer by scaling it to zero
-                tracer.transform.localScale = Vector3.zero;
+                networkedTracer.transform.localScale = Vector3.zero;
             }
         }
     }
@@ -614,28 +616,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     protected override void FixedUpdate()
     {
         base.FixedUpdate();
-
-        if (IsTracerVisible())
-        {
-            // Disable the ability to grab objects directly with the pointer if this is pointing at a chart
-            RaycastHit hit = GetDestinationHit();
-            if (objectInteractor != null)
-            {
-                objectInteractor.GetComponentInChildren<SphereCollider>().radius = 0.00000001f;
-
-                if (hit.collider != null && (hit.collider.gameObject.CompareTag("ChartRaycastCollider") || hit.collider.gameObject.CompareTag("Chart")))
-                {
-                    vrtkPointer.interactWithObjects = false;
-                    objectInteractor.SetActive(false);
-                }
-                else
-                {
-                    vrtkPointer.interactWithObjects = true;
-                    objectInteractor.SetActive(true);
-                }
-            }
-        }
-
+        
         switch (activeState)
         {
             case InteractionState.RangedBrushing:
@@ -953,6 +934,18 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
                 pullObjectIsPrototype = rangedPullGameObject.GetComponent<Chart>().IsPrototype();
             }
+            // Otherwise, if it is a menu button, click it
+            else if (collidedObject.CompareTag("MenuButton"))
+            {
+                collidedObject.GetComponent<MenuButton>().Click();
+            }
+            // Otherwise, if it is a physics based menu button, start to drag it
+            else if (collidedObject.CompareTag("PhysicsMenuButton"))
+            {
+                isDraggable = true;
+                rangedPullGameObject = collidedObject;
+                SetInteractionState(InteractionState.RangedInteracting);
+            }
         }
     }
 
@@ -979,6 +972,13 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 }
             }
         }
+
+        if (isDraggable)
+        {
+            RaycastHit hit = GetDestinationHit();
+
+            rangedPullGameObject.GetComponent<Rigidbody>().MovePosition(hit.point);
+        }
     }
 
     private void RangedInteractionTriggerEnd(ControllerInteractionEventArgs e)
@@ -992,22 +992,9 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         {
             SetInteractionState(InteractionState.RangedInteraction);
         }
-        /*
-        GameObject collidedObject = GetCollidedObject();
-        // If the object the pointer is colliding with is the one which was initially "clicked"
-        if (collidedObject != null && collidedObject == rangedPullGameObject)
-        {
-            if (collidedObject.tag == "HtmlElement")
-            {
-                collidedObject.GetComponent<InteractableHtmlElement>().Click();
-            }
-            else if (collidedObject.tag == "HtmlAxisElement")
-            {
-                collidedObject.GetComponent<InteractableHtmlAxisElement>().Click();
-            }
-        }
-        */
+
         isPullable = false;
+        isDraggable = false;
     }
 
     private void RangedPullLoop()

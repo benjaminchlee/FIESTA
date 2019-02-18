@@ -40,6 +40,11 @@ public class MenuButton : MonoBehaviour {
         else
             transform.DOMove(targetPos, duration).SetEase(Ease.OutCirc).OnComplete(() => gameObject.SetActive(!toDisable));
     }
+    
+    public void Click()
+    {
+        ButtonClicked.Invoke(this);
+    }
 
     private void OnButtonClicked(object sender, InteractableObjectEventArgs e)
     {
