@@ -6,23 +6,26 @@ using UnityEditor;
 using System;
 using System.Linq;
 using UnityEngine.Rendering;
+using VRTK.Examples;
 
 public class BrushingAndLinking : Photon.PunBehaviour
 {
 
-    [SerializeField] public ComputeShader computeShader;
+    [SerializeField]
+    public ComputeShader computeShader;
+
     ComputeBuffer buffer;
-
     ComputeBuffer brushedIndicesBuffer;
-
     ComputeBuffer filteredIndicesBuffer;
 
-    [SerializeField] public Material myRenderMaterial;
+    [SerializeField]
+    public Material myRenderMaterial;
 
     public RenderTexture BrushedIndicesTexture { get; private set; }
 
-    int kernelHandleBrushTexture;
-    int kernelHandleBrushArrayIndices;
+    private int kernelHandleBrushTexture;
+    private int kernelHandleBrushArrayIndices;
+    private int kernelResetBrushTexture;
 
     GameObject viewHolder;
     int texSize;
@@ -92,19 +95,23 @@ public class BrushingAndLinking : Photon.PunBehaviour
     // private fields
     private bool activated = false;
 
+    private void Awake()
+    {
+        // Create a copy of the compute shader that is specfic to this brushing and linking script
+        computeShader = Instantiate(computeShader);
+
+        InitialiseShaders();
+        InitialiseBuffersAndTextures();
+
+        ChartManager.Instance.ChartAdded.AddListener(ChartAdded);
+    }
+
     // Use this for initialization
     void Start()
     {
         brushingVisualisations = new List<Visualisation>();
 
-        SetSharedColorFromAvatar();
-        InitialiseShaders();
-        InitialiseBuffersAndTextures();
-
-        foreach (Chart chart in ChartManager.Instance.Charts)
-            ChartAdded(chart);
-
-        ChartManager.Instance.ChartAdded.AddListener(ChartAdded);
+        ResetBrushTexture();
     }
 
     // Update is called once per frame
@@ -133,7 +140,6 @@ public class BrushingAndLinking : Photon.PunBehaviour
         {
             updateBrushTexture();
 
-            //EXPERIMENTAL - GET details of original data
             getDetailsOnDemand();
         }
     }
@@ -142,6 +148,7 @@ public class BrushingAndLinking : Photon.PunBehaviour
     {
         kernelHandleBrushTexture = computeShader.FindKernel("CSMain");
         kernelHandleBrushArrayIndices = computeShader.FindKernel("ComputeBrushedIndicesArray");
+        kernelResetBrushTexture = computeShader.FindKernel("ResetBrushTexture");
     }
 
     public void InitialiseBuffersAndTextures()
@@ -170,7 +177,7 @@ public class BrushingAndLinking : Photon.PunBehaviour
         BrushingAndLinking[] bals = FindObjectsOfType<BrushingAndLinking>();
         foreach (BrushingAndLinking bal in bals)
         {
-            if (bal.BrushedIndicesTexture != null)
+            if (bal.BrushedIndicesTexture != null && bal.BrushedIndicesTexture.IsCreated())
                 BrushedIndicesTexture = bal.BrushedIndicesTexture;
         }
 
@@ -187,8 +194,17 @@ public class BrushingAndLinking : Photon.PunBehaviour
 
         computeShader.SetTexture(kernelHandleBrushTexture, "Result", BrushedIndicesTexture);
         computeShader.SetTexture(kernelHandleBrushArrayIndices, "Result", BrushedIndicesTexture);
+        computeShader.SetTexture(kernelResetBrushTexture, "Result", BrushedIndicesTexture);
         computeShader.SetFloat("_size", (float)texSize);
         computeShader.SetFloats("brushColor", privateBrushColor.r, privateBrushColor.g, privateBrushColor.b, privateBrushColor.a);
+        if (photonView.isMine)
+            photonView.RPC("SetSharedColor", PhotonTargets.AllBuffered, PlayerPreferencesManager.Instance.SharedBrushColor);
+    }
+
+    [PunRPC]
+    private void SetSharedColor(Color color)
+    {
+        sharedBrushColor = color;
         computeShader.SetFloats("sharedBrushColor", sharedBrushColor.r, sharedBrushColor.g, sharedBrushColor.b, sharedBrushColor.a);
     }
 
@@ -220,7 +236,7 @@ public class BrushingAndLinking : Photon.PunBehaviour
     }
 
 
-    private void ChartAdded(Chart chart)
+    public void ChartAdded(Chart chart)
     {
         if (photonView.isMine)
         {
@@ -237,6 +253,11 @@ public class BrushingAndLinking : Photon.PunBehaviour
     {
         yield return null;
 
+        while (chart.Visualisation.theVisualizationObject.viewList.Count == 0)
+        {
+            yield return null;
+        }
+
         foreach (var v in chart.Visualisation.theVisualizationObject.viewList)
         {
             v.BigMesh.SharedMaterial.SetTexture("_BrushedTexture", BrushedIndicesTexture);
@@ -247,23 +268,7 @@ public class BrushingAndLinking : Photon.PunBehaviour
             v.BigMesh.SharedMaterial.SetColor("sharedBrushColor", sharedBrushColor);
         }
     }
-
-    /// <summary>
-    /// Sets the color of the shared brush based on the owner's avatar
-    /// </summary>
-    private void SetSharedColorFromAvatar()
-    {
-        AvatarCustomiser[] avs = FindObjectsOfType<AvatarCustomiser>();
-
-        foreach (AvatarCustomiser av in avs)
-        {
-            if (av.photonView.ownerId == photonView.ownerId)
-            {
-                sharedBrushColor = av.Color;
-            }
-        }
-    }
-
+    
     /// <summary>
     /// runs the compute shader kernel and updates the brushed indices
     /// </summary>
@@ -392,6 +397,11 @@ public class BrushingAndLinking : Photon.PunBehaviour
                 1);
             detailsOnDemandRequest = AsyncGPUReadback.Request(brushedIndicesBuffer);
         }
+    }
+
+    public void ResetBrushTexture()
+    {
+        computeShader.Dispatch(kernelResetBrushTexture, Mathf.CeilToInt(texSize / 32), Mathf.CeilToInt(texSize / 32), 1);
     }
 
     /// <summary>

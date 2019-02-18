@@ -689,6 +689,12 @@ public class Chart : Photon.MonoBehaviour
 
         if (DataSource == null)
             DataSource = ChartManager.Instance.DataSource;
+
+        // If this chart was instantiated by someone else, register it
+        if (!photonView.isMine)
+        {
+            ChartManager.Instance.RegisterVisualisation(this);
+        }
     }
 
     private void SetAsScatterplot()

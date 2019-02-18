@@ -255,7 +255,7 @@ Shader "IATK/OutlineDots"
 				{
 					FS_OUTPUT o;
 
-					if (input.brushedColor.w > 0) {
+					if (input.brushedColor.a > 0) {
 						o.color = tex2D(_MainTex, input.tex0.xy) * float4(input.brushedColor.r, input.brushedColor.g, input.brushedColor.b, input.color.a);
 					}
 					else

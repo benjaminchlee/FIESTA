@@ -3017,6 +3017,7 @@ GameObject:
   - component: {fileID: 802063917}
   - component: {fileID: 802063916}
   - component: {fileID: 802063915}
+  - component: {fileID: 802063919}
   m_Layer: 0
   m_Name: Networking
   m_TagString: Untagged
@@ -3039,8 +3040,6 @@ MonoBehaviour:
     type: 2}
   remoteAvatar: {fileID: 1591226083005062, guid: a91def31a0f48704588cd358c0429120,
     type: 2}
-  name: Test
-  color: {r: 1, g: 0, b: 0.5939965, a: 0}
 --- !u!114 &802063916
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3093,6 +3092,31 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &802063919
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 802063914}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c83e06d07b8f654981913996327bdf4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  WorkInOfflineMode: 0
+  AutoConnect: 0
+  AutoDisconnect: 0
+  AutoTransmit: 1
+  SamplingRate: 24000
+  FrameDuration: 20000
+  Bitrate: 30000
+  VoiceDetection: 0
+  VoiceDetectionThreshold: 0.01
+  PlayDelayMs: 200
+  MicrophoneType: 0
+  DebugLostPercent: 0
+  DebugInfo: 0
+  Encrypt: 0
 --- !u!1 &833501522
 GameObject:
   m_ObjectHideFlags: 0
@@ -6678,6 +6702,49 @@ MonoBehaviour:
   gripSenseAxisChanged: 0
   gripSensePressed: 0
   controllerVisible: 1
+--- !u!1 &1628180570
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1628180572}
+  - component: {fileID: 1628180571}
+  m_Layer: 0
+  m_Name: PlayerPreferencesManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1628180571
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1628180570}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46cea0fc6f7d3ca4dbf8f20f6736f10c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  avatarName: Test
+  avatarColor: {r: 1, g: 0, b: 0, a: 1}
+  sharedBrushColor: {r: 1, g: 0, b: 0, a: 1}
+--- !u!4 &1628180572
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1628180570}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 16.729618, y: -0.6735944, z: -5.3325477}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 11
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1628990064
 GameObject:
   m_ObjectHideFlags: 0

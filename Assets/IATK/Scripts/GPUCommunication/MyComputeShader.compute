@@ -1,6 +1,7 @@
 ﻿// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
 #pragma kernel ComputeBrushedIndicesArray
+#pragma kernel ResetBrushTexture
 #include "UnityCG.cginc"
 
 // Create a RenderTexture with enableRandomWrite flag and set it
@@ -244,4 +245,12 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 			Result[id.xy] = float4(0.0, 0.0, 0.0, 0.0); // not brushed
 		}
 	}
+}
+
+[numthreads(32, 32, 1)]
+void ResetBrushTexture(uint3 id : SV_DispatchThreadID) {
+
+	int idx = id.x + id.y * _size;
+
+	Result[id.xy] = float4(0.0, 0.0, 0.0, 0.0);
 }

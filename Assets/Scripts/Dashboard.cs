@@ -69,14 +69,9 @@ public class Dashboard : Photon.MonoBehaviour
 
     private DashboardPage activePage;
     private DashboardPage activeChart;
-    
-    private void Start()
+
+    private void Awake()
     {
-        originalOwner = photonView.owner;
-
-        if (dataSource == null)
-            dataSource = ChartManager.Instance.DataSource;
-
         allButtons = standardButtons.Union(splomButtons)
             .Union(dimensionsButtons)
             .Union(sizeButtons)
@@ -87,6 +82,14 @@ public class Dashboard : Photon.MonoBehaviour
             //.Union(specialColorButtons)
             //.Union(specialFacetButtons)
             .ToList();
+    }
+
+    private void Start()
+    {
+        originalOwner = photonView.owner;
+
+        if (dataSource == null)
+            dataSource = ChartManager.Instance.DataSource;
 
         if (photonView.isMine)
         {
@@ -118,6 +121,11 @@ public class Dashboard : Photon.MonoBehaviour
             splomChart.Depth = splomTransform.localScale.z;
 
             ChangePage(DashboardPage.STANDARD);
+        }
+        else
+        {
+            ChartManager.Instance.RegisterVisualisation(standardChart);
+            ChartManager.Instance.RegisterVisualisation(splomChart);
         }
     }
 

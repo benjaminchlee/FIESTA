@@ -182,7 +182,7 @@ internal static class CustomTypes
         int index = 0;
         lock (memColor)
         {
-            byte[] bytes = memVector3;
+            byte[] bytes = memColor;
             Protocol.Serialize(co.r, bytes, ref index);
             Protocol.Serialize(co.g, bytes, ref index);
             Protocol.Serialize(co.b, bytes, ref index);

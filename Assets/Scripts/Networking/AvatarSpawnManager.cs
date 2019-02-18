@@ -14,11 +14,6 @@
         private bool sceneLoaded = false;
         private bool connected = false;
 
-        [SerializeField]
-        private string name;
-        [SerializeField]
-        private Color color;
-
         void Awake() {
             if (localAvatar == null) {
                 Debug.LogError("AvatarSpawnManager is missing a reference to the local avatar prefab!");
@@ -125,8 +120,8 @@
                     if (photonView.isMine)
                     {
                         AvatarCustomiser avatarCustomiser = player.GetComponent<AvatarCustomiser>();
-                        avatarCustomiser.photonView.RPC("SetColor", PhotonTargets.AllBuffered, color.r, color.g, color.b);
-                        avatarCustomiser.photonView.RPC("SetName", PhotonTargets.AllBuffered, name);
+                        avatarCustomiser.photonView.RPC("SetColor", PhotonTargets.AllBuffered, PlayerPreferencesManager.Instance.AvatarColor);
+                        avatarCustomiser.photonView.RPC("SetName", PhotonTargets.AllBuffered, PlayerPreferencesManager.Instance.AvatarName);
                     }
                 }
             }

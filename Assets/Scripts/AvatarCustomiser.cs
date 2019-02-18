@@ -48,9 +48,9 @@ public class AvatarCustomiser : Photon.PunBehaviour {
     }
 
     [PunRPC]
-    public void SetColor(float r, float g, float b)
+    public void SetColor(Color color)
     {
-        Color = new Color(r, g, b);
+        Color = color;
 
         if (isDoneLoading)
         {
@@ -70,7 +70,7 @@ public class AvatarCustomiser : Photon.PunBehaviour {
     {
         isDoneLoading = true;
 
-        SetColor(Color.r, Color.g, Color.b);
+        SetColor(Color);
         SetName(Name);
     }
 }

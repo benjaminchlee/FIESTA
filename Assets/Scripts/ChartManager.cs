@@ -19,7 +19,8 @@ public class ChartManager : MonoBehaviour {
         set { dataSource = value; }
     }
     
-    public List<Chart> Charts { get; private set; }
+    //public List<Chart> Charts { get; private set; }
+    public List<Chart> Charts;
     public List<Visualisation> Visualisations { get; private set; }
 
     [Serializable]
