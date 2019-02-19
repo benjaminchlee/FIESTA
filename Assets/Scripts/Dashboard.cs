@@ -14,7 +14,8 @@ public enum DashboardDimension
     Z,
     FACETBY,
     COLORBY,
-    SIZEBY
+    SIZEBY,
+    COLORPALETTE
 }
 
 public enum DashboardPage
@@ -274,6 +275,11 @@ public class Dashboard : Photon.MonoBehaviour
                     standardChart.SizeDimension = dimensionName;
                     splomChart.SizeDimension = dimensionName;
                     break;
+
+                case DashboardDimension.COLORPALETTE:
+                    standardChart.ColorPaletteDimension = dimensionName;
+                    splomChart.ColorPaletteDimension = dimensionName;
+                    break;
             }
         }
         else
@@ -400,6 +406,23 @@ public class Dashboard : Photon.MonoBehaviour
             splomChart.Gradient = gradient;
         }
     }
+
+    [PunRPC]
+    public void ColorPaletteChanged(Color[] palette)
+    {
+        if (IsOriginalOwner())
+        {
+            ResetChartOwnership();
+
+            standardChart.ColorPalette = palette;
+            splomChart.ColorPalette = palette;
+        }
+        else
+        {
+            photonView.RPC("ColorPaletteChanged", originalOwner, palette);
+        }
+    }
+
     /// <summary>
     /// Resets the ownership of all the subcharts back to the original owner of the dashboard (as that client is the one which
     /// has the proper links and references to the subcharts

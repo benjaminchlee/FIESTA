@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class AvatarCustomiser : Photon.PunBehaviour {
 
@@ -29,6 +30,8 @@ public class AvatarCustomiser : Photon.PunBehaviour {
                 childGameObjects.Add(child.gameObject);
             }
         }
+
+        SceneManager.sceneLoaded += OnSceneDoneLoading;
     }
 
     [PunRPC]
@@ -77,4 +80,11 @@ public class AvatarCustomiser : Photon.PunBehaviour {
         SetColor(Color);
         SetName(Name);
     }
+
+    private void OnSceneDoneLoading(Scene arg0, LoadSceneMode arg1)
+    {
+        if (arg0.name == "MainScene")
+            SetColor(Color);
+    }
+
 }

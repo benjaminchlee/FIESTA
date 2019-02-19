@@ -52,7 +52,7 @@ namespace IATK
 
                 for (int i = 0; i < v.coloursPalette.Length; i++)
                 {
-                    legend += "<color=#" + ColorUtility.ToHtmlStringRGB(v.coloursPalette[i]) + "> *** </color>" + stringValues[i] + "\n";
+                    legend += "<color=#" + ColorUtility.ToHtmlStringRGB(v.coloursPalette[i]) + "> ||||| </color>" + stringValues[i] + "\n";
                 }
             }
 

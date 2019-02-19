@@ -89,4 +89,9 @@ MonoBehaviour:
   - CloseButtons
   - OpenButtons
   - ReverseGradientButtons
+  - ColorPaletteChanged
+  - CreateColorButtons
+  - DestroyColorButtons
+  - HideColorPalettePicker
+  - ShowColorPalettePicker
   DisableAutoOpenWizard: 1

@@ -11,33 +11,31 @@ using UnityEngine.UI;
 public class Menu : Photon.MonoBehaviour {
 
     [SerializeField]
-    private DashboardDimension dimension;
+    protected DashboardDimension dimension;
     [SerializeField]
-    private DashboardPage page;
+    protected DashboardPage page;
     [SerializeField]
-    private CSVDataSource dataSource;
+    protected CSVDataSource dataSource;
     [SerializeField]
-    private GameObject menuButtonPrefab;
+    protected float spacing = 0.02f;
     [SerializeField]
-    private float spacing = 0.02f;
+    protected bool includeNoneButton = false;
     [SerializeField]
-    private bool includeNoneButton = false;
+    protected List<GameObject> objectsToShowWhenDefined;
     [SerializeField]
-    private List<GameObject> objectsToShowWhenDefined;
+    protected List<GameObject> objectsToHideWhenDefined;
     [SerializeField]
-    private List<GameObject> objectsToHideWhenDefined;
+    protected List<GameObject> objectsToShowWhenOpen;
     [SerializeField]
-    private List<GameObject> objectsToShowWhenOpen;
+    protected List<GameObject> objectsToHideWhenOpen;
     [SerializeField]
-    private List<GameObject> objectsToHideWhenOpen;
-    [SerializeField]
-    private bool animateHidingAndShowing;
+    protected bool animateHidingAndShowing;
 
     [Serializable]
     public class DimensionChangedEvent : UnityEvent<DashboardDimension, string> { }
     public DimensionChangedEvent DimensionChanged;
-    
-    private int selectedIndex;
+
+    protected int selectedIndex;
     public string SelectedButton
     {
         get
@@ -45,9 +43,9 @@ public class Menu : Photon.MonoBehaviour {
             return buttons[selectedIndex].Text;
         }
     }
-    
-    private List<MenuButton> buttons;
-    private bool isOpen;
+
+    protected List<MenuButton> buttons;
+    protected bool isOpen;
 
     private void Start()
     {
@@ -61,7 +59,7 @@ public class Menu : Photon.MonoBehaviour {
         CloseButtons(0);
     }
 
-    private void CreateButtons()
+    protected void CreateButtons()
     {
         List<string> dimensions = GetAttributesList();
 
@@ -70,7 +68,7 @@ public class Menu : Photon.MonoBehaviour {
 
         foreach (string dimensionName in dimensions)
         {
-            GameObject go = Instantiate(menuButtonPrefab);
+            GameObject go = (GameObject) Instantiate(Resources.Load("MenuButton"));
             go.transform.SetParent(transform);
             go.transform.position = transform.position;
             go.transform.rotation = transform.rotation;
@@ -87,7 +85,7 @@ public class Menu : Photon.MonoBehaviour {
         selectedIndex = 0;
     }
 
-    private List<string> GetAttributesList()
+    protected virtual List<string> GetAttributesList()
     {
         List<string> dimensions = new List<string>();
         for (int i = 0; i < dataSource.DimensionCount; ++i)
@@ -98,7 +96,7 @@ public class Menu : Photon.MonoBehaviour {
     }
 
     [PunRPC]
-    private void OpenButtons()
+    protected void OpenButtons()
     {
         float height = buttons[0].gameObject.transform.localScale.y;
 
@@ -108,7 +106,7 @@ public class Menu : Photon.MonoBehaviour {
 
             Vector3 targetPos = buttons[i].transform.localPosition;
             targetPos.y -= (i * (height + spacing));
-            buttons[i].AnimateTowards(targetPos, 0.5f, true);
+            buttons[i].AnimateTowards(targetPos, 0.35f, true);
         }
 
         // Switch object visibility associated with this menu
@@ -134,13 +132,13 @@ public class Menu : Photon.MonoBehaviour {
     }
 
     [PunRPC]
-    private void CloseButtons(int selectedIndex)
+    protected void CloseButtons(int selectedIndex)
     {
         this.selectedIndex = selectedIndex;
 
         for (int i = 0; i < buttons.Count; i++)
         {
-            buttons[i].AnimateTowards(Vector3.zero, 0.5f, true, (i != selectedIndex));
+            buttons[i].AnimateTowards(Vector3.zero, 0.35f, true, (i != selectedIndex));
         }
 
         // Switch object visibility associated with this menu

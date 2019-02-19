@@ -19,6 +19,8 @@ public class HueSlider : MonoBehaviour {
 
     public void SetHue(float value)
     {
+        value = 1 - value;
+
         Vector3 pos = transform.localPosition;
         pos.x = Mathf.Lerp(minClamp, maxClamp, value);
         transform.localPosition = pos;

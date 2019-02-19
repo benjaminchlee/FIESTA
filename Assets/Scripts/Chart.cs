@@ -5,7 +5,9 @@ using IATK;
 using VRTK;
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using DG.Tweening;
+using ExitGames.Client.Photon;
 
 /// <summary>
 /// Acts as a wrapper for IATK's visualisation script
@@ -221,15 +223,41 @@ public class Chart : Photon.MonoBehaviour
 
             switch (chartType)
             {
-                //case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
-                //    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
-                //    break;
-
                 case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
                 case AbstractVisualisation.VisualisationTypes.FACET:
                     foreach (Chart chart in subCharts)
                     {
                         chart.ColorDimension = value;
+                    }
+                    facetSplomKey.UpdateProperties(AbstractVisualisation.PropertyType.None, visualisation);
+                    break;
+            }
+        }
+    }
+
+    public string ColorPaletteDimension
+    {
+        get { return visualisation.colorPaletteDimension; }
+        set
+        {
+            if (value == ColorPaletteDimension)
+                return;
+
+            visualisation.colorPaletteDimension = value;
+
+            // Make sure the color palette is populated
+            if (value != "Undefined")
+                visualisation.coloursPalette = new Color[DataSource[value].Data.Distinct().Count()];
+
+            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
+
+            switch (chartType)
+            {
+                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+                case AbstractVisualisation.VisualisationTypes.FACET:
+                    foreach (Chart chart in subCharts)
+                    {
+                        chart.ColorPaletteDimension = value;
                     }
                     facetSplomKey.UpdateProperties(AbstractVisualisation.PropertyType.None, visualisation);
                     break;
@@ -329,6 +357,34 @@ public class Chart : Photon.MonoBehaviour
             case AbstractVisualisation.VisualisationTypes.FACET:
                 facetSplomKey.UpdateProperties(AbstractVisualisation.PropertyType.None, visualisation);
                 break;
+        }
+    }
+
+    public Color[] ColorPalette
+    {
+        get { return visualisation.coloursPalette; }
+        set
+        {
+            if (value == visualisation.coloursPalette)
+                return;
+
+            visualisation.coloursPalette = value;
+
+            switch (chartType)
+            {
+                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
+                    break;
+
+                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+                case AbstractVisualisation.VisualisationTypes.FACET:
+                    foreach (Chart chart in subCharts)
+                    {
+                        chart.ColorPalette = value;
+                    }
+                    facetSplomKey.UpdateProperties(AbstractVisualisation.PropertyType.None, visualisation);
+                    break;
+            }
         }
     }
 
@@ -1420,7 +1476,9 @@ public class Chart : Photon.MonoBehaviour
             stream.SendNext(YDimension);
             stream.SendNext(ZDimension);
             stream.SendNext(ColorDimension);
+            stream.SendNext(ColorPaletteDimension);
             stream.SendNext(Color);
+            stream.SendNext(ColorPalette);
             stream.SendNext(SizeDimension);
             stream.SendNext(Size);
             stream.SendNext(Scale);
@@ -1443,7 +1501,9 @@ public class Chart : Photon.MonoBehaviour
             YDimension = (string)stream.ReceiveNext();
             ZDimension = (string)stream.ReceiveNext();
             ColorDimension = (string)stream.ReceiveNext();
+            ColorPaletteDimension = (string) stream.ReceiveNext();
             Color = (Color)stream.ReceiveNext();
+            ColorPalette = (Color[]) stream.ReceiveNext();
             SizeDimension = (string)stream.ReceiveNext();
             Size = (float)stream.ReceiveNext();
             Scale = (Vector3)stream.ReceiveNext();

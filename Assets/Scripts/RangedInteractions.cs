@@ -937,15 +937,17 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             // Otherwise, if it is a menu button, click it
             else if (collidedObject.CompareTag("MenuButton"))
             {
-                // If it is not a menu button, it is a gradient button
-                MenuButton menuButtonScript = collidedObject.GetComponent<MenuButton>();
-                if (menuButtonScript != null)
+                if (collidedObject.GetComponent<MenuButton>() != null)
                 {
-                    menuButtonScript.Click();
+                    collidedObject.GetComponent<MenuButton>().Click();
                 }
-                else
+                else if (collidedObject.GetComponent<GradientButton>() != null)
                 {
                     collidedObject.GetComponent<GradientButton>().Click();
+                }
+                else if (collidedObject.GetComponent<ColorPaletteBinderButton>() != null)
+                {
+                    collidedObject.GetComponent<ColorPaletteBinderButton>().Click();
                 }
             }
             else if (collidedObject.CompareTag("SPLOMButton"))
