@@ -53,18 +53,7 @@ public class Dashboard : Photon.MonoBehaviour
     private List<GameObject> colorButtons;
     [SerializeField]
     private List<GameObject> facetButtons;
-
-    [SerializeField]
-    private List<GameObject> specialDimensionsButtons;
-    [SerializeField]
-    private List<GameObject> specialSizeButtons;
-    [SerializeField]
-    private List<GameObject> specialColorButtons;
-    [SerializeField]
-    private List<GameObject> specialColorButtons2;
-    [SerializeField]
-    private List<GameObject> specialFacetButtons;
-
+    
     private List<GameObject> allButtons;
 
     private DashboardPage activePage;
@@ -77,10 +66,6 @@ public class Dashboard : Photon.MonoBehaviour
             .Union(sizeButtons)
             .Union(colorButtons)
             .Union(facetButtons)
-            //.Union(specialDimensionsButtons)
-            //.Union(specialSizeButtons)
-            //.Union(specialColorButtons)
-            //.Union(specialFacetButtons)
             .ToList();
     }
 
@@ -231,40 +216,6 @@ public class Dashboard : Photon.MonoBehaviour
 
         activePage = page;
     }
-    
-    /// <summary>
-    /// This is called by the respective buttons/menus in their on enable functions
-    /// </summary>
-    /// <param name="page"></param>
-    /// <param name="activate"></param>
-    [PunRPC]
-    private void ToggleSpecialButtons(DashboardPage page, bool activate)
-    {
-        switch (page)
-        {
-            case DashboardPage.DIMENSIONS:
-                foreach (GameObject button in specialDimensionsButtons)
-                    button.SetActive(activate);
-                break;
-
-            case DashboardPage.SIZE:
-                foreach (GameObject button in specialSizeButtons)
-                    button.SetActive(activate);
-                break;
-
-            case DashboardPage.COLOR:
-                foreach (GameObject button in specialColorButtons)
-                    button.SetActive(activate);
-                foreach (GameObject button in specialColorButtons2)
-                    button.SetActive(!activate);
-                break;
-
-            case DashboardPage.FACET:
-                foreach (GameObject button in specialFacetButtons)
-                    button.SetActive(activate);
-                break;
-        }
-    }
 
     private void EnableAndDisableButtons(List<GameObject> buttonsToEnable)
     {
@@ -306,6 +257,7 @@ public class Dashboard : Photon.MonoBehaviour
                     if (dimensionName == "Undefined")
                     {
                         standardChart.FacetSize = 1;
+                        standardChart.FacetDimension = dimensionName;
                     }
                     else
                     {
@@ -415,7 +367,7 @@ public class Dashboard : Photon.MonoBehaviour
                 gradientList.Add(colorKey.color.b);
             }
 
-            photonView.RPC("ColorGradientChanged", originalOwner, gradientList);
+            photonView.RPC("ColorGradientChanged", originalOwner, gradientList.ToArray());
         }
     }
 

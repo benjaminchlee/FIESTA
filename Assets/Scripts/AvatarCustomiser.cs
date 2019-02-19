@@ -14,16 +14,20 @@ public class AvatarCustomiser : Photon.PunBehaviour {
 
     private bool isDoneLoading = false;
 
+    [SerializeField]
     private List<GameObject> childGameObjects;
 
     private void Awake()
     {
         ovrAvatar.AssetsDoneLoading.AddListener(OnAssetsDoneLoading);
 
-        childGameObjects = new List<GameObject>();
-        foreach (Transform child in transform)
+        if (childGameObjects == null)
         {
-            childGameObjects.Add(child.gameObject);
+            childGameObjects = new List<GameObject>();
+            foreach (Transform child in transform)
+            {
+                childGameObjects.Add(child.gameObject);
+            }
         }
     }
 

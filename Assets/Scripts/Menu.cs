@@ -2,12 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Remoting.Lifetime;
+using DG.Tweening;
 using UnityEngine;
 using IATK;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-public class Menu : MonoBehaviour {
+public class Menu : Photon.MonoBehaviour {
 
     [SerializeField]
     private DashboardDimension dimension;
@@ -22,17 +23,20 @@ public class Menu : MonoBehaviour {
     [SerializeField]
     private bool includeNoneButton = false;
     [SerializeField]
-    private bool hideSpecialButtonsWhenUndefined = false;
+    private List<GameObject> objectsToShowWhenDefined;
+    [SerializeField]
+    private List<GameObject> objectsToHideWhenDefined;
+    [SerializeField]
+    private List<GameObject> objectsToShowWhenOpen;
+    [SerializeField]
+    private List<GameObject> objectsToHideWhenOpen;
+    [SerializeField]
+    private bool animateHidingAndShowing;
 
     [Serializable]
     public class DimensionChangedEvent : UnityEvent<DashboardDimension, string> { }
     public DimensionChangedEvent DimensionChanged;
-
-    [Serializable]
-    public class SpecialButtonsChangedEvent : UnityEvent<DashboardPage, bool> { }
-    public SpecialButtonsChangedEvent SpecialButtonsChanged;
-
-
+    
     private int selectedIndex;
     public string SelectedButton
     {
@@ -54,6 +58,7 @@ public class Menu : MonoBehaviour {
         isOpen = false;
 
         CreateButtons();
+        CloseButtons(0);
     }
 
     private void CreateButtons()
@@ -92,6 +97,7 @@ public class Menu : MonoBehaviour {
         return dimensions;
     }
 
+    [PunRPC]
     private void OpenButtons()
     {
         float height = buttons[0].gameObject.transform.localScale.y;
@@ -104,13 +110,92 @@ public class Menu : MonoBehaviour {
             targetPos.y -= (i * (height + spacing));
             buttons[i].AnimateTowards(targetPos, 0.5f, true);
         }
+
+        // Switch object visibility associated with this menu
+        if (animateHidingAndShowing)
+        {
+            foreach (GameObject go in objectsToShowWhenOpen)
+            {
+                go.SetActive(true);
+                go.transform.DOScale(1f, 0.2f).SetEase(Ease.OutBack);
+            }
+            foreach (GameObject go in objectsToHideWhenOpen)
+            {
+                go.transform.DOScale(0f, 0.2f).SetEase(Ease.OutBack).OnComplete(() => go.SetActive(false));
+            }
+        }
+        else
+        {
+            foreach (GameObject go in objectsToShowWhenOpen)
+                go.SetActive(true);
+            foreach (GameObject go in objectsToHideWhenOpen)
+                go.SetActive(false);
+        }
     }
 
-    private void CloseButtons()
+    [PunRPC]
+    private void CloseButtons(int selectedIndex)
     {
+        this.selectedIndex = selectedIndex;
+
         for (int i = 0; i < buttons.Count; i++)
         {
             buttons[i].AnimateTowards(Vector3.zero, 0.5f, true, (i != selectedIndex));
+        }
+
+        // Switch object visibility associated with this menu
+        if (animateHidingAndShowing)
+        {
+            foreach (GameObject go in objectsToShowWhenOpen)
+            {
+                go.transform.DOScale(0f, 0.2f).SetEase(Ease.OutBack).OnComplete(() => go.SetActive(false));
+            }
+            foreach (GameObject go in objectsToHideWhenOpen)
+            {
+                go.SetActive(true);
+                go.transform.DOScale(1f, 0.2f).SetEase(Ease.OutBack);
+            }
+
+            // Show/hide special buttons depending on selected value
+            bool isDefined = buttons[selectedIndex].Text != "None";
+            foreach (GameObject go in objectsToShowWhenDefined)
+            {
+                if (isDefined)
+                {
+                    go.SetActive(true);
+                    go.transform.DOScale(1f, 0.2f).SetEase(Ease.OutBack);
+                }
+                else
+                {
+                    go.transform.DOScale(0f, 0.2f).SetEase(Ease.OutBack).OnComplete(() => go.SetActive(false));
+                }
+            }
+            foreach (GameObject go in objectsToHideWhenDefined)
+            {
+                if (isDefined)
+                {
+                    go.transform.DOScale(0f, 0.2f).SetEase(Ease.OutBack).OnComplete(() => go.SetActive(false));
+                }
+                else
+                {
+                    go.SetActive(true);
+                    go.transform.DOScale(1f, 0.2f).SetEase(Ease.OutBack);
+                }
+            }
+        }
+        else
+        {
+            foreach (GameObject go in objectsToShowWhenOpen)
+                go.SetActive(false);
+            foreach (GameObject go in objectsToHideWhenOpen)
+                go.SetActive(true);
+
+            // Show/hide special buttons depending on selected value
+            bool isDefined = buttons[selectedIndex].Text != "None";
+            foreach (GameObject go in objectsToShowWhenDefined)
+                go.SetActive(isDefined);
+            foreach (GameObject go in objectsToHideWhenDefined)
+                go.SetActive(!isDefined);
         }
     }
 
@@ -123,22 +208,20 @@ public class Menu : MonoBehaviour {
             if (button.Text == "None")
             {
                 DimensionChanged.Invoke(dimension, "Undefined");
-                SpecialButtonsChanged.Invoke(page, !hideSpecialButtonsWhenUndefined);
             }
             else
             {
                 DimensionChanged.Invoke(dimension, button.Text);
-                SpecialButtonsChanged.Invoke(page, hideSpecialButtonsWhenUndefined);
             }
             
             // Store the index of the selected option
             selectedIndex = buttons.IndexOf(button);
 
-            CloseButtons();
+            photonView.RPC("CloseButtons", PhotonTargets.All, selectedIndex);
         }
         else
         {
-            OpenButtons();
+            photonView.RPC("OpenButtons", PhotonTargets.All);
         }
 
         isOpen = !isOpen;

@@ -3,20 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using IATK;
 using VRTK;
-using VRTK.GrabAttachMechanics;
 using System;
-using System.Globalization;
 using System.Linq;
-using System.Net.Mime;
-using System.Security.Cryptography;
-using System.Xml.Serialization;
 using DG.Tweening;
-using DG.Tweening.Plugins;
-using NetBase;
-using TMPro;
-using UnityEditor;
-using UnityEditorInternal.VersionControl;
-using Component = UnityEngine.Component;
 
 /// <summary>
 /// Acts as a wrapper for IATK's visualisation script
@@ -40,6 +29,7 @@ public class Chart : Photon.MonoBehaviour
     private List<Chart> subCharts;  // Stored as 1D array
     private SPLOMButton[] splomButtons;
     private List<GameObject> facetLabels;
+    private Key facetSplomKey;
 
     private DisplayScreen displayScreen;
 
@@ -217,12 +207,13 @@ public class Chart : Photon.MonoBehaviour
                 return;
 
             visualisation.colourDimension = value;
+            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
 
             switch (chartType)
             {
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
-                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
-                    break;
+                //case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                //    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
+                //    break;
 
                 case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
                 case AbstractVisualisation.VisualisationTypes.FACET:
@@ -230,6 +221,7 @@ public class Chart : Photon.MonoBehaviour
                     {
                         chart.ColorDimension = value;
                     }
+                    facetSplomKey.UpdateProperties(AbstractVisualisation.PropertyType.None, visualisation);
                     break;
             }
         }
@@ -266,29 +258,32 @@ public class Chart : Photon.MonoBehaviour
                 return;
 
             visualisation.dimensionColour = value;
+            
+            // Update all instances of this chart in other clients, convert to array for serialization
+            List<float> gradientList = new List<float>();
+            foreach (GradientColorKey colorKey in value.colorKeys)
+            {
+                gradientList.Add(colorKey.time);
+                gradientList.Add(colorKey.color.r);
+                gradientList.Add(colorKey.color.g);
+                gradientList.Add(colorKey.color.b);
+            }
+            photonView.RPC("PropagateGradient", PhotonTargets.Others, gradientList.ToArray());
 
+            // Run for the owner only
             switch (chartType)
             {
                 case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
                     visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
-
-                    // Update all other scatterplots in other clients, convert to array for serialization
-                    List<float> gradientList = new List<float>();
-
-                    foreach (GradientColorKey colorKey in value.colorKeys)
-                    {
-                        gradientList.Add(colorKey.time);
-                        gradientList.Add(colorKey.color.r);
-                        gradientList.Add(colorKey.color.g);
-                        gradientList.Add(colorKey.color.b);
-                    }
-                    photonView.RPC("PropagateGradient", PhotonTargets.Others, gradientList.ToArray());
                     break;
 
                 case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
                 case AbstractVisualisation.VisualisationTypes.FACET:
                     foreach (Chart chart in subCharts)
+                    {
                         chart.Gradient = value;
+                    }
+                    facetSplomKey.UpdateProperties(AbstractVisualisation.PropertyType.None, visualisation);
                     break;
             }
         }
@@ -313,9 +308,17 @@ public class Chart : Photon.MonoBehaviour
         gradient.colorKeys = colorKeys.ToArray();
 
         visualisation.dimensionColour = gradient;
-        if (chartType == AbstractVisualisation.VisualisationTypes.SCATTERPLOT)
+
+        switch (chartType)
         {
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
+                break;
+
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+            case AbstractVisualisation.VisualisationTypes.FACET:
+                facetSplomKey.UpdateProperties(AbstractVisualisation.PropertyType.None, visualisation);
+                break;
         }
     }
 
@@ -328,12 +331,13 @@ public class Chart : Photon.MonoBehaviour
                 return;
 
             visualisation.sizeDimension = value;
+            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Size);
 
             switch (chartType)
             {
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
-                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Size);
-                    break;
+                //case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                //    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Size);
+                //    break;
 
                 case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
                 case AbstractVisualisation.VisualisationTypes.FACET:
@@ -341,6 +345,7 @@ public class Chart : Photon.MonoBehaviour
                     {
                         chart.SizeDimension = value;
                     }
+                    facetSplomKey.UpdateProperties(AbstractVisualisation.PropertyType.None, visualisation);
                     break;
             }
         }
@@ -598,6 +603,10 @@ public class Chart : Photon.MonoBehaviour
 
             if (VisualisationType == AbstractVisualisation.VisualisationTypes.FACET)
             {
+                // Store facet dimension in the first element of AttributeFilters
+                visualisation.attributeFilters = new[] { new AttributeFilter() { Attribute = value } };
+                facetSplomKey.UpdateProperties(AbstractVisualisation.PropertyType.None, visualisation);
+
                 AdjustAndUpdateFacet();
             }
         }
@@ -671,6 +680,21 @@ public class Chart : Photon.MonoBehaviour
         }
     }
 
+    public bool KeyVisiblility
+    {
+        get
+        {
+            return (visualisation.key != null && visualisation.key.activeSelf);
+        }
+        set
+        {
+            if (value == KeyVisiblility || visualisation.key == null)
+                return;
+
+            visualisation.key.SetActive(value);
+        }
+    }
+
     #endregion
     
     private void Awake()
@@ -706,17 +730,17 @@ public class Chart : Photon.MonoBehaviour
         boxCollider.enabled = true;
 
         interactableObject.isGrabbable = true;
-
-        //// Destroy scatterplot matrix gameobjects
-        //for (int i = 0; i < splomCharts.GetLength(0); i++)
-        //    for (int j = 0; j < splomCharts.GetLength(1); j++)
-        //        Destroy(splomCharts[i, j]);
     }
 
     private void SetAsScatterplotMatrix()
     {
         // Disable the visualisation
         visualisationGameObject.SetActive(false);
+
+        // Create a new facetSplomKey
+        GameObject go = (GameObject)Instantiate(Resources.Load("Key"));
+        facetSplomKey = go.GetComponent<Key>();
+        facetSplomKey.transform.SetParent(transform);
 
         // Disable this collider
         boxCollider.enabled = false;
@@ -738,6 +762,11 @@ public class Chart : Photon.MonoBehaviour
     {
         // Disable the visualisation
         visualisationGameObject.SetActive(false);
+
+        // Create a new facetSplomKey
+        GameObject go = (GameObject)Instantiate(Resources.Load("Key"));
+        facetSplomKey = go.GetComponent<Key>();
+        facetSplomKey.transform.SetParent(transform);
 
         // Disable this collider
         boxCollider.enabled = false;
@@ -793,6 +822,7 @@ public class Chart : Photon.MonoBehaviour
                             subChart.Gradient = Gradient;
                             subChart.SizeDimension = SizeDimension;
                             subChart.Size = Size;
+                            subChart.KeyVisiblility = false;
                             subChart.SetAsPrototype();
 
                             splomCharts[i, j] = subChart;
@@ -808,6 +838,7 @@ public class Chart : Photon.MonoBehaviour
                             subChart.XDimension = (splomButtons[i] != null) ? splomButtons[i].Text : DataSource[i].Identifier;
                             subChart.YDimension = (splomButtons[j] != null) ? splomButtons[j].Text : DataSource[j].Identifier;
                             subChart.GetComponent<Collider>().enabled = false;
+                            subChart.KeyVisiblility = false;
                             subChart.transform.SetParent(transform);
                             splomCharts[i, j] = subChart;
 
@@ -971,7 +1002,11 @@ public class Chart : Photon.MonoBehaviour
                 subChart.GeometryType = GeometryType;
                 subChart.XDimension = XDimension;
                 subChart.YDimension = YDimension;
+                subChart.SizeDimension = SizeDimension;
+                subChart.Size = Size;
+                subChart.ColorDimension = ColorDimension;
                 subChart.Color = Color;
+                subChart.Gradient = Gradient;
                 subChart.SetAsPrototype();
                 
                 subChart.transform.SetParent(transform);
@@ -990,9 +1025,10 @@ public class Chart : Photon.MonoBehaviour
         }
 
         // Destroy all previous labels (lazy)
-        foreach (GameObject label in facetLabels)
+        for (int i = facetLabels.Count - 1; i >= 0; i--)
         {
-            PhotonNetwork.Destroy(label);
+            if (facetLabels[i] != null)
+                PhotonNetwork.Destroy(facetLabels[i]);
         }
 
         // Position the charts
@@ -1018,21 +1054,25 @@ public class Chart : Photon.MonoBehaviour
                     float x = (-(Width / 2) + xDelta) + 2 * xDelta * j;
                     float y = ((Height / 2) - yDelta) - 2 * yDelta * i;
                     subChart.Scale = new Vector3(w * 0.75f, h * 0.65f, 1);
+                    subChart.KeyVisiblility = false;
                     subChart.transform.localPosition = new Vector3(x, y, 0);
                     subChart.transform.rotation = transform.rotation;
 
                     // Create and position labels
-                    GameObject labelHolder = PhotonNetwork.Instantiate("Label", Vector3.zero, Quaternion.identity, 0);
-                    facetLabels.Add(labelHolder);
-                    labelHolder.transform.SetParent(transform);
-                    labelHolder.transform.localPosition = new Vector3(x, y + yDelta * 0.9f, 0);
-                    labelHolder.transform.rotation = transform.rotation;
+                    if (facetSize > 1)  // Only create if there's more than one facet
+                    {
+                        GameObject labelHolder = PhotonNetwork.Instantiate("Label", Vector3.zero, Quaternion.identity, 0);
+                        facetLabels.Add(labelHolder);
+                        labelHolder.transform.SetParent(transform);
+                        labelHolder.transform.localPosition = new Vector3(x, y + yDelta * 0.9f, 0);
+                        labelHolder.transform.rotation = transform.rotation;
 
-                    NetworkedLabel label = labelHolder.GetComponent<NetworkedLabel>();
-                    string range1 = DataSource.getOriginalValue(index / (float) facetSize, FacetDimension).ToString();
-                    string range2 = DataSource.getOriginalValue((index + 1) / (float) facetSize, FacetDimension).ToString();
-                    label.SetText(range1 + " ... " + range2);
-                    label.SetRectTransform(new Vector2(w, 0.1f));
+                        NetworkedLabel label = labelHolder.GetComponent<NetworkedLabel>();
+                        string range1 = DataSource.getOriginalValue(index / (float)facetSize, FacetDimension).ToString();
+                        string range2 = DataSource.getOriginalValue((index + 1) / (float)facetSize, FacetDimension).ToString();
+                        label.SetText(range1 + " ... " + range2);
+                        label.SetRectTransform(new Vector2(w, 0.1f));
+                    }
 
                     // Hide the axis for all but the charts along the edge
                     bool isAlongLeft = (j == 0);
@@ -1213,7 +1253,29 @@ public class Chart : Photon.MonoBehaviour
         float y = (YDimension != "Undefined") ? -Height / 2 : 0;
         float z = (ZDimension != "Undefined") ? -Depth / 2 : 0;
 
-        visualisationGameObject.transform.DOLocalMove(new Vector3(x, y, z), 0.1f).SetEase(Ease.OutCubic);
+        //visualisationGameObject.transform.DOLocalMove(new Vector3(x, y, z), 0.1f).SetEase(Ease.OutCubic);
+        visualisationGameObject.transform.localPosition = new Vector3(x, y, z);
+
+        // Reposition the facetSplomKey
+        switch (chartType)
+        {
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                if (visualisation.key != null)
+                {
+                    visualisation.key.transform.localPosition = new Vector3(0.15f, Height + 0.165f, 0f);
+                    visualisation.key.transform.localRotation = Quaternion.identity;
+                }
+                break;
+
+            case AbstractVisualisation.VisualisationTypes.FACET:
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+                if (facetSplomKey != null)
+                {
+                    facetSplomKey.transform.localPosition = new Vector3(-0.2f, Height / 2 + 0.105f, 0f);
+                    facetSplomKey.transform.localRotation = Quaternion.identity;
+                }
+                break;
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -1292,6 +1354,7 @@ public class Chart : Photon.MonoBehaviour
             stream.SendNext(XAxisVisibility);
             stream.SendNext(YAxisVisibility);
             stream.SendNext(ZAxisVisibility);
+            stream.SendNext(KeyVisiblility);
             stream.SendNext(GetComponent<Collider>().enabled);
         }
         else
@@ -1313,6 +1376,7 @@ public class Chart : Photon.MonoBehaviour
             XAxisVisibility = (bool)stream.ReceiveNext();
             YAxisVisibility = (bool)stream.ReceiveNext();
             ZAxisVisibility = (bool)stream.ReceiveNext();
+            KeyVisiblility = (bool)stream.ReceiveNext();
             GetComponent<Collider>().enabled = (bool)stream.ReceiveNext();
         }
     }

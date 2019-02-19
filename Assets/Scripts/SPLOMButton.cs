@@ -31,7 +31,7 @@ public class SPLOMButton : Photon.MonoBehaviour
         dimensions = GetAttributesList();
     }
 
-    private void OnSPLOMButtonClicked(object sender, InteractableObjectEventArgs e)
+    public void Click()
     {
         int index = dimensions.IndexOf(Text);
         index = (index + 1) % dimensions.Count;
@@ -40,6 +40,11 @@ public class SPLOMButton : Photon.MonoBehaviour
 
         PhotonView pv = PhotonView.Find(parentSplomPhotonID);
         pv.RPC("ScatterplotMatrixDimensionChanged", pv.owner, photonView.viewID, Text);
+    }
+
+    private void OnSPLOMButtonClicked(object sender, InteractableObjectEventArgs e)
+    {
+        Click();
     }
 
     private List<string> GetAttributesList()

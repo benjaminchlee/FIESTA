@@ -321,7 +321,7 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RenderingLayerMask: 4294967295
   m_Materials:
-  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  - {fileID: 2100000, guid: e73a58f6e2794ae7b1b7e50b7fb811b0, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -840,6 +840,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ovrAvatar: {fileID: 114950418060822550}
   nameplate: {fileID: 114762793159395476}
+  childGameObjects:
+  - {fileID: 1828518242039934}
+  - {fileID: 1217354047976732}
+  - {fileID: 1633156233250538}
+  - {fileID: 1614573475022184}
+  - {fileID: 1041765311029334}
+  - {fileID: 1524854091069158}
+  - {fileID: 1010375282961988}
+  - {fileID: 1002674374935828}
+  - {fileID: 1873478548107032}
 --- !u!114 &114546921846877896
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -910,7 +920,7 @@ MonoBehaviour:
   m_text: Name
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: e73a58f6e2794ae7b1b7e50b7fb811b0, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

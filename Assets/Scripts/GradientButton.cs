@@ -64,6 +64,11 @@ public class GradientButton : MonoBehaviour {
         gradientMeshRenderer.transform.localScale = scale;
     }
 
+    public void Click()
+    {
+        ButtonClicked.Invoke(this);
+    }
+
     private void OnButtonClicked(object sender, InteractableObjectEventArgs e)
     {
         ButtonClicked.Invoke(this);

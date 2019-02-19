@@ -387,7 +387,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             RaycastHit pointerCollidedWith;
             GameObject collidedObject = GetCollidedObject(out pointerCollidedWith);
 
-            if (collidedObject != null && collidedObject.CompareTag("MenuButton") || collidedObject.CompareTag("PhysicsMenuButton"))
+            if (collidedObject != null && (collidedObject.CompareTag("MenuButton") || collidedObject.CompareTag("PhysicsMenuButton") || collidedObject.CompareTag("SPLOMButton")))
             {
                 previousState = activeState;
                 RangedInteractionTriggerStart(e);
@@ -937,7 +937,20 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             // Otherwise, if it is a menu button, click it
             else if (collidedObject.CompareTag("MenuButton"))
             {
-                collidedObject.GetComponent<MenuButton>().Click();
+                // If it is not a menu button, it is a gradient button
+                MenuButton menuButtonScript = collidedObject.GetComponent<MenuButton>();
+                if (menuButtonScript != null)
+                {
+                    menuButtonScript.Click();
+                }
+                else
+                {
+                    collidedObject.GetComponent<GradientButton>().Click();
+                }
+            }
+            else if (collidedObject.CompareTag("SPLOMButton"))
+            {
+                collidedObject.GetComponent<SPLOMButton>().Click();;
             }
             // Otherwise, if it is a physics based menu button, start to drag it
             else if (collidedObject.CompareTag("PhysicsMenuButton"))

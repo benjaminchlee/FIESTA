@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class GradientMenu : MonoBehaviour {
+public class GradientMenu : Photon.PunBehaviour {
 
     [Serializable]
     public struct GradientTexturePair
@@ -25,6 +25,11 @@ public class GradientMenu : MonoBehaviour {
     private int selectedIndex;
     private bool isOpen = false;
     private bool isReversed = false;
+
+    [SerializeField]
+    private List<GameObject> objectsToShowWhenOpen;
+    [SerializeField]
+    private List<GameObject> objectsToHideWhenOpen;
 
     [Serializable]
     public class GradientChangedEvent : UnityEvent<Gradient> { }
@@ -66,6 +71,7 @@ public class GradientMenu : MonoBehaviour {
             GradientChanged.Invoke(ReverseGradient(gradientButtons[selectedIndex].Gradient));
     }
 
+    [PunRPC]
     private void OpenButtons()
     {
         float height = gradientButtons[0].gameObject.transform.localScale.y;
@@ -78,14 +84,29 @@ public class GradientMenu : MonoBehaviour {
             targetPos.y -= (i * (height + spacing));
             gradientButtons[i].AnimateTowards(targetPos, 0.5f, true);
         }
+
+        // Switch object visibility associated with this menu
+        foreach (GameObject go in objectsToShowWhenOpen)
+            go.SetActive(true);
+        foreach (GameObject go in objectsToHideWhenOpen)
+            go.SetActive(false);
     }
 
-    private void CloseButtons()
+    [PunRPC]
+    private void CloseButtons(int selectedIndex)
     {
+        this.selectedIndex = selectedIndex;
+
         for (int i = 0; i < gradientButtons.Count; i++)
         {
             gradientButtons[i].AnimateTowards(Vector3.zero, 0.5f, true, (i != selectedIndex));
         }
+
+        // Switch object visibility associated with this menu
+        foreach (GameObject go in objectsToShowWhenOpen)
+            go.SetActive(false);
+        foreach (GameObject go in objectsToHideWhenOpen)
+            go.SetActive(true);
     }
 
     private void GradientButtonClicked(GradientButton gradientButton)
@@ -102,11 +123,11 @@ public class GradientMenu : MonoBehaviour {
             // Store the index of the selected option
             selectedIndex = gradientButtons.IndexOf(gradientButton);
 
-            CloseButtons();
+            photonView.RPC("CloseButtons", PhotonTargets.All, selectedIndex);
         }
         else
         {
-            OpenButtons();
+            photonView.RPC("OpenButtons", PhotonTargets.All);
         }
 
         isOpen = !isOpen;
@@ -114,8 +135,14 @@ public class GradientMenu : MonoBehaviour {
 
     private void ReverseButtonClicked(MenuButton button)
     {
+        photonView.RPC("ReverseGradientButtons", PhotonTargets.All);
+    }
+
+    [PunRPC]
+    private void ReverseGradientButtons()
+    {
         isReversed = !isReversed;
-        
+
         foreach (GradientButton gradientButton in gradientButtons)
         {
             gradientButton.SetGradientReversed(isReversed);

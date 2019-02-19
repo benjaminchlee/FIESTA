@@ -86,4 +86,7 @@ MonoBehaviour:
   - ToggleCharts
   - ToggleSpecialButtons
   - SetSharedColor
+  - CloseButtons
+  - OpenButtons
+  - ReverseGradientButtons
   DisableAutoOpenWizard: 1

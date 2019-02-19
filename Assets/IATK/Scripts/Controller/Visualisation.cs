@@ -114,10 +114,8 @@ namespace IATK
 
         public delegate void UpdateViewAction(AbstractVisualisation.PropertyType propertyType);
         public static event UpdateViewAction OnUpdateViewAction;
-
-        //Private
-        // Key
-        GameObject key;
+        
+        public GameObject key;
 
         int MAX_INIT_SCATTERPLOTMATRIX = 5;
 
@@ -203,7 +201,7 @@ namespace IATK
 
             key = (GameObject)Instantiate(Resources.Load("Key"));
             key.transform.parent = transform;
-            key.transform.localPosition = new Vector3(-1f, 1f, 0f);
+            key.transform.localPosition = new Vector3(0.15f, 1.165f, 0f);
         }
 
         public void updateView(AbstractVisualisation.PropertyType propertyType)

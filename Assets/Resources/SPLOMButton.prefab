@@ -49,7 +49,7 @@ GameObject:
   - component: {fileID: 114285878939752714}
   m_Layer: 0
   m_Name: SPLOMButton
-  m_TagString: Untagged
+  m_TagString: SPLOMButton
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -384,11 +384,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   textMesh: {fileID: 114909272238574684}
-  SPLOMButtonClicked:
-    m_PersistentCalls:
-      m_Calls: []
-    m_TypeName: SPLOMButton+SPLOMButtonClickedEvent, Assembly-CSharp, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
+  parentSplomPhotonID: 0
 --- !u!114 &114940739910487380
 MonoBehaviour:
   m_ObjectHideFlags: 1
