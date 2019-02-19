@@ -80,54 +80,73 @@ public class InteractionsManager : MonoBehaviour {
 
     private void Start()
     {
-        leftController = VRTK_DeviceFinder.GetControllerLeftHand();
-        rightController = VRTK_DeviceFinder.GetControllerRightHand();
-
-        leftRigidbody = leftController.GetComponent<Rigidbody>();
-        rightRigidbody = rightController.GetComponent<Rigidbody>();
-
-        if (spinMenuScript == null)
-            spinMenuScript = FindObjectOfType<SpinMenu>();
-
-        if (rangedInteractionsScript == null)
-            rangedInteractionsScript = FindObjectOfType<RangedInteractions>();
+        GetControllersAndScripts();
     }
 
     private void Update()
     {
-        // Check the current zone for the head
-        float headDistance = CalculateHeadDistance();
+        if (leftController == null || rightController == null)
+            GetControllersAndScripts();
+        else
+        {
+            // Check the current zone for the head
+            float headDistance = CalculateHeadDistance();
 
-        if (headZone != Zone.Immediate && headDistance < ImmediateZoneThreshold)
-        {
-            SetHeadZone(Zone.Immediate);
-        }
-        else if (headZone != Zone.Close && ImmediateZoneThreshold < headDistance && headDistance < CloseZoneThreshold)
-        {
-            SetHeadZone(Zone.Close);
-        }
-        else if (headZone != Zone.Far && CloseZoneThreshold < headDistance)
-        {
-            SetHeadZone(Zone.Far);
-        }
-
-        // If the user is not currently grabbing
-        if (activeState != InteractionState.Grabbing)
-        {
-            // Check the current zone for the closest controller
-            float controllerDistance = CalculateControllerDistance();
-
-            if (controllerZone != Zone.Immediate && controllerDistance < ImmediateZoneThreshold)
+            if (headZone != Zone.Immediate && headDistance < ImmediateZoneThreshold)
             {
-                SetControllerZone(Zone.Immediate);
+                SetHeadZone(Zone.Immediate);
             }
-            else if (controllerZone != Zone.Close && ImmediateZoneThreshold < controllerDistance && controllerDistance < CloseZoneThreshold)
+            else if (headZone != Zone.Close && ImmediateZoneThreshold < headDistance && headDistance < CloseZoneThreshold)
             {
-                SetControllerZone(Zone.Close);
+                SetHeadZone(Zone.Close);
             }
-            else if (controllerZone != Zone.Far && CloseZoneThreshold < controllerDistance)
+            else if (headZone != Zone.Far && CloseZoneThreshold < headDistance)
             {
-                SetControllerZone(Zone.Far);
+                SetHeadZone(Zone.Far);
+            }
+
+            // If the user is not currently grabbing
+            if (activeState != InteractionState.Grabbing)
+            {
+                // Check the current zone for the closest controller
+                float controllerDistance = CalculateControllerDistance();
+
+                if (controllerZone != Zone.Immediate && controllerDistance < ImmediateZoneThreshold)
+                {
+                    SetControllerZone(Zone.Immediate);
+                }
+                else if (controllerZone != Zone.Close && ImmediateZoneThreshold < controllerDistance && controllerDistance < CloseZoneThreshold)
+                {
+                    SetControllerZone(Zone.Close);
+                }
+                else if (controllerZone != Zone.Far && CloseZoneThreshold < controllerDistance)
+                {
+                    SetControllerZone(Zone.Far);
+                }
+            }
+        }
+    }
+
+    private void GetControllersAndScripts()
+    {
+        leftController = VRTK_DeviceFinder.GetControllerLeftHand();
+        rightController = VRTK_DeviceFinder.GetControllerRightHand();
+
+        if (leftController != null && rightController != null)
+        {
+            leftRigidbody = leftController.GetComponent<Rigidbody>();
+            rightRigidbody = rightController.GetComponent<Rigidbody>();
+
+            if (spinMenuScript == null)
+            {
+                spinMenuScript = FindObjectOfType<SpinMenu>();
+                spinMenuScript.Enable();
+            }
+
+            if (rangedInteractionsScript == null)
+            {
+                rangedInteractionsScript = FindObjectOfType<RangedInteractions>();
+                rangedInteractionsScript.Enable();
             }
         }
     }
@@ -158,18 +177,18 @@ public class InteractionsManager : MonoBehaviour {
         switch (zone)
         {
             case Zone.None:
-                break;
+                //break;
 
             case Zone.Immediate:
-                closeInteractionsScript.Disable();
-                spinMenuScript.Disable();
-                break;
+                //closeInteractionsScript.Disable();
+                //spinMenuScript.Disable();
+                //break;
 
             case Zone.Close:
-                closeInteractionsScript.Enable();
-                spinMenuScript.Disable();
-                rangedInteractionsScript.Disable();
-                break;
+                //closeInteractionsScript.Enable();
+                //spinMenuScript.Disable();
+                //rangedInteractionsScript.Disable();
+                //break;
 
             case Zone.Far:
                 closeInteractionsScript.Disable();
