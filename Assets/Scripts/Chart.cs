@@ -24,6 +24,12 @@ public class Chart : Photon.MonoBehaviour
     private Rigidbody rigidbody;
     [SerializeField]
     private VRTK_InteractableObject interactableObject;
+    [SerializeField]
+    private VRTK_InteractableObject topLeftInteractableHandle;
+    [SerializeField]
+    private VRTK_InteractableObject bottomRightInteractableHandle;
+    [SerializeField]
+    private LineRenderer resizerLineRenderer;
 
     private Chart[,] splomCharts;  // Stored as 2D array
     private List<Chart> subCharts;  // Stored as 1D array
@@ -38,6 +44,10 @@ public class Chart : Photon.MonoBehaviour
     private bool isPrototype = false;
     private bool isThrowing = false;
     private bool isTouchingDisplayScreen = false;
+    private bool isResizing = false;
+    private float xResizeHandleDistance;
+    private float yResizeHandleDistance;
+    private float zResizeHandleDistance;
 
     private Vector3 originalWorldPos;
     private Vector3 originalPos;
@@ -695,6 +705,25 @@ public class Chart : Photon.MonoBehaviour
         }
     }
 
+    private bool resizeHandleVisibility = false;
+    public bool ResizeHandleVisibility
+    {
+        get
+        {
+            return resizeHandleVisibility;
+        }
+        set
+        {
+            if (value == resizeHandleVisibility)
+                return;
+
+            resizeHandleVisibility = value;
+
+            topLeftInteractableHandle.gameObject.SetActive(value);
+            bottomRightInteractableHandle.gameObject.SetActive(value);
+        }
+    }
+
     #endregion
     
     private void Awake()
@@ -1197,6 +1226,44 @@ public class Chart : Photon.MonoBehaviour
                 deletionTimer += Time.deltaTime;
             }
         }
+
+        if (topLeftInteractableHandle.IsUsing() && bottomRightInteractableHandle.IsUsing())
+        {
+            if (!photonView.isMine)
+                photonView.RequestOwnership();
+
+            isResizing = true;
+
+            GameObject topLeftController = topLeftInteractableHandle.GetUsingObject();
+            GameObject bottomRightController = bottomRightInteractableHandle.GetUsingObject();
+
+            topLeftInteractableHandle.transform.SetParent(topLeftController.transform);
+            bottomRightInteractableHandle.transform.SetParent(bottomRightController.transform);
+
+            resizerLineRenderer.enabled = true;
+            resizerLineRenderer.useWorldSpace = true;
+            resizerLineRenderer.SetPositions(new [] { topLeftInteractableHandle.transform.position, bottomRightInteractableHandle.transform.position });
+
+            // Disable collider temporarily
+            GetComponent<Collider>().enabled = false;
+        }
+        else if (isResizing)
+        {
+            isResizing = false;
+
+            GetComponent<Collider>().enabled = true;
+
+            topLeftInteractableHandle.transform.SetParent(transform);
+            bottomRightInteractableHandle.transform.SetParent(transform);
+
+            resizerLineRenderer.enabled = false;
+
+            float width = Mathf.Abs(topLeftInteractableHandle.transform.localPosition.x - bottomRightInteractableHandle.transform.localPosition.x) - xResizeHandleDistance;
+            float height = Mathf.Abs(topLeftInteractableHandle.transform.localPosition.y - bottomRightInteractableHandle.transform.localPosition.y) - yResizeHandleDistance;
+            float depth = 1;
+
+            Scale = new Vector3(width, height, depth);
+        }
     }
 
     public void SetAsPrototype()
@@ -1245,18 +1312,28 @@ public class Chart : Photon.MonoBehaviour
             boxCollider.enabled = false;
             raycastCollider.enabled = false;
         }
+
+        xResizeHandleDistance = width * 0.15f;
+        yResizeHandleDistance = height * 0.15f;
+        zResizeHandleDistance = depth * 0.15f;
+
+        // Reposition the resize handles
+        topLeftInteractableHandle.transform.localPosition = new Vector3(-xSize / 2 - xResizeHandleDistance, ySize / 2 + yResizeHandleDistance, 0);
+        bottomRightInteractableHandle.transform.localPosition = new Vector3(xSize / 2 + xResizeHandleDistance, -ySize / 2 - yResizeHandleDistance, 0);
+        topLeftInteractableHandle.transform.localRotation = Quaternion.identity;
+        bottomRightInteractableHandle.transform.localRotation = Quaternion.identity;
     }
 
     private void CenterVisualisation()
     {
-        float x = (XDimension != "Undefined") ? -Width / 2 : 0;
-        float y = (YDimension != "Undefined") ? -Height / 2 : 0;
-        float z = (ZDimension != "Undefined") ? -Depth / 2 : 0;
+        float x = (XDimension != "Undefined") ? Width / 2 : 0;
+        float y = (YDimension != "Undefined") ? Height / 2 : 0;
+        float z = (ZDimension != "Undefined") ? Depth / 2 : 0;
 
-        //visualisationGameObject.transform.DOLocalMove(new Vector3(x, y, z), 0.1f).SetEase(Ease.OutCubic);
-        visualisationGameObject.transform.localPosition = new Vector3(x, y, z);
+        //visualisationGameObject.transform.DOLocalMove(new Vector3(-x, -y, -z), 0.1f).SetEase(Ease.OutCubic);
+        visualisationGameObject.transform.localPosition = new Vector3(-x, -y, -z);
 
-        // Reposition the facetSplomKey
+        // Reposition the key
         switch (chartType)
         {
             case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
@@ -1355,6 +1432,7 @@ public class Chart : Photon.MonoBehaviour
             stream.SendNext(YAxisVisibility);
             stream.SendNext(ZAxisVisibility);
             stream.SendNext(KeyVisiblility);
+            stream.SendNext(ResizeHandleVisibility);
             stream.SendNext(GetComponent<Collider>().enabled);
         }
         else
@@ -1377,6 +1455,7 @@ public class Chart : Photon.MonoBehaviour
             YAxisVisibility = (bool)stream.ReceiveNext();
             ZAxisVisibility = (bool)stream.ReceiveNext();
             KeyVisiblility = (bool)stream.ReceiveNext();
+            ResizeHandleVisibility = (bool) stream.ReceiveNext();
             GetComponent<Collider>().enabled = (bool)stream.ReceiveNext();
         }
     }

@@ -142,6 +142,7 @@ public class ChartManager : MonoBehaviour {
         chart.Size = dupe.Size;
         chart.Scale = dupe.Scale;
         chart.AttributeFilters = dupe.AttributeFilters;
+        chart.ResizeHandleVisibility = true;
 
         vis.transform.position = dupe.transform.position;
         vis.transform.rotation = dupe.transform.rotation;
