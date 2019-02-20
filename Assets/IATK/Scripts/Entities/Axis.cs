@@ -94,7 +94,7 @@ public class Axis : MonoBehaviour {
         }
         foreach (GameObject go in children)
         {
-            DestroyImmediate(go);
+            Destroy(go);
         }
 
         axisLabels.Clear();

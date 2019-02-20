@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using DG.Tweening;
 using ExitGames.Client.Photon;
+using VRTK.Examples;
 
 /// <summary>
 /// Acts as a wrapper for IATK's visualisation script
@@ -50,6 +51,8 @@ public class Chart : Photon.MonoBehaviour
     private float xResizeHandleDistance;
     private float yResizeHandleDistance;
     private float zResizeHandleDistance;
+    private bool isTouchingDashboard = false;
+    private Dashboard touchingDashboard;
 
     private Vector3 originalWorldPos;
     private Vector3 originalPos;
@@ -1237,6 +1240,11 @@ public class Chart : Photon.MonoBehaviour
                 {
                     AttachToDisplayScreen();
                 }
+                // If it isn't being placed on the display screen, check if it is being transferred onto a dashboard
+                else if (!isPrototype && isTouchingDashboard)
+                {
+                    touchingDashboard.LoadChart(this, true);
+                }
             }
         }
     }
@@ -1252,8 +1260,8 @@ public class Chart : Photon.MonoBehaviour
     {
         if (interactableObject.IsGrabbed())
         {
+            // Check if the chart is being pulled from the dashboard
             currentVelocity = rigidbody.velocity;
-
             if (isPrototype && Vector3.Distance(transform.position, originalWorldPos) > 0.25f)
             {
                 // Create a duplicate of this visualisation
@@ -1268,6 +1276,11 @@ public class Chart : Photon.MonoBehaviour
                 // Grab the duplicate
                 interactTouch.ForceTouch(dupe.gameObject);
                 interactGrab.AttemptGrab();
+            }
+            // Check if the chart is being held next to the dashboard for transfer
+            else if (!isPrototype && isTouchingDashboard)
+            {
+                VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(interactableObject.GetGrabbingObject()), 0.4f);
             }
         }
         else if (isThrowing)
@@ -1426,6 +1439,17 @@ public class Chart : Photon.MonoBehaviour
                 AttachToDisplayScreen();
             }
         }
+        else if (!isPrototype && other.CompareTag("DashboardCollider"))
+        {
+            isTouchingDashboard = true;
+            touchingDashboard = other.transform.parent.GetComponent<Dashboard>();
+            
+            // If the chart was thrown at the dashboard, immediately transfer it
+            if (isThrowing)
+            {
+                touchingDashboard.LoadChart(this, true);
+            }
+        }
     }
 
     private void OnTriggerExit(Collider other)
@@ -1433,6 +1457,10 @@ public class Chart : Photon.MonoBehaviour
         if (other.CompareTag("DisplayScreen"))
         {
             isTouchingDisplayScreen = false;
+        }
+        else if (!isPrototype && other.CompareTag("DashboardCollider"))
+        {
+            isTouchingDashboard = false;
         }
     }
 

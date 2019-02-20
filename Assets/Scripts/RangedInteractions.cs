@@ -923,7 +923,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         if (collidedObject != null)
         {
             // If the object that is being pointed at is a chart, it is pullable
-            if (collidedObject.transform.parent != null && collidedObject.transform.parent.CompareTag("Chart"))
+            if (collidedObject.transform.parent != null && collidedObject.CompareTag("ChartRaycastCollider") && collidedObject.transform.parent.CompareTag("Chart"))
             {
                 isPullable = true;
                 rangedPullGameObject = collidedObject.transform.parent.gameObject;

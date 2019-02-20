@@ -7,6 +7,8 @@ public class PaletteMenu : Menu
 {
     [SerializeField]
     private int maxNumberOfDistinctValues = 10;
+    [SerializeField]
+    private ColorPaletteBinderMenu paletteBinderMenu;  // lazy, required to update palette
 
     protected override List<string> GetAttributesList()
     {
@@ -17,5 +19,15 @@ public class PaletteMenu : Menu
                 dimensions.Add(dataSource[i].Identifier);
         }
         return dimensions;
+    }
+
+    public override void ChartTransferred(Chart chart)
+    {
+        base.ChartTransferred(chart);
+
+        if (chart.ColorPaletteDimension != "Undefined")
+        {
+            paletteBinderMenu.CreateColorButtonsFromPalette(chart.ColorPaletteDimension, chart.ColorPalette);
+        }
     }
 }

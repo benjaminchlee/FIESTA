@@ -25,6 +25,7 @@ public class GradientMenu : Photon.PunBehaviour {
     private int selectedIndex;
     private bool isOpen = false;
     private bool isReversed = false;
+    private bool isInitialised = false;
 
     [SerializeField]
     private List<GameObject> objectsToShowWhenOpen;
@@ -36,6 +37,12 @@ public class GradientMenu : Photon.PunBehaviour {
     public GradientChangedEvent GradientChanged;
 
     private void Awake()
+    {
+        if (!isInitialised)
+            Initialise();
+    }
+
+    private void Initialise()
     {
         gradientButtons = new List<GradientButton>();
 
@@ -61,6 +68,8 @@ public class GradientMenu : Photon.PunBehaviour {
         selectedIndex = 0;
 
         reverseButton.ButtonClicked.AddListener(ReverseButtonClicked);
+
+        isInitialised = true;
     }
 
     private void OnEnable()
@@ -163,9 +172,62 @@ public class GradientMenu : Photon.PunBehaviour {
             GradientColorKey reversedColorKey = new GradientColorKey(colorKey.color, 1 - colorKey.time);
             reversedColorKeys.Add(reversedColorKey);
         }
-        
+
         Gradient reversedGradient = new Gradient();
         reversedGradient.colorKeys = reversedColorKeys.ToArray();
         return reversedGradient;
+    }
+
+    public void ChartTransferred(Chart chart)
+    {
+        if (!isInitialised)
+            Initialise();
+
+        if (chart.ColorDimension != "Undefined")
+        {
+            GradientButton selectedGradientButton = FindGradientButton(chart.Gradient);
+            selectedIndex = gradientButtons.IndexOf(selectedGradientButton);
+
+            CloseButtons(selectedIndex);
+        }
+    }
+
+    private GradientButton FindGradientButton(Gradient gradient)
+    {
+        foreach (GradientButton button in gradientButtons)
+        {
+            if (EquateGradients(gradient, button.Gradient))
+            {
+                return button;
+            }
+
+            // Check reverse
+            if (EquateGradients(gradient, ReverseGradient(button.Gradient)))
+            {
+                return button;
+            }
+        }
+
+        Debug.LogError("Unable to find corresponding gradient button with supplied gradient.");
+        return null;
+    }
+
+    private bool EquateGradients(Gradient grad1, Gradient grad2)
+    {
+        // First check if number of keys are the same
+        if (grad1.colorKeys.Length != grad2.colorKeys.Length)
+            return false;
+
+        // Then check if every color key has the same time and color
+        for (int i = 0; i < grad1.colorKeys.Length; i++)
+        {
+            GradientColorKey key1 = grad1.colorKeys[i];
+            GradientColorKey key2 = grad2.colorKeys[i];
+
+            if (key1.time != key2.time || key1.color != key2.color)
+                return false;
+        }
+
+        return true;
     }
 }

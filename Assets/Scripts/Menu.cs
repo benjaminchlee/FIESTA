@@ -46,8 +46,18 @@ public class Menu : Photon.MonoBehaviour {
 
     protected List<MenuButton> buttons;
     protected bool isOpen;
+    protected bool isInitialised = false;
 
     private void Start()
+    {
+        if (!isInitialised)
+        {
+            Initialise();
+        }
+    }
+
+    // This is needed to create the buttons if the script is disabled
+    protected void Initialise()
     {
         if (dataSource == null)
             dataSource = ChartManager.Instance.DataSource;
@@ -57,6 +67,8 @@ public class Menu : Photon.MonoBehaviour {
 
         CreateButtons();
         CloseButtons(0);
+
+        isInitialised = true;
     }
 
     protected void CreateButtons()
@@ -87,6 +99,9 @@ public class Menu : Photon.MonoBehaviour {
 
     protected virtual List<string> GetAttributesList()
     {
+        if (dataSource == null)
+            dataSource = ChartManager.Instance.DataSource;
+
         List<string> dimensions = new List<string>();
         for (int i = 0; i < dataSource.DimensionCount; ++i)
         {
@@ -223,5 +238,66 @@ public class Menu : Photon.MonoBehaviour {
         }
 
         isOpen = !isOpen;
+    }
+
+    public virtual void ChartTransferred(Chart chart)
+    {
+        if (!isInitialised)
+            Initialise();
+
+        string valueToCompare = "";
+
+        switch (dimension)
+        {
+            case DashboardDimension.X:
+                valueToCompare = chart.XDimension;
+                break;
+
+            case DashboardDimension.Y:
+                valueToCompare = chart.YDimension;
+                break;
+
+            case DashboardDimension.Z:
+                valueToCompare = chart.ZDimension;
+                break;
+
+            case DashboardDimension.SIZEBY:
+                valueToCompare = chart.SizeDimension;
+                break;
+
+            case DashboardDimension.FACETBY:
+                valueToCompare = chart.FacetDimension;
+                break;
+
+            case DashboardDimension.COLORBY:
+                valueToCompare = chart.ColorDimension;
+                break;
+
+            case DashboardDimension.COLORPALETTE:
+                valueToCompare = chart.ColorPaletteDimension;
+                break;
+        }
+
+        // If the dimension is undefined, the "None" button is the first index
+        if (includeNoneButton && valueToCompare == "Undefined")
+        {
+            selectedIndex = 0;
+            CloseButtons(selectedIndex);
+        }
+        // If the dimension is undefined and yet there is no "None" button, log an error
+        else if (!includeNoneButton && valueToCompare == "Undefined")
+        {
+            Debug.LogError("The dimension " + Enum.GetName(typeof(DashboardDimension), dimension) + " was set to Undefined but does not have a None button.");
+        }
+        else
+        {
+            List<string> dimensions = GetAttributesList();
+            selectedIndex = dimensions.IndexOf(valueToCompare);
+
+            if (includeNoneButton)
+                selectedIndex++;
+
+            CloseButtons(selectedIndex);
+        }
     }
 }

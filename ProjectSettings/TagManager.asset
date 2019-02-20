@@ -11,6 +11,8 @@ TagManager:
   - MenuButton
   - PhysicsMenuButton
   - SPLOMButton
+  - Dashboard
+  - DashboardCollider
   layers:
   - Default
   - TransparentFX

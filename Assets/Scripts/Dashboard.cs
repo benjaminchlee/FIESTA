@@ -1,11 +1,16 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net.Sockets;
+using DG.Tweening;
 using DG.Tweening.Plugins;
 using IATK;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Rendering;
+using UnityEngine.XR.WSA.WebCam;
 
 public enum DashboardDimension
 {
@@ -41,6 +46,10 @@ public class Dashboard : Photon.MonoBehaviour
     private Transform standardTransform;
     [SerializeField]
     private Transform splomTransform;
+    [SerializeField]
+    private Renderer transferColliderRenderer;
+    [SerializeField]
+    private Color transferColliderColor;
 
     [SerializeField]
     private List<GameObject> standardButtons;
@@ -59,6 +68,11 @@ public class Dashboard : Photon.MonoBehaviour
 
     private DashboardPage activePage;
     private DashboardPage activeChart;
+
+
+    [Serializable]
+    public class VisualisationTransferredEvent : UnityEvent<Chart> { }
+    public VisualisationTransferredEvent ChartTransferred;
 
     private void Awake()
     {
@@ -447,5 +461,46 @@ public class Dashboard : Photon.MonoBehaviour
                     pv.TransferOwnership(PhotonNetwork.player);
             }
         }
+    }
+    
+    public void LoadChart(Chart chart, bool destroyOnComplete = false)
+    {
+        photonView.RPC("LoadChart", PhotonTargets.All, chart.photonView.viewID, destroyOnComplete);
+
+    }
+
+    [PunRPC]
+    private void LoadChart(int chartViewId, bool destroyOnComplete = false)
+    {
+        Chart chart = PhotonView.Find(chartViewId).GetComponent<Chart>();
+
+        standardChart.GeometryType = chart.GeometryType;
+        standardChart.XDimension = chart.XDimension;
+        standardChart.YDimension = chart.YDimension;
+        standardChart.ZDimension = chart.ZDimension;
+        standardChart.ColorDimension = chart.ColorDimension;
+        standardChart.ColorPaletteDimension = chart.ColorPaletteDimension;
+        standardChart.Color = chart.Color;
+        standardChart.Gradient = chart.Gradient;
+        standardChart.ColorPalette = chart.ColorPalette;
+        standardChart.SizeDimension = chart.SizeDimension;
+        standardChart.Size = chart.Size;
+        //standardChart.AttributeFilters = chart.AttributeFilters;
+
+        splomChart.GeometryType = chart.GeometryType;
+        splomChart.ColorDimension = chart.ColorDimension;
+        splomChart.ColorPaletteDimension = chart.ColorPaletteDimension;
+        splomChart.Color = chart.Color;
+        splomChart.Gradient = chart.Gradient;
+        splomChart.ColorPalette = chart.ColorPalette;
+        splomChart.SizeDimension = chart.SizeDimension;
+        splomChart.Size = chart.Size;
+        //splomChart.AttributeFilters = chart.AttributeFilters;
+
+        ChartTransferred.Invoke(chart);
+
+        if (destroyOnComplete)
+            chart.transform.DOScale(0, 0.4f).SetEase(Ease.InBack)
+                .OnComplete(() => ChartManager.Instance.RemoveVisualisation(chart));
     }
 }

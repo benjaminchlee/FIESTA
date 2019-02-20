@@ -89,4 +89,17 @@ public class ColorPicker : MonoBehaviour {
             isEventQueued = true;
         }
     }
+
+    public void ChartTransferred(Chart chart)
+    {
+        if (chart.ColorDimension == "Undefined" && chart.ColorPaletteDimension == "Undefined")
+        {
+            Color color = chart.Color;
+            Color.RGBToHSV(color, out currentHue, out currentSaturation, out currentBrightness);
+
+            hueSlider.SetHue(currentHue);
+            saturationBrightnessPicker.SetSaturation(currentSaturation);
+            saturationBrightnessPicker.SetBrightness(currentBrightness);
+        }
+    }
 }

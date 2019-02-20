@@ -78,6 +78,40 @@ public class ColorPaletteBinderMenu : Photon.PunBehaviour {
             ButtonClicked(null);
         }
     }
+    
+    public void CreateColorButtonsFromPalette(string dimension, Color[] palette)
+    {
+        if (this.dimension != dimension)
+        {
+            this.dimension = dimension;
+
+            DestroyColorButtons();
+
+            float[] paletteValues = ChartManager.Instance.DataSource[dimension].MetaData.categories;
+
+            for (int i = 0; i < paletteValues.Length; i++)
+            {
+                GameObject button = (GameObject)Instantiate(Resources.Load("ColorPaletteBinderButton"));
+                button.transform.SetParent(transform);
+                ColorPaletteBinderButton paletteButton = button.GetComponent<ColorPaletteBinderButton>();
+
+                paletteButton.Color = palette[i];
+                paletteButton.Text = ChartManager.Instance.DataSource.getOriginalValue(paletteValues[i], dimension).ToString();
+                paletteButton.ButtonClicked.AddListener(ColorButtonClicked);
+
+                float height = paletteButton.transform.localScale.y;
+                Vector3 targetPos = Vector3.zero;
+                targetPos.y -= (i * (height + spacing));
+                paletteButton.transform.localPosition = targetPos;
+                paletteButton.transform.localRotation = Quaternion.identity; ;
+
+                buttons.Add(paletteButton);
+            }
+
+            // Reset the page
+            ButtonClicked(null);
+        }
+    }
 
     [PunRPC]
     public void DestroyColorButtons()
@@ -86,7 +120,8 @@ public class ColorPaletteBinderMenu : Photon.PunBehaviour {
         {
             Destroy(button.gameObject);
         }
-        
+
+        dimension = "";
         buttons.Clear();
     }
 
@@ -150,5 +185,16 @@ public class ColorPaletteBinderMenu : Photon.PunBehaviour {
         }
 
         return colors.ToArray();
+    }
+
+    public void LoadColorPalette(Color[] palette)
+    {
+        for (int i = 0; i < palette.Length; i++)
+        {
+            Color col = palette[i];
+            ColorPaletteBinderButton button = buttons[i];
+
+            button.Color = col;
+        }
     }
 }

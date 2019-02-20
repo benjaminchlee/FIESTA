@@ -432,7 +432,10 @@ MonoBehaviour:
   hueSlider: {fileID: 114956010534977890}
   saturationBrightnessPicker: {fileID: 114690266255391760}
   startColor: {r: 1, g: 1, b: 1, a: 1}
-  currentColor: {r: 0, g: 0, b: 0, a: 0}
+  framesBetweenUpdates: 5
+  currentHue: 0
+  currentSaturation: 0
+  currentBrightness: 0
 --- !u!114 &114956010534977890
 MonoBehaviour:
   m_ObjectHideFlags: 1

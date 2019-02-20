@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IATK;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -10,9 +11,13 @@ using VRTK.Controllables.PhysicsBased;
 
 public class DashboardSlider : MonoBehaviour {
 
+    [SerializeField]
     private VRTK_PhysicsSlider physicsSlider;
+    [SerializeField]
     private VRTK_InteractableObject interactableObject;
 
+    [SerializeField]
+    private AbstractVisualisation.PropertyType propertyType;
     [SerializeField]
     private float startValue;
     [SerializeField]
@@ -22,22 +27,36 @@ public class DashboardSlider : MonoBehaviour {
 
     [Serializable]
     public class DashboardSliderValueChangedEvent : UnityEvent<float> { }
-
     public DashboardSliderValueChangedEvent DashboardSliderValueChanged;
 
+    private bool isInitialised = false;
     private float previousValue;
+    private float storedValue;
+    private bool setStoredValue;
 
     private void Start()
     {
-        physicsSlider = GetComponent<VRTK_PhysicsSlider>();
-        interactableObject = GetComponent<VRTK_InteractableObject>();
+        if (!isInitialised)
+            Initialise();
+    }
 
+    private void Initialise()
+    {
         physicsSlider.ValueChanged += OnSliderValueChanged;
         interactableObject.InteractableObjectUngrabbed += OnSliderUngrabbed;
-        
-        physicsSlider.SetValue((startValue - physicsSlider.stepValueRange.minimum) / (physicsSlider.stepValueRange.maximum - physicsSlider.stepValueRange.minimum) * physicsSlider.maximumLength);
+
+        if (gameObject.activeInHierarchy)
+            physicsSlider.SetValue((startValue - physicsSlider.stepValueRange.minimum) / (physicsSlider.stepValueRange.maximum - physicsSlider.stepValueRange.minimum) * physicsSlider.maximumLength);
 
         previousValue = startValue;
+
+        isInitialised = true;
+    }
+
+    private void OnDestroy()
+    {
+        physicsSlider.ValueChanged -= OnSliderValueChanged;
+        interactableObject.InteractableObjectUngrabbed -= OnSliderUngrabbed;
     }
 
     private void OnSliderValueChanged(object sender, ControllableEventArgs e)
@@ -63,5 +82,48 @@ public class DashboardSlider : MonoBehaviour {
     private void OnSliderUngrabbed(object sender, InteractableObjectEventArgs e)
     {
         physicsSlider.SetValue(physicsSlider.GetValue());
+    }
+
+    public void ChartTransferred(Chart chart)
+    {
+        if (!isInitialised)
+            Initialise();
+
+        switch (propertyType)
+        {
+            case AbstractVisualisation.PropertyType.Size:
+                if (chart.SizeDimension == "Undefined")
+                {
+                    storedValue = (chart.Size - physicsSlider.stepValueRange.minimum) / (physicsSlider.stepValueRange.maximum - physicsSlider.stepValueRange.minimum) * physicsSlider.maximumLength;
+                }
+                break;
+        }
+
+        // If the object is enabled, then its physics will work properly and the value can be set now
+        if (gameObject.activeInHierarchy)
+        {
+            physicsSlider.SetValue(storedValue);
+        }
+        // Otherwise, store it for it to be set when the slider becomes enabled
+        else
+        {
+            setStoredValue = true;
+        }
+    }
+
+    private void OnEnable()
+    {
+        if (setStoredValue)
+        {
+            StartCoroutine(SetStoredValue());
+        }
+    }
+
+    private IEnumerator SetStoredValue()
+    {
+        yield return null;
+
+        physicsSlider.SetValue(storedValue);
+        setStoredValue = false;
     }
 }

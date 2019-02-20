@@ -94,4 +94,5 @@ MonoBehaviour:
   - DestroyColorButtons
   - HideColorPalettePicker
   - ShowColorPalettePicker
+  - LoadChart
   DisableAutoOpenWizard: 1
