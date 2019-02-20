@@ -213,6 +213,81 @@ public class Chart : Photon.MonoBehaviour
         }
     }
 
+    public Vector2 XNormaliser
+    {
+        get { return new Vector2(visualisation.xDimension.minScale, visualisation.xDimension.maxScale); }
+        set
+        {
+            if (value == XNormaliser)
+                return;
+
+            visualisation.xDimension.minScale = value.x;
+            visualisation.xDimension.maxScale = value.y;
+            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
+
+            switch (chartType)
+            {
+                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+                case AbstractVisualisation.VisualisationTypes.FACET:
+                    foreach (Chart chart in subCharts)
+                    {
+                        chart.XNormaliser = value;
+                    }
+                    break;
+            }
+        }
+    }
+
+    public Vector2 YNormaliser
+    {
+        get { return new Vector2(visualisation.yDimension.minScale, visualisation.yDimension.maxScale); }
+        set
+        {
+            if (value == YNormaliser)
+                return;
+
+            visualisation.yDimension.minScale = value.x;
+            visualisation.yDimension.maxScale = value.y;
+            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
+
+            switch (chartType)
+            {
+                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+                case AbstractVisualisation.VisualisationTypes.FACET:
+                    foreach (Chart chart in subCharts)
+                    {
+                        chart.YNormaliser = value;
+                    }
+                    break;
+            }
+        }
+    }
+
+    public Vector2 ZNormaliser
+    {
+        get { return new Vector2(visualisation.zDimension.minScale, visualisation.zDimension.maxScale); }
+        set
+        {
+            if (value == XNormaliser)
+                return;
+
+            visualisation.zDimension.minScale = value.x;
+            visualisation.zDimension.maxScale = value.y;
+            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
+
+            switch (chartType)
+            {
+                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+                case AbstractVisualisation.VisualisationTypes.FACET:
+                    foreach (Chart chart in subCharts)
+                    {
+                        chart.ZNormaliser = value;
+                    }
+                    break;
+            }
+        }
+    }
+
     public string ColorDimension
     {
         get { return visualisation.colourDimension; }

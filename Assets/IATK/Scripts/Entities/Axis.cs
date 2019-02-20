@@ -57,7 +57,7 @@ public class Axis : MonoBehaviour {
     private AxisLabelDelegate labelDelegate;
     private List<TextMeshPro> axisLabels = new List<TextMeshPro>();
 
-    private int MyDirection = 0;
+    public int MyDirection = 0;
 
 
     public void Init(DataSource srcData, AttributeFilter attributeFilter, Visualisation visualisation)
@@ -252,7 +252,7 @@ public class Axis : MonoBehaviour {
         MinNormaliser = Mathf.Clamp(val, 0, 1);
 
         Vector3 p = minNormaliserObject.transform.localPosition;
-        p.y = val;;// * Length;
+        p.y = MinNormaliser * Length;
         minNormaliserObject.transform.localPosition = p;
 
         UpdateTicks();
@@ -263,7 +263,7 @@ public class Axis : MonoBehaviour {
         MaxNormaliser = Mathf.Clamp(val, 0, 1);
 
         Vector3 p = maxNormaliserObject.transform.localPosition;
-        p.y = val;// * Length;
+        p.y = MaxNormaliser * Length;
         maxNormaliserObject.transform.localPosition = p;
 
         UpdateTicks();
@@ -275,11 +275,11 @@ public class Axis : MonoBehaviour {
     // as a float between 0...1
     public float CalculateLinearMapping(Transform tr)
     {
-        Vector3 direction = MaxPosition- MinPosition;
+        Vector3 direction = MaxPosition - MinPosition;
         float length = direction.magnitude;
         direction.Normalize();
 
-        Vector3 displacement = tr.position - MinPosition;
+        Vector3 displacement = transform.InverseTransformPoint(tr.position) - MinPosition;
 
         return Vector3.Dot(displacement, direction) / length;
     }
@@ -287,13 +287,15 @@ public class Axis : MonoBehaviour {
     Vector3 _maxPos;
     public Vector3 MaxPosition
     {
-        get { return _maxPos; }
+        //get { return _maxPos; }
+        get { return Vector3.up * Length; }
     }
 
     Vector3 _minPos;
     public Vector3 MinPosition
     {
-        get { return _minPos; }
+        //get { return _minPos; }
+        get { return Vector3.zero; }
     }
 
     #endregion
