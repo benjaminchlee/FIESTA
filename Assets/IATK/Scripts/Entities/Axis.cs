@@ -150,18 +150,22 @@ public class Axis : MonoBehaviour {
         switch (direction)
         {
             case 1:
+                transform.localEulerAngles = new Vector3(0, 0, -90);
+                SetXPos(axisValueLabels.transform, 1);
+                foreach (TextMeshPro tmp in axisValueLabels.transform.GetComponentsInChildren<TextMeshPro>(true))
                 {
-                    transform.localEulerAngles = new Vector3(0, 0, -90);
-                    SetXPos(axisValueLabels.transform, 1);
-                    foreach (TextMeshPro tmp in axisValueLabels.transform.GetComponentsInChildren<TextMeshPro>(true))
-                    {
-                        tmp.alignment = TextAlignmentOptions.MidlineLeft;
-                    }
-                    SetXPos(label.transform, 1);
-                    label.alignment = TextAlignmentOptions.Top;                    
+                    tmp.alignment = TextAlignmentOptions.MidlineLeft;
                 }
+                SetXPos(label.transform, 1);
+                label.alignment = TextAlignmentOptions.Top;  
                 break;
             case 2:
+                transform.localEulerAngles = new Vector3(0, 0, 0);
+                SetXPos(minNormaliserObject, -0.054f);
+                SetXPos(maxNormaliserObject, -0.054f);
+                minNormaliserObject.localEulerAngles = new Vector3(90, 90, 0);
+                maxNormaliserObject.localEulerAngles = new Vector3(90, 90, 0);
+                break;
             default:
                 SetXPos(minNormaliserObject, -0.054f);
                 SetXPos(maxNormaliserObject, -0.054f);

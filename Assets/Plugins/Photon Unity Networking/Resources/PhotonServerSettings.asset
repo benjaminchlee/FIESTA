@@ -95,4 +95,18 @@ MonoBehaviour:
   - HideColorPalettePicker
   - ShowColorPalettePicker
   - LoadChart
+  - PropagateColorDimension
+  - PropagateColorPalette
+  - PropagateColorPaletteDimension
+  - PropagateScale
+  - PropagateSizeDimension
+  - PropagateXNormaliser
+  - PropagateYNormaliser
+  - PropagateZNormaliser
+  - PropagateColliderActiveState
+  - PropagateKeyVisibility
+  - PropagateResizeHandleVisibility
+  - PropagateIsPrototype
+  - PropagateSetRectTransform
+  - PropagateSetText
   DisableAutoOpenWizard: 1

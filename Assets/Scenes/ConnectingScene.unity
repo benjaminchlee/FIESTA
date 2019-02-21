@@ -611,6 +611,7 @@ GameObject:
   - component: {fileID: 99129230}
   - component: {fileID: 99129229}
   - component: {fileID: 99129228}
+  - component: {fileID: 99129232}
   - component: {fileID: 99129227}
   - component: {fileID: 99129226}
   - component: {fileID: 99129225}
@@ -843,6 +844,20 @@ MonoBehaviour:
   gripSenseAxisChanged: 0
   gripSensePressed: 0
   controllerVisible: 1
+--- !u!114 &99129232
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 99129223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eda201177cd508f49849386d157bdd39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  colliderRadius: 0.2
+  customColliderContainer: {fileID: 0}
+  interactTouch: {fileID: 99129229}
 --- !u!1 &121968011
 GameObject:
   m_ObjectHideFlags: 0
@@ -3528,6 +3543,7 @@ GameObject:
   - component: {fileID: 933908396}
   - component: {fileID: 933908395}
   - component: {fileID: 933908394}
+  - component: {fileID: 933908397}
   m_Layer: 0
   m_Name: ChartManager
   m_TagString: Untagged
@@ -3579,6 +3595,29 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &933908397
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 933908393}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d06466c03d263624786afa88b52928b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  statsWindowOn: 1
+  statsOn: 1
+  healthStatsVisible: 0
+  trafficStatsOn: 1
+  buttonsOn: 0
+  statsRect:
+    serializedVersion: 2
+    x: 0
+    y: 100
+    width: 200
+    height: 50
+  WindowId: 100
 --- !u!1 &959791596
 GameObject:
   m_ObjectHideFlags: 0
@@ -6626,6 +6665,7 @@ GameObject:
   - component: {fileID: 1615352298}
   - component: {fileID: 1615352297}
   - component: {fileID: 1615352296}
+  - component: {fileID: 1615352300}
   - component: {fileID: 1615352295}
   m_Layer: 0
   m_Name: LeftController
@@ -6763,6 +6803,20 @@ MonoBehaviour:
   gripSenseAxisChanged: 0
   gripSensePressed: 0
   controllerVisible: 1
+--- !u!114 &1615352300
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1615352293}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eda201177cd508f49849386d157bdd39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  colliderRadius: 0.2
+  customColliderContainer: {fileID: 0}
+  interactTouch: {fileID: 99129229}
 --- !u!1 &1628180570
 GameObject:
   m_ObjectHideFlags: 0
@@ -6790,7 +6844,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46cea0fc6f7d3ca4dbf8f20f6736f10c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  avatarName: Test
+  avatarName: Red Player
   avatarColor: {r: 1, g: 0, b: 0, a: 1}
   sharedBrushColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!4 &1628180572

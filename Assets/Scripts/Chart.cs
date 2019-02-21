@@ -6,6 +6,7 @@ using VRTK;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Remoting.Lifetime;
 using DG.Tweening;
 using ExitGames.Client.Photon;
 using VRTK.Examples;
@@ -44,7 +45,6 @@ public class Chart : Photon.MonoBehaviour
 
     private Vector3 previousPosition;
     private Vector3 currentVelocity;
-    private bool isPrototype = false;
     private bool isThrowing = false;
     private bool isTouchingDisplayScreen = false;
     private bool isResizing = false;
@@ -85,24 +85,30 @@ public class Chart : Photon.MonoBehaviour
             if (value == chartType)
                 return;
 
-            chartType = value;
+            photonView.RPC("PropagateVisualisationType", PhotonTargets.All, value);
+        }
+    }
 
-            switch (value)
-            {
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
-                    visualisation.visualisationType = value;
-                    visualisation.CreateVisualisation(value);
-                    SetAsScatterplot();
-                    break;
+    [PunRPC]
+    private void PropagateVisualisationType(AbstractVisualisation.VisualisationTypes value)
+    {
+        chartType = value;
 
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
-                    SetAsScatterplotMatrix();
-                    break;
+        switch (value)
+        {
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                visualisation.visualisationType = value;
+                visualisation.CreateVisualisation(value);
+                SetAsScatterplot();
+                break;
 
-                case AbstractVisualisation.VisualisationTypes.FACET:
-                    SetAsFacet();
-                    break;
-            }
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+                SetAsScatterplotMatrix();
+                break;
+
+            case AbstractVisualisation.VisualisationTypes.FACET:
+                SetAsFacet();
+                break;
         }
     }
 
@@ -114,17 +120,23 @@ public class Chart : Photon.MonoBehaviour
             if (value == GeometryType)
                 return;
 
-            visualisation.geometry = value;
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.GeometryType);
+            photonView.RPC("PropagateGeometryType", PhotonTargets.All, value);
+        }
+    }
 
-            switch (chartType)
-            {
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
-                case AbstractVisualisation.VisualisationTypes.FACET:
-                    foreach (Chart chart in subCharts)
-                        chart.GeometryType = value;
-                    break;
-            }
+    [PunRPC]
+    private void PropagateGeometryType(AbstractVisualisation.GeometryType value)
+    {
+        visualisation.geometry = value;
+        visualisation.updateViewProperties(AbstractVisualisation.PropertyType.GeometryType);
+
+        switch (chartType)
+        {
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+            case AbstractVisualisation.VisualisationTypes.FACET:
+                foreach (Chart chart in subCharts)
+                    chart.GeometryType = value;
+                break;
         }
     }
 
@@ -136,24 +148,29 @@ public class Chart : Photon.MonoBehaviour
             if (value == XDimension)
                 return;
 
-            visualisation.xDimension = value;
+            photonView.RPC("PropagateXDimension", PhotonTargets.All, value);
+        }
+    }
 
-            switch (chartType)
-            {
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
-                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.X);
-                    CenterVisualisation();
-                    SetColliderBounds();
-                    break;
+    [PunRPC]
+    private void PropagateXDimension(string value)
+    {
+        visualisation.xDimension = value;
 
-                case AbstractVisualisation.VisualisationTypes.FACET:
-                    foreach (Chart chart in subCharts)
-                    {
-                        chart.XDimension = value;
-                    }
-                        
-                    break;
-            }
+        switch (chartType)
+        {
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                visualisation.updateViewProperties(AbstractVisualisation.PropertyType.X);
+                CenterVisualisation();
+                SetColliderBounds();
+                break;
+
+            case AbstractVisualisation.VisualisationTypes.FACET:
+                foreach (Chart chart in subCharts)
+                {
+                    chart.XDimension = value;
+                }
+                break;
         }
     }
 
@@ -165,23 +182,29 @@ public class Chart : Photon.MonoBehaviour
             if (value == YDimension)
                 return;
 
-            visualisation.yDimension = value;
+            photonView.RPC("PropagateYDimension", PhotonTargets.All, value);
+        }
+    }
 
-            switch (chartType)
-            {
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
-                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Y);
-                    CenterVisualisation();
-                    SetColliderBounds();
-                    break;
+    [PunRPC]
+    private void PropagateYDimension(string value)
+    {
+        visualisation.yDimension = value;
 
-                case AbstractVisualisation.VisualisationTypes.FACET:
-                    foreach (Chart chart in subCharts)
-                    {
-                        chart.YDimension = value;
-                    }
-                    break;
-            }
+        switch (chartType)
+        {
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Y);
+                CenterVisualisation();
+                SetColliderBounds();
+                break;
+
+            case AbstractVisualisation.VisualisationTypes.FACET:
+                foreach (Chart chart in subCharts)
+                {
+                    chart.YDimension = value;
+                }
+                break;
         }
     }
 
@@ -193,23 +216,29 @@ public class Chart : Photon.MonoBehaviour
             if (value == ZDimension)
                 return;
 
-            visualisation.zDimension = value;
+            photonView.RPC("PropagateZDimension", PhotonTargets.All, value);
+        }
+    }
 
-            switch (chartType)
-            {
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
-                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Z);
-                    CenterVisualisation();
-                    SetColliderBounds();
-                    break;
+    [PunRPC]
+    private void PropagateZDimension(string value)
+    {
+        visualisation.zDimension = value;
 
-                case AbstractVisualisation.VisualisationTypes.FACET:
-                    foreach (Chart chart in subCharts)
-                    {
-                        chart.ZDimension = value;
-                    }
-                    break;
-            }
+        switch (chartType)
+        {
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Z);
+                CenterVisualisation();
+                SetColliderBounds();
+                break;
+
+            case AbstractVisualisation.VisualisationTypes.FACET:
+                foreach (Chart chart in subCharts)
+                {
+                    chart.ZDimension = value;
+                }
+                break;
         }
     }
 
@@ -221,20 +250,26 @@ public class Chart : Photon.MonoBehaviour
             if (value == XNormaliser)
                 return;
 
-            visualisation.xDimension.minScale = value.x;
-            visualisation.xDimension.maxScale = value.y;
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
+            photonView.RPC("PropagateXNormaliser", PhotonTargets.All, value);
+        }
+    }
 
-            switch (chartType)
-            {
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
-                case AbstractVisualisation.VisualisationTypes.FACET:
-                    foreach (Chart chart in subCharts)
-                    {
-                        chart.XNormaliser = value;
-                    }
-                    break;
-            }
+    [PunRPC]
+    private void PropagateXNormaliser(Vector2 value)
+    {
+        visualisation.xDimension.minScale = value.x;
+        visualisation.xDimension.maxScale = value.y;
+        visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
+
+        switch (chartType)
+        {
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+            case AbstractVisualisation.VisualisationTypes.FACET:
+                foreach (Chart chart in subCharts)
+                {
+                    chart.XNormaliser = value;
+                }
+                break;
         }
     }
 
@@ -246,20 +281,27 @@ public class Chart : Photon.MonoBehaviour
             if (value == YNormaliser)
                 return;
 
-            visualisation.yDimension.minScale = value.x;
-            visualisation.yDimension.maxScale = value.y;
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
+            photonView.RPC("PropagateYNormaliser", PhotonTargets.All, value);
+        }
+    }
 
-            switch (chartType)
-            {
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
-                case AbstractVisualisation.VisualisationTypes.FACET:
-                    foreach (Chart chart in subCharts)
-                    {
-                        chart.YNormaliser = value;
-                    }
-                    break;
-            }
+    [PunRPC]
+    private void PropagateYNormaliser(Vector2 value)
+    {
+
+        visualisation.yDimension.minScale = value.x;
+        visualisation.yDimension.maxScale = value.y;
+        visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
+
+        switch (chartType)
+        {
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+            case AbstractVisualisation.VisualisationTypes.FACET:
+                foreach (Chart chart in subCharts)
+                {
+                    chart.YNormaliser = value;
+                }
+                break;
         }
     }
 
@@ -271,20 +313,26 @@ public class Chart : Photon.MonoBehaviour
             if (value == XNormaliser)
                 return;
 
-            visualisation.zDimension.minScale = value.x;
-            visualisation.zDimension.maxScale = value.y;
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
+            photonView.RPC("PropagateZNormaliser", PhotonTargets.All, value);
+        }
+    }
 
-            switch (chartType)
-            {
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
-                case AbstractVisualisation.VisualisationTypes.FACET:
-                    foreach (Chart chart in subCharts)
-                    {
-                        chart.ZNormaliser = value;
-                    }
-                    break;
-            }
+    [PunRPC]
+    private void PropagateZNormaliser(Vector2 value)
+    {
+        visualisation.zDimension.minScale = value.x;
+        visualisation.zDimension.maxScale = value.y;
+        visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
+
+        switch (chartType)
+        {
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+            case AbstractVisualisation.VisualisationTypes.FACET:
+                foreach (Chart chart in subCharts)
+                {
+                    chart.ZNormaliser = value;
+                }
+                break;
         }
     }
 
@@ -296,20 +344,26 @@ public class Chart : Photon.MonoBehaviour
             if (value == ColorDimension)
                 return;
 
-            visualisation.colourDimension = value;
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
+            photonView.RPC("PropagateColorDimension", PhotonTargets.All, value);
+        }
+    }
 
-            switch (chartType)
-            {
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
-                case AbstractVisualisation.VisualisationTypes.FACET:
-                    foreach (Chart chart in subCharts)
-                    {
-                        chart.ColorDimension = value;
-                    }
-                    facetSplomKey.UpdateProperties(AbstractVisualisation.PropertyType.None, visualisation);
-                    break;
-            }
+    [PunRPC]
+    private void PropagateColorDimension(string value)
+    {
+        visualisation.colourDimension = value;
+        visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
+
+        switch (chartType)
+        {
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+            case AbstractVisualisation.VisualisationTypes.FACET:
+                foreach (Chart chart in subCharts)
+                {
+                    chart.ColorDimension = value;
+                }
+                facetSplomKey.UpdateProperties(AbstractVisualisation.PropertyType.None, visualisation);
+                break;
         }
     }
 
@@ -321,25 +375,31 @@ public class Chart : Photon.MonoBehaviour
             if (value == ColorPaletteDimension)
                 return;
 
-            visualisation.colorPaletteDimension = value;
+            photonView.RPC("PropagateColorPaletteDimension", PhotonTargets.All, value);
+        }
+    }
 
-            // Make sure the color palette is populated
-            if (value != "Undefined")
-                visualisation.coloursPalette = new Color[DataSource[value].Data.Distinct().Count()];
+    [PunRPC]
+    private void PropagateColorPaletteDimension(string value)
+    {
+        visualisation.colorPaletteDimension = value;
 
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
+        // Make sure the color palette is populated
+        if (value != "Undefined")
+            visualisation.coloursPalette = new Color[DataSource[value].Data.Distinct().Count()];
 
-            switch (chartType)
-            {
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
-                case AbstractVisualisation.VisualisationTypes.FACET:
-                    foreach (Chart chart in subCharts)
-                    {
-                        chart.ColorPaletteDimension = value;
-                    }
-                    facetSplomKey.UpdateProperties(AbstractVisualisation.PropertyType.None, visualisation);
-                    break;
-            }
+        visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
+
+        switch (chartType)
+        {
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+            case AbstractVisualisation.VisualisationTypes.FACET:
+                foreach (Chart chart in subCharts)
+                {
+                    chart.ColorPaletteDimension = value;
+                }
+                facetSplomKey.UpdateProperties(AbstractVisualisation.PropertyType.None, visualisation);
+                break;
         }
     }
 
@@ -351,17 +411,23 @@ public class Chart : Photon.MonoBehaviour
             if (value == Color)
                 return;
 
-            visualisation.colour = value;
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
+            photonView.RPC("PropagateColor", PhotonTargets.All, value);
+        }
+    }
 
-            switch (chartType)
-            {
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
-                case AbstractVisualisation.VisualisationTypes.FACET:
-                    foreach (Chart chart in subCharts)
-                        chart.Color = value;
-                    break;
-            }
+    [PunRPC]
+    private void PropagateColor(Color value)
+    {
+        visualisation.colour = value;
+        visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
+
+        switch (chartType)
+        {
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+            case AbstractVisualisation.VisualisationTypes.FACET:
+                foreach (Chart chart in subCharts)
+                    chart.Color = value;
+                break;
         }
     }
 
@@ -446,23 +512,29 @@ public class Chart : Photon.MonoBehaviour
             if (value == visualisation.coloursPalette)
                 return;
 
-            visualisation.coloursPalette = value;
+            photonView.RPC("PropagateColorPalette", PhotonTargets.All, value);
+        }
+    }
 
-            switch (chartType)
-            {
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
-                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
-                    break;
+    [PunRPC]
+    private void PropagateColorPalette(Color[] value)
+    {
+        visualisation.coloursPalette = value;
 
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
-                case AbstractVisualisation.VisualisationTypes.FACET:
-                    foreach (Chart chart in subCharts)
-                    {
-                        chart.ColorPalette = value;
-                    }
-                    facetSplomKey.UpdateProperties(AbstractVisualisation.PropertyType.None, visualisation);
-                    break;
-            }
+        switch (chartType)
+        {
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
+                break;
+
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+            case AbstractVisualisation.VisualisationTypes.FACET:
+                foreach (Chart chart in subCharts)
+                {
+                    chart.ColorPalette = value;
+                }
+                facetSplomKey.UpdateProperties(AbstractVisualisation.PropertyType.None, visualisation);
+                break;
         }
     }
 
@@ -473,25 +545,31 @@ public class Chart : Photon.MonoBehaviour
         {
             if (value == SizeDimension)
                 return;
+            
+            photonView.RPC("PropagateSizeDimension", PhotonTargets.All, value);
+        }
+    }
 
-            visualisation.sizeDimension = value;
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Size);
+    [PunRPC]
+    private void PropagateSizeDimension(string value)
+    {
+        visualisation.sizeDimension = value;
+        visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Size);
 
-            switch (chartType)
-            {
-                //case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
-                //    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Size);
-                //    break;
+        switch (chartType)
+        {
+            //case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+            //    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Size);
+            //    break;
 
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
-                case AbstractVisualisation.VisualisationTypes.FACET:
-                    foreach (Chart chart in subCharts)
-                    {
-                        chart.SizeDimension = value;
-                    }
-                    facetSplomKey.UpdateProperties(AbstractVisualisation.PropertyType.None, visualisation);
-                    break;
-            }
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+            case AbstractVisualisation.VisualisationTypes.FACET:
+                foreach (Chart chart in subCharts)
+                {
+                    chart.SizeDimension = value;
+                }
+                facetSplomKey.UpdateProperties(AbstractVisualisation.PropertyType.None, visualisation);
+                break;
         }
     }
 
@@ -503,17 +581,23 @@ public class Chart : Photon.MonoBehaviour
             if (value == Size)
                 return;
 
-            visualisation.size = value;
-            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.SizeValues);
+            photonView.RPC("PropagateSize", PhotonTargets.All, value);
+        }
+    }
 
-            switch (chartType)
-            {
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
-                case AbstractVisualisation.VisualisationTypes.FACET:
-                    foreach (Chart chart in subCharts)
-                        chart.Size = value;
-                    break;
-            }
+    [PunRPC]
+    private void PropagateSize(float value)
+    {
+        visualisation.size = value;
+        visualisation.updateViewProperties(AbstractVisualisation.PropertyType.SizeValues);
+
+        switch (chartType)
+        {
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+            case AbstractVisualisation.VisualisationTypes.FACET:
+                foreach (Chart chart in subCharts)
+                    chart.Size = value;
+                break;
         }
     }
 
@@ -525,48 +609,54 @@ public class Chart : Photon.MonoBehaviour
             if (value == Scale)
                 return;
 
-            visualisation.width = value.x;
-            visualisation.height = value.y;
-            visualisation.depth = value.z;
+            photonView.RPC("PropagateScale", PhotonTargets.All, value);
+        }
+    }
 
-            CenterVisualisation();
-            SetColliderBounds();
+    [PunRPC]
+    private void PropagateScale(Vector3 value)
+    {
+        visualisation.width = value.x;
+        visualisation.height = value.y;
+        visualisation.depth = value.z;
 
-            switch (chartType)
-            {
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
-                    // Update the axes objects with the length
-                    GameObject axis = visualisation.theVisualizationObject.X_AXIS;
-                    if (axis != null)
-                    {
-                        axis.GetComponent<Axis>().Length = value.x;
-                        axis.GetComponent<Axis>().UpdateLength();
-                    }
-                    axis = visualisation.theVisualizationObject.Y_AXIS;
-                    if (axis != null)
-                    {
-                        axis.GetComponent<Axis>().Length = value.y;
-                        axis.GetComponent<Axis>().UpdateLength();
-                    }
-                    axis = visualisation.theVisualizationObject.Z_AXIS;
-                    if (axis != null)
-                    {
-                        axis.GetComponent<Axis>().Length = value.z;
-                        axis.GetComponent<Axis>().UpdateLength();
-                    }
+        CenterVisualisation();
+        SetColliderBounds();
 
-                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
-                    ForceViewScale();
-                    break;
+        switch (chartType)
+        {
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                // Update the axes objects with the length
+                GameObject axis = visualisation.theVisualizationObject.X_AXIS;
+                if (axis != null)
+                {
+                    axis.GetComponent<Axis>().Length = value.x;
+                    axis.GetComponent<Axis>().UpdateLength();
+                }
+                axis = visualisation.theVisualizationObject.Y_AXIS;
+                if (axis != null)
+                {
+                    axis.GetComponent<Axis>().Length = value.y;
+                    axis.GetComponent<Axis>().UpdateLength();
+                }
+                axis = visualisation.theVisualizationObject.Z_AXIS;
+                if (axis != null)
+                {
+                    axis.GetComponent<Axis>().Length = value.z;
+                    axis.GetComponent<Axis>().UpdateLength();
+                }
 
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
-                    ResizeAndPositionScatterplotMatrix();
-                    break;
+                visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
+                ForceViewScale();
+                break;
 
-                case AbstractVisualisation.VisualisationTypes.FACET:
-                    AdjustAndUpdateFacet();
-                    break;
-            }
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+                ResizeAndPositionScatterplotMatrix();
+                break;
+
+            case AbstractVisualisation.VisualisationTypes.FACET:
+                AdjustAndUpdateFacet();
+                break;
         }
     }
 
@@ -578,33 +668,39 @@ public class Chart : Photon.MonoBehaviour
             if (value == Width)
                 return;
 
-            visualisation.width = value;
-            CenterVisualisation();
-            SetColliderBounds();
+            photonView.RPC("PropagateWidth", PhotonTargets.All, value);
+        }
+    }
 
-            switch (chartType)
-            {
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
-                    // Update the axis object with the length
-                    GameObject axis = visualisation.theVisualizationObject.X_AXIS;
-                    if (axis != null)
-                    {
-                        axis.GetComponent<Axis>().Length = value;
-                        axis.GetComponent<Axis>().UpdateLength();
-                    }
+    [PunRPC]
+    private void PropagateWidth(float value)
+    {
+        visualisation.width = value;
+        CenterVisualisation();
+        SetColliderBounds();
 
-                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
-                    ForceViewScale();
-                    break;
+        switch (chartType)
+        {
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                // Update the axis object with the length
+                GameObject axis = visualisation.theVisualizationObject.X_AXIS;
+                if (axis != null)
+                {
+                    axis.GetComponent<Axis>().Length = value;
+                    axis.GetComponent<Axis>().UpdateLength();
+                }
 
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
-                    ResizeAndPositionScatterplotMatrix();
-                    break;
+                visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
+                ForceViewScale();
+                break;
 
-                case AbstractVisualisation.VisualisationTypes.FACET:
-                    AdjustAndUpdateFacet();
-                    break;
-            }
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+                ResizeAndPositionScatterplotMatrix();
+                break;
+
+            case AbstractVisualisation.VisualisationTypes.FACET:
+                AdjustAndUpdateFacet();
+                break;
         }
     }
 
@@ -616,33 +712,39 @@ public class Chart : Photon.MonoBehaviour
             if (value == Height)
                 return;
 
-            visualisation.height = value;
-            CenterVisualisation();
-            SetColliderBounds();
+            photonView.RPC("PropagateHeight", PhotonTargets.All, value);
+        }
+    }
 
-            switch (chartType)
-            {
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
-                    // Update the axis object with the length
-                    GameObject axis = visualisation.theVisualizationObject.Y_AXIS;
-                    if (axis != null)
-                    {
-                        axis.GetComponent<Axis>().Length = value;
-                        axis.GetComponent<Axis>().UpdateLength();
-                    }
+    [PunRPC]
+    private void PropagateHeight(float value)
+    {
+        visualisation.height = value;
+        CenterVisualisation();
+        SetColliderBounds();
 
-                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
-                    ForceViewScale();
-                    break;
+        switch (chartType)
+        {
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                // Update the axis object with the length
+                GameObject axis = visualisation.theVisualizationObject.Y_AXIS;
+                if (axis != null)
+                {
+                    axis.GetComponent<Axis>().Length = value;
+                    axis.GetComponent<Axis>().UpdateLength();
+                }
 
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
-                    ResizeAndPositionScatterplotMatrix();
-                    break;
+                visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
+                ForceViewScale();
+                break;
 
-                case AbstractVisualisation.VisualisationTypes.FACET:
-                    AdjustAndUpdateFacet();
-                    break;
-            }
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+                ResizeAndPositionScatterplotMatrix();
+                break;
+
+            case AbstractVisualisation.VisualisationTypes.FACET:
+                AdjustAndUpdateFacet();
+                break;
         }
     }
 
@@ -654,33 +756,39 @@ public class Chart : Photon.MonoBehaviour
             if (value == Depth)
                 return;
 
-            visualisation.depth = value;
-            CenterVisualisation();
-            SetColliderBounds();
+            photonView.RPC("PropagateDepth", PhotonTargets.All, value);
+        }
+    }
 
-            switch (chartType)
-            {
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
-                    // Update the axis object with the length
-                    GameObject axis = visualisation.theVisualizationObject.Z_AXIS;
-                    if (axis != null)
-                    {
-                        axis.GetComponent<Axis>().Length = value;
-                        axis.GetComponent<Axis>().UpdateLength();
-                    }
+    [PunRPC]
+    private void PropagateDepth(float value)
+    {
+        visualisation.depth = value;
+        CenterVisualisation();
+        SetColliderBounds();
 
-                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
-                    ForceViewScale();
-                    break;
+        switch (chartType)
+        {
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                // Update the axis object with the length
+                GameObject axis = visualisation.theVisualizationObject.Z_AXIS;
+                if (axis != null)
+                {
+                    axis.GetComponent<Axis>().Length = value;
+                    axis.GetComponent<Axis>().UpdateLength();
+                }
 
-                case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
-                    ResizeAndPositionScatterplotMatrix();
-                    break;
+                visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
+                ForceViewScale();
+                break;
 
-                case AbstractVisualisation.VisualisationTypes.FACET:
-                    AdjustAndUpdateFacet();
-                    break;
-            }
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+                ResizeAndPositionScatterplotMatrix();
+                break;
+
+            case AbstractVisualisation.VisualisationTypes.FACET:
+                AdjustAndUpdateFacet();
+                break;
         }
     }
 
@@ -725,12 +833,18 @@ public class Chart : Photon.MonoBehaviour
 
             if (value == scatterplotMatrixSize)
                 return;
-            
-            if (VisualisationType == AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX)
-            {
-                scatterplotMatrixSize = value;
-                AdjustScatterplotMatrixSize();
-            }
+
+            photonView.RPC("PropagateScatterplotMatrixSize", PhotonTargets.All, value);
+        }
+    }
+
+    [PunRPC]
+    private void PropagateScatterplotMatrixSize(int value)
+    {
+        if (VisualisationType == AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX)
+        {
+            scatterplotMatrixSize = value;
+            AdjustScatterplotMatrixSize();
         }
     }
 
@@ -742,17 +856,23 @@ public class Chart : Photon.MonoBehaviour
         {
             if (value == facetDimension)
                 return;
+            
+            photonView.RPC("PropagateFacetDimension", PhotonTargets.All, value);
+        }
+    }
 
-            facetDimension = value;
+    [PunRPC]
+    private void PropagateFacetDimension(string value)
+    {
+        facetDimension = value;
 
-            if (VisualisationType == AbstractVisualisation.VisualisationTypes.FACET)
-            {
-                // Store facet dimension in the first element of AttributeFilters
-                visualisation.attributeFilters = new[] { new AttributeFilter() { Attribute = value } };
-                facetSplomKey.UpdateProperties(AbstractVisualisation.PropertyType.None, visualisation);
+        if (VisualisationType == AbstractVisualisation.VisualisationTypes.FACET)
+        {
+            // Store facet dimension in the first element of AttributeFilters
+            visualisation.attributeFilters = new[] { new AttributeFilter() { Attribute = value } };
+            facetSplomKey.UpdateProperties(AbstractVisualisation.PropertyType.None, visualisation);
 
-                AdjustAndUpdateFacet();
-            }
+            AdjustAndUpdateFacet();
         }
     }
 
@@ -762,18 +882,46 @@ public class Chart : Photon.MonoBehaviour
         get { return facetSize; }
         set
         {
+            if (value == facetSize)
+                return;
+
             value = Mathf.Max(value, 1);
 
             if (value == facetSize)
                 return;
-            
-            facetSize = value;
 
-            if (VisualisationType == AbstractVisualisation.VisualisationTypes.FACET)
-            {
-                AdjustAndUpdateFacet();
-            }
+            photonView.RPC("PropagateFacetSize", PhotonTargets.All, value);
         }
+    }
+
+    [PunRPC]
+    private void PropagateFacetSize(int value)
+    {
+        facetSize = value;
+
+        if (VisualisationType == AbstractVisualisation.VisualisationTypes.FACET)
+        {
+            AdjustAndUpdateFacet();
+        }
+    }
+
+    private bool isPrototype;
+    public bool IsPrototype
+    {
+        get { return isPrototype; }
+        set
+        {
+            if (value == isPrototype)
+                return;
+
+            photonView.RPC("PropagateIsPrototype", PhotonTargets.All, value);
+        }
+    }
+
+    [PunRPC]
+    private void PropagateIsPrototype(bool value)
+    {
+        isPrototype = value;
     }
 
     public bool XAxisVisibility
@@ -788,8 +936,14 @@ public class Chart : Photon.MonoBehaviour
             if (value == XAxisVisibility || visualisation.theVisualizationObject.X_AXIS == null)
                 return;
 
-            visualisation.theVisualizationObject.X_AXIS.SetActive(value);
+            photonView.RPC("PropagateXAxisVisibility", PhotonTargets.All, value);
         }
+    }
+
+    [PunRPC]
+    private void PropagateXAxisVisibility(bool value)
+    {
+        visualisation.theVisualizationObject.X_AXIS.SetActive(value);
     }
 
     public bool YAxisVisibility
@@ -804,8 +958,14 @@ public class Chart : Photon.MonoBehaviour
             if (value == YAxisVisibility || visualisation.theVisualizationObject.Y_AXIS == null)
                 return;
 
-            visualisation.theVisualizationObject.Y_AXIS.SetActive(value);
+            photonView.RPC("PropagateYAxisVisibility", PhotonTargets.All, value);
         }
+    }
+
+    [PunRPC]
+    private void PropagateYAxisVisibility(bool value)
+    {
+        visualisation.theVisualizationObject.Y_AXIS.SetActive(value);
     }
 
     public bool ZAxisVisibility
@@ -820,8 +980,14 @@ public class Chart : Photon.MonoBehaviour
             if (value == ZAxisVisibility || visualisation.theVisualizationObject.Z_AXIS == null)
                 return;
 
-            visualisation.theVisualizationObject.Z_AXIS.SetActive(value);
+            photonView.RPC("PropagateZAxisVisibility", PhotonTargets.All, value);
         }
+    }
+
+    [PunRPC]
+    private void PropagateZAxisVisibility(bool value)
+    {
+        visualisation.theVisualizationObject.Z_AXIS.SetActive(value);
     }
 
     public bool KeyVisiblility
@@ -835,8 +1001,14 @@ public class Chart : Photon.MonoBehaviour
             if (value == KeyVisiblility || visualisation.key == null)
                 return;
 
-            visualisation.key.SetActive(value);
+            photonView.RPC("PropagateKeyVisibility", PhotonTargets.All, value);
         }
+    }
+
+    [PunRPC]
+    private void PropagateKeyVisibility(bool value)
+    {
+        visualisation.key.SetActive(value);
     }
 
     private bool resizeHandleVisibility = false;
@@ -851,11 +1023,35 @@ public class Chart : Photon.MonoBehaviour
             if (value == resizeHandleVisibility)
                 return;
 
-            resizeHandleVisibility = value;
-
-            topLeftInteractableHandle.gameObject.SetActive(value);
-            bottomRightInteractableHandle.gameObject.SetActive(value);
+            photonView.RPC("PropagateResizeHandleVisibility", PhotonTargets.All, value);
         }
+    }
+
+    [PunRPC]
+    private void PropagateResizeHandleVisibility(bool value)
+    {
+        resizeHandleVisibility = value;
+
+        topLeftInteractableHandle.gameObject.SetActive(value);
+        bottomRightInteractableHandle.gameObject.SetActive(value);
+    }
+
+    public bool ColliderActiveState
+    {
+        get { return GetComponent<Collider>().enabled; }
+        set
+        {
+            if (value == ColliderActiveState)
+                return;
+
+            photonView.RPC("PropagateColliderActiveState", PhotonTargets.All, value);
+        }
+    }
+
+    [PunRPC]
+    private void PropagateColliderActiveState(bool value)
+    {
+        GetComponent<Collider>().enabled = value;
     }
 
     #endregion
@@ -986,7 +1182,7 @@ public class Chart : Photon.MonoBehaviour
                             subChart.SizeDimension = SizeDimension;
                             subChart.Size = Size;
                             subChart.KeyVisiblility = false;
-                            subChart.SetAsPrototype();
+                            subChart.IsPrototype = true;
 
                             splomCharts[i, j] = subChart;
                             subChart.transform.SetParent(transform);
@@ -1017,14 +1213,8 @@ public class Chart : Photon.MonoBehaviour
                     // Hide the axis for all but the charts along the edge
                     bool isAlongLeft = (i == 0);
                     bool isAlongBottom = (j == scatterplotMatrixSize - 1);
-                    GameObject xAxis = subChart.visualisation.theVisualizationObject.X_AXIS;
-                    GameObject yAxis = subChart.visualisation.theVisualizationObject.Y_AXIS;
-
-                    if (xAxis != null && yAxis != null)
-                    {
-                        xAxis.SetActive(isAlongBottom);
-                        yAxis.SetActive(isAlongLeft);
-                    }
+                    subChart.XAxisVisibility = isAlongBottom;
+                    subChart.YAxisVisibility = isAlongLeft;
                 }
                 // If it is larger, delete any charts if there were any
                 else
@@ -1170,7 +1360,7 @@ public class Chart : Photon.MonoBehaviour
                 subChart.ColorDimension = ColorDimension;
                 subChart.Color = Color;
                 subChart.Gradient = Gradient;
-                subChart.SetAsPrototype();
+                subChart.IsPrototype = true;
                 
                 subChart.transform.SetParent(transform);
                 subCharts.Add(subChart);
@@ -1240,8 +1430,6 @@ public class Chart : Photon.MonoBehaviour
                     // Hide the axis for all but the charts along the edge
                     bool isAlongLeft = (j == 0);
                     bool isAlongBottom = (i == numRows - 1);
-                    GameObject xAxis = subChart.visualisation.theVisualizationObject.X_AXIS;
-                    GameObject yAxis = subChart.visualisation.theVisualizationObject.Y_AXIS;
 
                     // If the the index of a subchart below this one would be larger than the total number of subcharts, then it does not exist, therefore
                     // this subchart is along the bottom
@@ -1249,11 +1437,8 @@ public class Chart : Photon.MonoBehaviour
                     if (count > facetSize)
                         isAlongBottom = true;
 
-                    if (xAxis != null && yAxis != null)
-                    {
-                        xAxis.SetActive(isAlongBottom);
-                        yAxis.SetActive(isAlongLeft);
-                    }
+                    subChart.XAxisVisibility = isAlongBottom;
+                    subChart.YAxisVisibility = isAlongLeft;
                 }
                 index++;
             }
@@ -1409,16 +1594,6 @@ public class Chart : Photon.MonoBehaviour
             Scale = new Vector3(width, height, depth);
         }
     }
-
-    public void SetAsPrototype()
-    {
-        isPrototype = true;
-    }
-
-    public bool IsPrototype()
-    {
-        return isPrototype;
-    }
     
     private void ForceViewScale()
     {
@@ -1567,59 +1742,5 @@ public class Chart : Photon.MonoBehaviour
     {
         transform.localPosition = targetPos;
         transform.localRotation = targetRot;
-    }
-
-    void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
-    {
-        if (stream.isWriting)
-        {
-            stream.SendNext(VisualisationType);
-            stream.SendNext(GeometryType);
-            stream.SendNext(XDimension);
-            stream.SendNext(YDimension);
-            stream.SendNext(ZDimension);
-            stream.SendNext(ColorDimension);
-            stream.SendNext(ColorPaletteDimension);
-            stream.SendNext(Color);
-            stream.SendNext(ColorPalette);
-            stream.SendNext(SizeDimension);
-            stream.SendNext(Size);
-            stream.SendNext(Scale);
-            stream.SendNext(ScatterplotMatrixSize);
-            stream.SendNext(FacetDimension);
-            stream.SendNext(FacetSize);
-            stream.SendNext(isPrototype);
-            stream.SendNext(XAxisVisibility);
-            stream.SendNext(YAxisVisibility);
-            stream.SendNext(ZAxisVisibility);
-            stream.SendNext(KeyVisiblility);
-            stream.SendNext(ResizeHandleVisibility);
-            stream.SendNext(GetComponent<Collider>().enabled);
-        }
-        else
-        {
-            VisualisationType = (AbstractVisualisation.VisualisationTypes)stream.ReceiveNext();
-            GeometryType = (AbstractVisualisation.GeometryType)stream.ReceiveNext();
-            XDimension = (string)stream.ReceiveNext();
-            YDimension = (string)stream.ReceiveNext();
-            ZDimension = (string)stream.ReceiveNext();
-            ColorDimension = (string)stream.ReceiveNext();
-            ColorPaletteDimension = (string) stream.ReceiveNext();
-            Color = (Color)stream.ReceiveNext();
-            ColorPalette = (Color[]) stream.ReceiveNext();
-            SizeDimension = (string)stream.ReceiveNext();
-            Size = (float)stream.ReceiveNext();
-            Scale = (Vector3)stream.ReceiveNext();
-            ScatterplotMatrixSize = (int)stream.ReceiveNext();
-            FacetDimension = (string)stream.ReceiveNext();
-            FacetSize = (int)stream.ReceiveNext();
-            isPrototype = (bool)stream.ReceiveNext();
-            XAxisVisibility = (bool)stream.ReceiveNext();
-            YAxisVisibility = (bool)stream.ReceiveNext();
-            ZAxisVisibility = (bool)stream.ReceiveNext();
-            KeyVisiblility = (bool)stream.ReceiveNext();
-            ResizeHandleVisibility = (bool) stream.ReceiveNext();
-            GetComponent<Collider>().enabled = (bool)stream.ReceiveNext();
-        }
     }
 }

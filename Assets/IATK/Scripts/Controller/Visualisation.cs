@@ -4,6 +4,7 @@ using UnityEngine;
 using System.IO;
 using System.Linq;
 using System;
+using UnityEditor;
 
 
 namespace IATK
@@ -197,7 +198,8 @@ namespace IATK
 
             theVisualizationObject.UpdateVisualisation(AbstractVisualisation.PropertyType.None);
 
-            RuntimeEditorLoadAndSaveConfiguration();
+            if (!EditorApplication.isPlaying)
+                RuntimeEditorLoadAndSaveConfiguration();
 
             key = (GameObject)Instantiate(Resources.Load("Key"));
             key.transform.parent = transform;

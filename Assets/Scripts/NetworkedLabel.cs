@@ -5,7 +5,6 @@ using UnityEngine;
 
 public class NetworkedLabel : Photon.MonoBehaviour
 {
-
     public TextMeshPro textMesh;
     private string text;
     private Vector2 rectTransformSize;
@@ -18,28 +17,26 @@ public class NetworkedLabel : Photon.MonoBehaviour
 
     public void SetText(string value)
     {
+        photonView.RPC("PropagateSetText", PhotonTargets.All, value);
+    }
+
+    [PunRPC]
+    private void PropagateSetText(string value)
+    {
         text = value;
         textMesh.text = text;
     }
 
     public void SetRectTransform(Vector2 size)
     {
+        photonView.RPC("PropagateSetRectTransform", PhotonTargets.All, size);
+    }
+
+    [PunRPC]
+    private void PropagateSetRectTransform(Vector2 size)
+    {
         rectTransformSize = size;
         RectTransform container = GetComponent<RectTransform>();
         container.sizeDelta = size;
-    }
-
-    void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
-    {
-        if (stream.isWriting)
-        {
-            stream.SendNext(text);
-            stream.SendNext(rectTransformSize);
-        }
-        else
-        {
-            SetText((string) stream.ReceiveNext());
-            SetRectTransform((Vector2) stream.ReceiveNext());
-        }
     }
 }

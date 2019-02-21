@@ -932,7 +932,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 rangedPullObjectStartRotation = rangedPullGameObject.transform.rotation;
                 SetInteractionState(InteractionState.RangedInteracting);
 
-                pullObjectIsPrototype = rangedPullGameObject.GetComponent<Chart>().IsPrototype();
+                pullObjectIsPrototype = rangedPullGameObject.GetComponent<Chart>().IsPrototype;
             }
             // Otherwise, if it is a menu button, click it
             else if (collidedObject.CompareTag("MenuButton"))

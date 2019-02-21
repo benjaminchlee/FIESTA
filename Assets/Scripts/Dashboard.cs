@@ -478,6 +478,9 @@ public class Dashboard : Photon.MonoBehaviour
         standardChart.XDimension = chart.XDimension;
         standardChart.YDimension = chart.YDimension;
         standardChart.ZDimension = chart.ZDimension;
+        standardChart.XNormaliser = chart.XNormaliser;
+        standardChart.YNormaliser = chart.YNormaliser;
+        standardChart.ZNormaliser = chart.ZNormaliser;
         standardChart.ColorDimension = chart.ColorDimension;
         standardChart.ColorPaletteDimension = chart.ColorPaletteDimension;
         standardChart.Color = chart.Color;

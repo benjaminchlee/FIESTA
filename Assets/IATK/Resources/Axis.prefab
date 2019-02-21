@@ -252,6 +252,8 @@ GameObject:
   - component: {fileID: 114162554662858892}
   - component: {fileID: 114563118019049206}
   - component: {fileID: 54677730715367170}
+  - component: {fileID: 114397107120767368}
+  - component: {fileID: 114853420266558452}
   m_Layer: 0
   m_Name: MinNormaliser
   m_TagString: Untagged
@@ -337,6 +339,8 @@ GameObject:
   - component: {fileID: 114249885558968500}
   - component: {fileID: 114476771102449600}
   - component: {fileID: 54395512494957842}
+  - component: {fileID: 114062826655680256}
+  - component: {fileID: 114716285868872252}
   m_Layer: 0
   m_Name: MaxNormaliser
   m_TagString: Untagged
@@ -1718,6 +1722,25 @@ MonoBehaviour:
   objectHighlighter: {fileID: 0}
   touchHighlightColor: {r: 0, g: 0, b: 0, a: 0}
   usingState: 0
+--- !u!114 &114062826655680256
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1740450645015984}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: abc4b5dd2be1cea4aaea2850b910d3f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nearTouchHighlight: {r: 0, g: 0, b: 0, a: 0}
+  touchHighlight: {r: 1, g: 1, b: 0, a: 1}
+  grabHighlight: {r: 0, g: 0, b: 0, a: 0}
+  useHighlight: {r: 0, g: 0, b: 0, a: 0}
+  objectToMonitor: {fileID: 0}
+  objectToHighlight: {fileID: 1282854806284292}
+  objectHighlighter: {fileID: 114716285868872252}
+  objectToAffect: {fileID: 0}
 --- !u!114 &114128338758435196
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1920,6 +1943,25 @@ MonoBehaviour:
         m_CallState: 2
     m_TypeName: AxisRangeWidget+OnValueChanged, Assembly-CSharp, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
+--- !u!114 &114397107120767368
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1510158793778460}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: abc4b5dd2be1cea4aaea2850b910d3f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nearTouchHighlight: {r: 0, g: 0, b: 0, a: 0}
+  touchHighlight: {r: 1, g: 1, b: 0, a: 1}
+  grabHighlight: {r: 0, g: 0, b: 0, a: 0}
+  useHighlight: {r: 0, g: 0, b: 0, a: 0}
+  objectToMonitor: {fileID: 0}
+  objectToHighlight: {fileID: 1135547766072476}
+  objectHighlighter: {fileID: 114853420266558452}
+  objectToAffect: {fileID: 0}
 --- !u!114 &114476771102449600
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2128,6 +2170,36 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   m_maskType: 0
+--- !u!114 &114716285868872252
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1740450645015984}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dc366c4ab9b63a4dad97fc1290dc00a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  active: 1
+  unhighlightOnDisable: 1
+  emissionDarken: 50
+  customMaterial: {fileID: 0}
+--- !u!114 &114853420266558452
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1510158793778460}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dc366c4ab9b63a4dad97fc1290dc00a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  active: 1
+  unhighlightOnDisable: 1
+  emissionDarken: 50
+  customMaterial: {fileID: 0}
 --- !u!135 &135045662777895698
 SphereCollider:
   m_ObjectHideFlags: 1
