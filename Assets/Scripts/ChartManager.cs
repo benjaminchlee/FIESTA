@@ -54,48 +54,48 @@ public class ChartManager : MonoBehaviour {
     {
         if (arg0.name == "MainScene")
         {
+            Invoke("CreateDashboard", 0.1f);
+        }
+    }
 
-            Transform headset = VRTK_DeviceFinder.HeadsetTransform();
+    private void CreateDashboard()
+    {
+        Transform headset = VRTK_DeviceFinder.HeadsetCamera();
 
-            if (PhotonNetwork.connected)
-            {
-                int id = PhotonNetwork.player.ID;
+        if (PhotonNetwork.connected)
+        {
+            int id = PhotonNetwork.player.ID;
 
-                Vector3 pos;
-                Quaternion rot;
+            Vector3 pos;
+            Quaternion rot;
 
-                switch (id)
-                {
-                    case 1:
-                        pos = new Vector3(1f, 1.5f, 0f);
-                        rot = Quaternion.Euler(0f, 90f, 0f);
-                        break;
+            //switch (id)
+            //{
+            //    case 1:
+            //        pos = new Vector3(1f, 1.5f, 0f);
+            //        rot = Quaternion.Euler(0f, 90f, 0f);
+            //        break;
 
-                    case 2:
-                        pos = new Vector3(0f, 1.5f, -1f);
-                        rot = Quaternion.Euler(0f, 180f, 0f);
-                        break;
+            //    case 2:
+            //        pos = new Vector3(0f, 1.5f, -1f);
+            //        rot = Quaternion.Euler(0f, 180f, 0f);
+            //        break;
 
-                    case 3:
-                        pos = new Vector3(-1f, 1.5f, 0f);
-                        rot = Quaternion.Euler(0f, -90f, 0f);
-                        break;
+            //    case 3:
+            //        pos = new Vector3(-1f, 1.5f, 0f);
+            //        rot = Quaternion.Euler(0f, -90f, 0f);
+            //        break;
 
-                    default:
-                        pos = headset.TransformPoint(Vector3.forward * 0.5f);
-                        rot = headset.rotation;
-                        break;
-                }
+            //    default:
+            //        pos = headset.TransformPoint(Vector3.forward * 0.5f);
+            //        rot = headset.rotation;
+            //        break;
+            //}
 
-                PhotonNetwork.Instantiate("Dashboard", pos, rot, 0);
-            }
-            else
-            {
-                Vector3 pos = headset.TransformPoint(Vector3.forward * 0.5f);
-                Quaternion rot = headset.rotation;
+            pos = headset.TransformPoint(Vector3.forward * 0.5f);
+            rot = headset.rotation;
 
-                PhotonNetwork.Instantiate("Dashboard", pos, rot, 0);
-            }
+            PhotonNetwork.Instantiate("Dashboard", pos, rot, 0);
         }
     }
 

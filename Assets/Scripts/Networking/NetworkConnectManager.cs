@@ -51,6 +51,7 @@ namespace PlayoVR {
             Debug.Log("Creating room...");
             var options = new RoomOptions();
             options.MaxPlayers = MaxPlayersPerRoom;
+            options.PlayerTtl = 10000;
             PhotonNetwork.CreateRoom(null, options, null);
         }
 
@@ -84,6 +85,7 @@ namespace PlayoVR {
 
         public override void OnDisconnectedFromPhoton() {
             Debug.Log("We got disconnected form the Photon network");
+            PhotonNetwork.ReconnectAndRejoin();
         }
     }
 }

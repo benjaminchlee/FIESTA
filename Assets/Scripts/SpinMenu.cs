@@ -31,16 +31,14 @@ public class SpinMenu : MonoBehaviour {
 
     private bool isExpanded = false;
     private bool isEnabled = false;
-
-    private VRTK_ControllerEvents controllerEvents;
     private SpinMenuButton activeButton = null;
+
+    [Serializable]
+    public class SpinMenuToolChangedEvent : UnityEvent<string> { }
+    public SpinMenuToolChangedEvent SpinMenuToolChanged;
 
     private void Start()
     {
-        controllerEvents = GetComponentInParent<VRTK_ControllerEvents>();
-        controllerEvents.TouchpadPressed += OnTouchpadPressed;
-        controllerEvents.TouchpadReleased += OnTouchpadReleased;
-
         // If the cancel button is not the last element in the last, move it to the end
         if (buttons.IndexOf(cancelButton) != buttons.Count - 1)
         {
@@ -49,7 +47,7 @@ public class SpinMenu : MonoBehaviour {
         }
 
         cancelButton.transform.position = topPosition;
-        cancelButton.GetComponentInChildren<MeshRenderer>().material.color = selectedColor;
+        cancelButton.Color = selectedColor;
         activeButton = cancelButton;
 
         // Make all other buttons size 0
@@ -111,6 +109,40 @@ public class SpinMenu : MonoBehaviour {
         }
     }
 
+    public void SpinMenuButtonClicked(SpinMenuButton spinMenuButton)
+    {
+        if (isEnabled)
+        {
+            // If the menu is closed, open it
+            if (!isExpanded)
+            {
+                isExpanded = true;
+                ExpandButtons();
+            }
+            // If the menu is open, choose the clicked button
+            else
+            {
+                isExpanded = false;
+
+                ActiveButtonChanged(spinMenuButton);
+
+                RetractButtons();
+            }
+        }
+    }
+
+    private void ActiveButtonChanged(SpinMenuButton spinMenuButton)
+    {
+        activeButton = spinMenuButton;
+
+        foreach (SpinMenuButton button in buttons)
+        {
+            button.Color = (button == activeButton) ? selectedColor : unselectedColor;
+        }
+        
+        SpinMenuToolChanged.Invoke(spinMenuButton.RangedInteractionsToolName);
+    }
+
     /// <summary>
     /// This method expands the buttons from the default resting state to the expanded state.
     /// </summary>
@@ -119,9 +151,6 @@ public class SpinMenu : MonoBehaviour {
         // Set the expanded positions of the buttons
         for (int i = 0; i < buttons.Count; i++)
         {
-            // Enable colliders
-            buttons[i].GetComponentInChildren<Collider>().enabled = true;
-
             if (buttons[i] != cancelButton)
             {
                 float angle = (startAngle + intervalAngle * i) % 360;
@@ -135,7 +164,7 @@ public class SpinMenu : MonoBehaviour {
             else
             {
                 cancelButton.AnimateToPosition(topPosition, Vector3.one, animationDuration);
-                cancelButton.GetComponentInChildren<TextMeshPro>().text = "Cancel";
+                cancelButton.Text = "Cancel";
             }
         }
 
@@ -150,9 +179,6 @@ public class SpinMenu : MonoBehaviour {
     {        
         for (int i = 0; i < buttons.Count; i++)
         {
-            // Disable colliders
-            buttons[i].GetComponentInChildren<Collider>().enabled = false;
-
             // If the button is not the active one, send it back to the controller
             if (buttons[i] != activeButton)
             {
@@ -166,7 +192,7 @@ public class SpinMenu : MonoBehaviour {
         }
 
         // Change the text of the cancel button
-        cancelButton.GetComponentInChildren<TextMeshPro>().text = "No Tool Selected";
+        cancelButton.Text = "No Tool Selected";
 
         InteractionsManager.Instance.RangedMenuFinished();
     }
@@ -183,29 +209,7 @@ public class SpinMenu : MonoBehaviour {
         }
         
         // Change the text of the cancel button
-        cancelButton.GetComponentInChildren<TextMeshPro>().text = "No Tool Selected";
+        cancelButton.Text = "No Tool Selected";
     }
 
-    /// <summary>
-    /// This method changes the current active button to the one specified.
-    /// </summary>
-    /// <param name="button">The button to be set as active</param>
-    public void ActiveButtonChanged(SpinMenuButton button)
-    {
-        activeButton = button;
-
-        for (int i = 0; i < buttons.Count; i++)
-        {
-            if (buttons[i] == activeButton)
-            {
-                buttons[i].GetComponentInChildren<MeshRenderer>().material.color = selectedColor;
-            }
-            else
-            {
-                buttons[i].GetComponentInChildren<MeshRenderer>().material.color = unselectedColor;
-            }
-        }
-
-        RetractButtons();
-    }
 }

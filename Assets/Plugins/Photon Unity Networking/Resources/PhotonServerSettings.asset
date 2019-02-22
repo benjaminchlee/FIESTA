@@ -109,4 +109,7 @@ MonoBehaviour:
   - PropagateIsPrototype
   - PropagateSetRectTransform
   - PropagateSetText
+  - PropagateSetColor
+  - PropagateText
+  - PropagateSprite
   DisableAutoOpenWizard: 1

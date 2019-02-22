@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.SceneManagement;
 using Util;
 using VRTK;
@@ -15,7 +16,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
     [Header("Sprite Parameters")]
     [SerializeField] [Tooltip("The sprite renderer that renders the sprites for the selected ranged tool.")]
-    private SpriteRenderer selectedInteractionRenderer;
+    private NetworkedSprite selectedInteractionRenderer;
     [SerializeField] [Tooltip("The sprite used to represent the ranged brush tool.")]
     private Sprite rangedBrushSprite;
     [SerializeField] [Tooltip("The sprite used to represent the lasso selection tool.")]
@@ -123,7 +124,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     /// <summary>
     /// Networked objects
     /// </summary>
-    private GameObject networkedTracer;
+    private NetworkedTrackedObject networkedTracer;
+    private NetworkedTrackedObject networkedBrush;
 
     /// <summary>
     /// The state of interaction the user is currently in. Note that this scope only extends to that of touchpad interactions, and not
@@ -186,6 +188,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         // Keep pointer on scene change
         DontDestroyOnLoad(actualCursor.transform.root.gameObject);
         DontDestroyOnLoad(actualTracer.transform.root.gameObject);
+
         SceneManager.sceneLoaded += InstantiatePhotonObjects;
     }
 
@@ -193,9 +196,25 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     {
         if (arg0.name == "MainScene")
         {
+            // Instantiate spin menu
+            GameObject spinMenu = PhotonNetwork.Instantiate("SpinMenu", Vector3.zero, Quaternion.identity, 0);
+            spinMenu.GetComponent<SpinMenu>().SpinMenuToolChanged.AddListener(InteractionToolChanged);
+
+            // Put spin menu on other controller
+            spinMenu.transform.SetParent(VRTK_DeviceFinder.IsControllerLeftHand(gameObject) ? VRTK_DeviceFinder.GetControllerRightHand().transform : VRTK_DeviceFinder.GetControllerLeftHand().transform);
+            spinMenu.transform.localPosition = Vector3.zero;
+            spinMenu.transform.localRotation = Quaternion.identity;
+
+            // Instantiate sprite renderer
+            GameObject spriteRenderer =  PhotonNetwork.Instantiate("InteractionModeSprite", Vector3.zero, Quaternion.identity, 0);
+            selectedInteractionRenderer = spriteRenderer.GetComponent<NetworkedSprite>();
+            spriteRenderer.transform.SetParent(transform);
+            spriteRenderer.transform.localPosition = Vector3.up * 0.06f;
+            spriteRenderer.transform.localRotation = Quaternion.identity;
+
             // Instantiate ranged brush
-            rangedBrush = PhotonNetwork.Instantiate("BrushSphere", Vector3.zero, Quaternion.identity, 0);
-            rangedBrush.transform.position = Vector3.one * 9999f;
+            rangedBrush = (GameObject) Instantiate(Resources.Load("BrushSphere"));
+            rangedBrush.SetActive(false);
 
             // Create brushing and linking object
             GameObject bal = PhotonNetwork.Instantiate("BrushingAndLinking", Vector3.zero, Quaternion.identity, 0);
@@ -203,13 +222,21 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             brushingInput1 = brushingAndLinking.input1;
             brushingInput2 = brushingAndLinking.input2;
 
-            // Instantiate tracer
-            networkedTracer = PhotonNetwork.Instantiate("Tracer", Vector3.zero, Quaternion.identity, 0);
-            // Hide the mesh for the owner
+            // Instantiate networked tracer
+            GameObject tracer = PhotonNetwork.Instantiate("NetworkedTracer", Vector3.zero, Quaternion.identity, 0);
+            networkedTracer = tracer.GetComponent<NetworkedTrackedObject>();
+            networkedTracer.SetTrackedObject(actualTracer);
+            networkedTracer.SetColor(PlayerPreferencesManager.Instance.AvatarColor);
+            // Hide the mesh for the owner (this does not get propagated)
             networkedTracer.GetComponent<Renderer>().enabled = false;
-            networkedTracer.transform.localScale = Vector3.zero;
 
-            actualTracer.GetComponentInParent<VRTK_TransformFollow>().moment = VRTK_TransformFollow.FollowMoment.OnUpdate;
+            // Instantiate networked brush
+            GameObject brush = PhotonNetwork.Instantiate("NetworkedBrush", Vector3.zero, Quaternion.identity, 0);
+            networkedBrush = brush.GetComponent<NetworkedTrackedObject>();
+            networkedBrush.SetTrackedObject(rangedBrush);
+            networkedBrush.SetColor(PlayerPreferencesManager.Instance.AvatarColor);
+            // Hide the mesh for the owner (this does not get propagated)
+            networkedBrush.GetComponent<Renderer>().enabled = false;
         }
     }
 
@@ -305,7 +332,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         {
             case InteractionState.None:
                 previousState = InteractionState.None;
-                selectedInteractionRenderer.sprite = null;
+                selectedInteractionRenderer.Sprite = null;
                 tracerVisibility = VisibilityStates.AlwaysOff;
                 selectionMode = SelectionMode.None;
                 break;
@@ -313,9 +340,9 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             case InteractionState.RangedBrush:
                 // TODO: make a bit cleaner
                 if (brushingAndLinking.shareBrushing)
-                    selectedInteractionRenderer.sprite = sharedBrushSprite;
+                    selectedInteractionRenderer.Sprite = sharedBrushSprite;
                 else
-                    selectedInteractionRenderer.sprite = privateBrushSprite;
+                    selectedInteractionRenderer.Sprite = privateBrushSprite;
                 tracerVisibility = VisibilityStates.AlwaysOn;
                 break;
 
@@ -323,7 +350,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 break;
 
             case InteractionState.LassoSelection:
-                selectedInteractionRenderer.sprite = lassoSelectionSprite;
+                selectedInteractionRenderer.Sprite = lassoSelectionSprite;
                 tracerVisibility = VisibilityStates.AlwaysOn;
                 break;
 
@@ -331,7 +358,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 break;
 
             case InteractionState.RectangleSelection:
-                selectedInteractionRenderer.sprite = rectangleSelectionSprite;
+                selectedInteractionRenderer.Sprite = rectangleSelectionSprite;
                 tracerVisibility = VisibilityStates.AlwaysOn;
                 break;
 
@@ -339,7 +366,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 break;
 
             case InteractionState.RangedInteraction:
-                selectedInteractionRenderer.sprite = rangedInteractionSprite;
+                selectedInteractionRenderer.Sprite = rangedInteractionSprite;
                 tracerVisibility = VisibilityStates.AlwaysOn;
                 break;
 
@@ -661,13 +688,16 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         GameObject collidedObject = GetCollidedObject(out hit);
         if (collidedObject != null)
         {
+            if (!rangedBrush.activeSelf)
+                rangedBrush.SetActive(true);
+
             rangedBrush.transform.position = hit.point;
             brushingInput1.position = hit.point;
             brushingAndLinking.brushButtonController = true;
         }
         else
         {
-            rangedBrush.transform.position = Vector3.one * 9999f;
+            rangedBrush.SetActive(false);
             brushingAndLinking.brushButtonController = false;
         }
 
@@ -683,7 +713,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
         brushingAndLinking.brushButtonController = false;
 
-        rangedBrush.transform.position = Vector3.one * 9999f;
+        rangedBrush.SetActive(false);
     }
 
     private void LassoSelectionTriggerStart(ControllerInteractionEventArgs e)

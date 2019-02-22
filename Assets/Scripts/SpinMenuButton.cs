@@ -1,64 +1,75 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using VRTK;
 
-public class SpinMenuButton : VRTK_InteractableObject {
+public class SpinMenuButton : Photon.MonoBehaviour {
     
-    [Tooltip("The function to be called when the user clicks on this button with a controller.")]
-    public UnityEvent OnClick = new UnityEvent();
+    [SerializeField]
+    private VRTK_InteractableObject interactableObject;
+    [SerializeField]
+    private TextMeshPro label;
+    [SerializeField]
+    private Renderer renderer;
+    [SerializeField]
+    private string rangedInteractionsToolName;
 
-    private SpinMenu menu;
-    private Coroutine activeCoroutine;
+    [Serializable]
+    public class ButtonClickedEvent : UnityEvent<SpinMenuButton> { }
+    public ButtonClickedEvent ButtonClicked;
+
+    public string Text
+    {
+        get { return label.text; }
+        set { photonView.RPC("PropagateText", PhotonTargets.All, value); }
+    }
+
+    [PunRPC]
+    private void PropagateText(string value)
+    {
+        label.text = value;
+    }
+
+    public Color Color
+    {
+        get { return renderer.material.color; }
+        set { photonView.RPC("PropagateColor", PhotonTargets.All, value); }
+    }
+
+    [PunRPC]
+    private void PropagateColor(Color value)
+    {
+        renderer.material.color = value;
+    }
+    
+    public string RangedInteractionsToolName
+    {
+        get { return rangedInteractionsToolName;}
+    }
 
     private void Start()
     {
-        menu = GetComponentInParent<SpinMenu>();
+        interactableObject.InteractableObjectUsed += OnSpinMenuButtonUsed;
     }
 
-    protected override void OnEnable()
+    private void OnDestroy()
     {
-        base.OnEnable();
-        InteractableObjectUsed += OnSpinMenuButtonUsed;
-    }
-
-    protected override void OnDisable()
-    {
-        base.OnDisable();
-        InteractableObjectUsed -= OnSpinMenuButtonUsed;
+        interactableObject.InteractableObjectUsed -= OnSpinMenuButtonUsed;
     }
 
     private void OnSpinMenuButtonUsed(object sender, InteractableObjectEventArgs e)
     {
         InteractionsManager.Instance.RangedMenuFinished();
-        OnClick.Invoke();
-        menu.ActiveButtonChanged(this);
+        ButtonClicked.Invoke(this);
     }
 
     public void AnimateToPosition(Vector3 position, Vector3 scale, float time)
     {
-        if (activeCoroutine != null)
-            StopCoroutine(activeCoroutine);
-        
-        activeCoroutine = StartCoroutine(AnimateTowardsPosition(position, scale, time));
-    }
-
-    private IEnumerator AnimateTowardsPosition(Vector3 position, Vector3 scale, float time)
-    {
-        Vector3 startPosition = transform.localPosition;
-        Vector3 startScale = transform.localScale;
-        float elapsedTime = 0;
-        while (elapsedTime < time)
-        {
-            transform.localPosition = Vector3.Lerp(startPosition, position, elapsedTime / time);
-            transform.localScale = Vector3.Lerp(startScale, scale, elapsedTime / time);
-            elapsedTime += Time.deltaTime;
-            yield return new WaitForFixedUpdate();
-        }
-        // Force the object to end at the target
-        transform.localPosition = position;
-        transform.localScale = scale;
+        transform.DOLocalMove(position, time);
+        transform.DOScale(scale, time);
     }
 }
