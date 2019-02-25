@@ -150,6 +150,15 @@ bool IsEqual(float4 value1, float4 value2, float tolerance) {
 	}
 }
 
+bool IsEqual(float value1, float value2, float tolerance) {
+	if (abs(value1 - value2) < tolerance) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
 // TODO
 // brush sphere
 
@@ -209,14 +218,15 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 							}
 						}
 						else {
-							Result[id.xy] = sharedBrushColor;  // shared brush can override others
+							if (!IsEqual(Result[id.xy].w, 0.9, 0.01))  // don't allow brushing over inspected points
+								Result[id.xy] = sharedBrushColor;  // shared brush can override others
 						}
 						break;
 					// subtractive selection
 					case 2:
 						if (!shareBrushing) {
-							if (IsEqual(Result[id.xy], brushColor, 0.001)  // private brush can only deselect private brushed points
-								|| IsEqual(float4(Result[id.xy].x, Result[id.xy].y, Result[id.xy].z, 1.0), brushColor, 0.001)) {  // also check for ones being inspected
+							if (IsEqual(Result[id.xy], brushColor, 0.01)  // private brush can only deselect private brushed points
+								|| IsEqual(float4(Result[id.xy].x, Result[id.xy].y, Result[id.xy].z, 1.0), brushColor, 0.01)) {  // also check for ones being inspected
 								Result[id.xy] = float4(0.0, 0.0, 0.0, 0.0);
 							}
 						}
@@ -269,7 +279,7 @@ void SetHighlightedIndex(uint3 id : SV_DispatchThreadID) {
 		float2 previousPos = float2(previousX, previousY);
 
 		// If the previous position is still highlighted, revert it back to being normally brushed 
-		if (0.89 <= Result[previousPos].w && Result[previousPos].w <= 0.91)
+		if (IsEqual(Result[previousPos].w, 0.9, 0.01))
 			Result[previousPos] = float4(Result[previousPos].x, Result[previousPos].y, Result[previousPos].z, 1.0);
 	}
 	

@@ -113,6 +113,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
     private bool isEnabled = false;
     private bool isControllerSelecting = true;
+    private bool toolJustActivated = false;
 
     /// <summary>
     /// Brushing and linking variables
@@ -274,7 +275,6 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     public void InteractionToolChanged(string interactionType)
     {
         // Only change the tool that is used if the active state is a default one
-        //if (new string[] { "none", "rangedbrush", "lassoselection", "rectangleselection", "rangedinteraction" }.Contains(activeState.ToString().ToLower()))
         if (!IsInteracting())
         {
             switch (interactionType.ToLower())
@@ -284,27 +284,33 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                     break;
 
                 case "rangedbrush":
+                    toolJustActivated = true;
                     SetInteractionState(InteractionState.RangedBrush);
                     break;
 
                 case "lassoselection":
+                    toolJustActivated = true;
                     SetInteractionState(InteractionState.LassoSelection);
                     break;
 
                 case "rectangleselection":
+                    toolJustActivated = true;
                     SetInteractionState(InteractionState.RectangleSelection);
                     break;
 
                 case "rangedinteraction":
+                    toolJustActivated = true;
                     SetInteractionState(InteractionState.RangedInteraction);
                     break;
 
                 case "privaterangedbrush":
+                    toolJustActivated = true;
                     brushingAndLinking.shareBrushing = false;
                     SetInteractionState(InteractionState.RangedBrush);
                     break;
 
                 case "sharedrangedbrush":
+                    toolJustActivated = true;
                     brushingAndLinking.shareBrushing = true;
                     SetInteractionState(InteractionState.RangedBrush);
                     break;
@@ -405,7 +411,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     /// </summary>
     private void OnTriggerStart(object sender, ControllerInteractionEventArgs e)
     {
-        if (IsInteractionToolActive() && !IsInteracting())
+        if (IsInteractionToolActive() && !IsInteracting() && !toolJustActivated)
         {
             selectionMode = SelectionMode.Selecting;
 
@@ -441,6 +447,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 }
             }
         }
+
+        toolJustActivated = false;
     }
 
     private void OnTriggerEnd(object sender, ControllerInteractionEventArgs e)

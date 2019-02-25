@@ -1618,9 +1618,9 @@ public class Chart : Photon.MonoBehaviour
         string z = visualisation.zDimension.Attribute;
         
         // Calculate size
-        float xSize = (x != "Undefined") ? width + width * 0.15f : 0.1f;
-        float ySize = (y != "Undefined") ? height + height * 0.15f : 0.1f;
-        float zSize = (z != "Undefined") ? depth + depth * 0.15f : 0.1f;
+        float xSize = (x != "Undefined") ? width + 0.015f : 0.1f;
+        float ySize = (y != "Undefined") ? height + 0.015f : 0.1f;
+        float zSize = (z != "Undefined") ? depth + 0.015f : 0.1f;
         
         boxCollider.size = new Vector3(xSize, ySize, zSize);
         raycastCollider.size = new Vector3(xSize, ySize, 0.01f);

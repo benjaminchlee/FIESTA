@@ -717,8 +717,8 @@ MonoBehaviour:
   ownershipTransfer: 0
   ObservedComponents: []
   ObservedComponentsFoldoutOpen: 1
-  viewIdField: 3
-  instantiationId: 3
+  viewIdField: 0
+  instantiationId: -1
   currentMasterID: -1
   isRuntimeInstantiated: 0
 --- !u!114 &114777493468359402
@@ -767,8 +767,8 @@ MonoBehaviour:
   ObservedComponents:
   - {fileID: 114609601322864650}
   ObservedComponentsFoldoutOpen: 1
-  viewIdField: 1
-  instantiationId: 1
+  viewIdField: 0
+  instantiationId: -1
   currentMasterID: -1
   isRuntimeInstantiated: 0
 --- !u!114 &114936891236767034
@@ -813,8 +813,8 @@ MonoBehaviour:
   ownershipTransfer: 0
   ObservedComponents: []
   ObservedComponentsFoldoutOpen: 1
-  viewIdField: 2
-  instantiationId: 2
+  viewIdField: 0
+  instantiationId: -1
   currentMasterID: -1
   isRuntimeInstantiated: 0
 --- !u!114 &114997526723355948

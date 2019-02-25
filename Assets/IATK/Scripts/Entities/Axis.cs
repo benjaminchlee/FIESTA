@@ -354,7 +354,7 @@ public class Axis : MonoBehaviour {
             if (IsDiscreet())
             {
                 CSVDataSource csvdatasoure = (CSVDataSource)dataSource;
-                return csvdatasoure.TextualDimensionsListReverse[attributeFilter.Attribute].Count;
+                return Mathf.Min(csvdatasoure.TextualDimensionsListReverse[attributeFilter.Attribute].Count, 6);
             }
             else
             {
@@ -380,8 +380,14 @@ public class Axis : MonoBehaviour {
         {
             if (IsDiscreet())
             {
-                CSVDataSource csvdatasoure = (CSVDataSource)dataSource;
-                return csvdatasoure.TextualDimensionsListReverse[attributeFilter.Attribute].Keys.ToList()[labelIndex];
+                CSVDataSource csvdatasource = (CSVDataSource)dataSource;
+
+                if (csvdatasource.TextualDimensionsListReverse[attributeFilter.Attribute].Count > 6)
+                {
+                    return csvdatasource.getOriginalValue(labelIndex / 5f, attributeFilter.Attribute).ToString();
+                }
+
+                return csvdatasource.TextualDimensionsListReverse[attributeFilter.Attribute].Keys.ToList()[labelIndex];
             }
             else
             {
