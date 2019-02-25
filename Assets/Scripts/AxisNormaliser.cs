@@ -24,8 +24,8 @@ public class AxisNormaliser : MonoBehaviour {
 
     private void Awake()
     {
-        interactableObject.InteractableObjectTouched += NormaliserNearTouched;
-        interactableObject.InteractableObjectUntouched += NormaliserNearUntouched;
+        interactableObject.InteractableObjectNearTouched += NormaliserNearTouched;
+        interactableObject.InteractableObjectNearUntouched += NormaliserNearUntouched;
 
         interactableObject.InteractableObjectUngrabbed += NormaliserUngrabbed;
     }
@@ -48,8 +48,8 @@ public class AxisNormaliser : MonoBehaviour {
 
     private void OnDestroy()
     {
-        interactableObject.InteractableObjectTouched -= NormaliserNearTouched;
-        interactableObject.InteractableObjectUntouched -= NormaliserNearUntouched;
+        interactableObject.InteractableObjectNearTouched -= NormaliserNearTouched;
+        interactableObject.InteractableObjectNearUntouched -= NormaliserNearUntouched;
 
         interactableObject.InteractableObjectUngrabbed -= NormaliserUngrabbed;
     }
@@ -72,21 +72,21 @@ public class AxisNormaliser : MonoBehaviour {
                 if (isMinHandle)
                     parentChart.XNormaliser = new Vector2(offset, parentChart.XNormaliser.y);
                 else
-                    parentChart.XNormaliser = new Vector2(parentChart.XNormaliser.y, offset);
+                    parentChart.XNormaliser = new Vector2(parentChart.XNormaliser.x, offset);
             }
             else if (myDirection == 2)
             {
                 if (isMinHandle)
                     parentChart.YNormaliser = new Vector2(offset, parentChart.YNormaliser.y);
                 else
-                    parentChart.YNormaliser = new Vector2(parentChart.YNormaliser.y, offset);
+                    parentChart.YNormaliser = new Vector2(parentChart.YNormaliser.x, offset);
             }
             else if (myDirection == 3)
             {
                 if (isMinHandle)
                     parentChart.ZNormaliser = new Vector2(offset, parentChart.ZNormaliser.y);
                 else
-                    parentChart.ZNormaliser = new Vector2(parentChart.ZNormaliser.y, offset);
+                    parentChart.ZNormaliser = new Vector2(parentChart.ZNormaliser.x, offset);
             }
 
             Vector3 newPos = Vector3.Lerp(parentAxis.MinPosition, parentAxis.MaxPosition, offset);

@@ -32,8 +32,6 @@ public class Chart : Photon.MonoBehaviour
     private VRTK_InteractableObject topLeftInteractableHandle;
     [SerializeField]
     private VRTK_InteractableObject bottomRightInteractableHandle;
-    [SerializeField]
-    private LineRenderer resizerLineRenderer;
 
     private Chart[,] splomCharts;  // Stored as 2D array
     private List<Chart> subCharts;  // Stored as 1D array
@@ -48,9 +46,6 @@ public class Chart : Photon.MonoBehaviour
     private bool isThrowing = false;
     private bool isTouchingDisplayScreen = false;
     private bool isResizing = false;
-    private float xResizeHandleDistance;
-    private float yResizeHandleDistance;
-    private float zResizeHandleDistance;
     private bool isTouchingDashboard = false;
     private Dashboard touchingDashboard;
 
@@ -1556,42 +1551,47 @@ public class Chart : Photon.MonoBehaviour
             }
         }
 
-        if (topLeftInteractableHandle.IsUsing() && bottomRightInteractableHandle.IsUsing())
+        if (topLeftInteractableHandle.IsGrabbed() || bottomRightInteractableHandle.IsGrabbed())
         {
             if (!photonView.isMine)
                 photonView.RequestOwnership();
 
-            isResizing = true;
+            Vector3 scale = Scale;
 
-            GameObject topLeftController = topLeftInteractableHandle.GetUsingObject();
-            GameObject bottomRightController = bottomRightInteractableHandle.GetUsingObject();
+            if (topLeftInteractableHandle.IsGrabbed())
+            {
+                Vector3 handleLocalPos = transform.InverseTransformPoint(topLeftInteractableHandle.transform.position);
 
-            topLeftInteractableHandle.transform.SetParent(topLeftController.transform);
-            bottomRightInteractableHandle.transform.SetParent(bottomRightController.transform);
+                // Don't allow the handle to get too small
+                if (handleLocalPos.y < 0.1f)
+                    handleLocalPos.y = 0.1f;
 
-            resizerLineRenderer.enabled = true;
-            resizerLineRenderer.useWorldSpace = true;
-            resizerLineRenderer.SetPositions(new [] { topLeftInteractableHandle.transform.position, bottomRightInteractableHandle.transform.position });
+                scale.y = (handleLocalPos.y - 0.08f) * 2;
 
-            // Disable collider temporarily
-            GetComponent<Collider>().enabled = false;
-        }
-        else if (isResizing)
-        {
-            isResizing = false;
+                // Lock handle to only move along y axis
+                handleLocalPos.x = -Width / 2 - 0.05f;
+                handleLocalPos.z = 0;
+                topLeftInteractableHandle.transform.localPosition = handleLocalPos;
+                topLeftInteractableHandle.transform.localRotation = Quaternion.identity;;
+            }
+            if (bottomRightInteractableHandle.IsGrabbed())
+            {
+                Vector3 handleLocalPos = transform.InverseTransformPoint(bottomRightInteractableHandle.transform.position);
 
-            GetComponent<Collider>().enabled = true;
+                // Don't allow the handle to get too small
+                if (handleLocalPos.x < 0.1f)
+                    handleLocalPos.x = 0.1f;
 
-            topLeftInteractableHandle.transform.SetParent(transform);
-            bottomRightInteractableHandle.transform.SetParent(transform);
+                scale.x = (handleLocalPos.x - 0.08f) * 2;
 
-            resizerLineRenderer.enabled = false;
+                // Lock handle to only move along x axis
+                handleLocalPos.y = -Height / 2 - 0.05f;
+                handleLocalPos.z = 0;
+                bottomRightInteractableHandle.transform.localPosition = handleLocalPos;
+                bottomRightInteractableHandle.transform.localRotation = Quaternion.identity; ;
+            }
 
-            float width = Mathf.Abs(topLeftInteractableHandle.transform.localPosition.x - bottomRightInteractableHandle.transform.localPosition.x) - xResizeHandleDistance;
-            float height = Mathf.Abs(topLeftInteractableHandle.transform.localPosition.y - bottomRightInteractableHandle.transform.localPosition.y) - yResizeHandleDistance;
-            float depth = 1;
-
-            Scale = new Vector3(width, height, depth);
+            Scale = scale;
         }
     }
     
@@ -1632,15 +1632,9 @@ public class Chart : Photon.MonoBehaviour
             raycastCollider.enabled = false;
         }
 
-        xResizeHandleDistance = width * 0.15f;
-        yResizeHandleDistance = height * 0.15f;
-        zResizeHandleDistance = depth * 0.15f;
-
         // Reposition the resize handles
-        topLeftInteractableHandle.transform.localPosition = new Vector3(-xSize / 2 - xResizeHandleDistance, ySize / 2 + yResizeHandleDistance, 0);
-        bottomRightInteractableHandle.transform.localPosition = new Vector3(xSize / 2 + xResizeHandleDistance, -ySize / 2 - yResizeHandleDistance, 0);
-        topLeftInteractableHandle.transform.localRotation = Quaternion.identity;
-        bottomRightInteractableHandle.transform.localRotation = Quaternion.identity;
+        topLeftInteractableHandle.transform.localPosition = new Vector3(-width / 2 - 0.05f, height / 2 + 0.08f, 0); 
+        bottomRightInteractableHandle.transform.localPosition = new Vector3(width / 2 + 0.08f, -height / 2 - 0.05f, 0);
     }
 
     private void CenterVisualisation()

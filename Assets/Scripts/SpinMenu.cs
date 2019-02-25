@@ -13,6 +13,10 @@ public class SpinMenu : MonoBehaviour {
     private List<SpinMenuButton> buttons = new List<SpinMenuButton>();
     [SerializeField] [Tooltip("The button that acts as the cancel button. This both signifies that no tool is selected and to cancel the active tool.")]
     private SpinMenuButton cancelButton;
+    [SerializeField] [Tooltip("The button that acts as the details on demand toggle.")]
+    private SpinMenuButton detailsOnDemandButton;
+    [SerializeField] [Tooltip("The local position of the details on demand toggle button.")]
+    private Vector3 detailsOnDemandPosition = new Vector3(0, 0.1f, -0.0525f);
 
     [SerializeField] [Tooltip("The local position of the button that rests on top of the controller.")]
     private Vector3 topPosition = new Vector3(0, 0.06f, -0.0525f);
@@ -29,6 +33,7 @@ public class SpinMenu : MonoBehaviour {
     [SerializeField] [Tooltip("The color of a button when it is selected.")]
     private Color selectedColor = new Color(190, 0, 0);
 
+    private VRTK_ControllerEvents controllerEvents;
     private bool isExpanded = false;
     private bool isEnabled = false;
     private SpinMenuButton activeButton = null;
@@ -56,6 +61,10 @@ public class SpinMenu : MonoBehaviour {
             if (buttons[i] != cancelButton)
                 buttons[i].transform.localScale = Vector3.zero;
         }
+
+        controllerEvents = GetComponentInParent<VRTK_ControllerEvents>();
+        controllerEvents.TouchpadPressed += OnTouchpadPressed;
+        controllerEvents.TouchpadReleased += OnTouchpadReleased;
     }
 
     /// <summary>
@@ -122,11 +131,20 @@ public class SpinMenu : MonoBehaviour {
             // If the menu is open, choose the clicked button
             else
             {
-                isExpanded = false;
+                Debug.Log(spinMenuButton.Text);
+                // But if it is the details on demand, toggle it instead
+                if (spinMenuButton == detailsOnDemandButton)
+                {
+                    SpinMenuToolChanged.Invoke(spinMenuButton.RangedInteractionsToolName);
+                }
+                else
+                {
+                    isExpanded = false;
 
-                ActiveButtonChanged(spinMenuButton);
+                    ActiveButtonChanged(spinMenuButton);
 
-                RetractButtons();
+                    RetractButtons();
+                }
             }
         }
     }
@@ -151,7 +169,17 @@ public class SpinMenu : MonoBehaviour {
         // Set the expanded positions of the buttons
         for (int i = 0; i < buttons.Count; i++)
         {
-            if (buttons[i] != cancelButton)
+            // Set the position of the cancel button to be above the controller as well as its text
+            if (buttons[i] == cancelButton)
+            {
+                cancelButton.AnimateToPosition(topPosition, Vector3.one, animationDuration);
+                cancelButton.Text = "Cancel";
+            }
+            else if (buttons[i] == detailsOnDemandButton)
+            {
+                detailsOnDemandButton.AnimateToPosition(detailsOnDemandPosition, Vector3.one, animationDuration);
+            }
+            else
             {
                 float angle = (startAngle + intervalAngle * i) % 360;
                 Vector2 direction = new Vector2((float)Math.Sin(angle * Mathf.Deg2Rad), (float)Math.Cos(angle * Mathf.Deg2Rad));
@@ -159,12 +187,6 @@ public class SpinMenu : MonoBehaviour {
                 Vector3 position = new Vector3(p.x, 0, p.y);
 
                 buttons[i].AnimateToPosition(position, Vector3.one, animationDuration);
-            }
-            // Set the position of the cancel button to be above the controller as well as its text
-            else
-            {
-                cancelButton.AnimateToPosition(topPosition, Vector3.one, animationDuration);
-                cancelButton.Text = "Cancel";
             }
         }
 

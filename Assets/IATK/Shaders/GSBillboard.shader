@@ -215,7 +215,10 @@ Shader "IATK/OutlineDots"
 					float sizeFactor = normaliseValue(p[0].normal.y, 0.0, 1.0, _MinSize, _MaxSize);
 										
 					float halfS = 0.025f * (_Size + (dist * sizeFactor));
-							
+
+					if (0.89 <= p[0].brushedColor.a && p[0].brushedColor.a <= 0.91)
+						halfS = halfS + 0.01f;
+
 					float4 v[4];				
 
 					v[0] = float4(p[0].pos + halfS * right - halfS * up, 1.0f);
@@ -256,7 +259,10 @@ Shader "IATK/OutlineDots"
 					FS_OUTPUT o;
 
 					if (input.brushedColor.a > 0) {
-						o.color = tex2D(_MainTex, input.tex0.xy) * float4(input.brushedColor.r, input.brushedColor.g, input.brushedColor.b, input.color.a);
+						if (0.89 <= input.brushedColor.a && input.brushedColor.a <= 0.91)
+							o.color = tex2D(_MainTex, input.tex0.xy) * float4(0.5, 0.0, 0.5, input.color.a);
+						else
+							o.color = tex2D(_MainTex, input.tex0.xy) * float4(input.brushedColor.r, input.brushedColor.g, input.brushedColor.b, input.color.a);
 					}
 					else
 						o.color = tex2D(_MainTex, input.tex0.xy) * input.color;

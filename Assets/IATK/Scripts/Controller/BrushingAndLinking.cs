@@ -26,6 +26,7 @@ public class BrushingAndLinking : Photon.PunBehaviour
     private int kernelHandleBrushTexture;
     private int kernelHandleBrushArrayIndices;
     private int kernelResetBrushTexture;
+    private int kernelSetHighlightedIndex;
 
     GameObject viewHolder;
     int texSize;
@@ -58,6 +59,9 @@ public class BrushingAndLinking : Photon.PunBehaviour
     public float radiusSphere;
     [SerializeField]
     public bool brushButtonController;
+
+    private DetailsOnDemand detailsOnDemand;
+    private int highlightedIndex = -1;
 
     public struct VecIndexPair
     {
@@ -112,6 +116,7 @@ public class BrushingAndLinking : Photon.PunBehaviour
         brushingVisualisations = new List<Visualisation>();
 
         ResetBrushTexture();
+        GenerateDetailsOnDemandPanel();
     }
 
     // Update is called once per frame
@@ -140,7 +145,8 @@ public class BrushingAndLinking : Photon.PunBehaviour
         {
             updateBrushTexture();
 
-            getDetailsOnDemand();
+            if (photonView.isMine)
+                getDetailsOnDemand();
         }
     }
 
@@ -149,6 +155,7 @@ public class BrushingAndLinking : Photon.PunBehaviour
         kernelHandleBrushTexture = computeShader.FindKernel("CSMain");
         kernelHandleBrushArrayIndices = computeShader.FindKernel("ComputeBrushedIndicesArray");
         kernelResetBrushTexture = computeShader.FindKernel("ResetBrushTexture");
+        kernelSetHighlightedIndex = computeShader.FindKernel("SetHighlightedIndex");
     }
 
     public void InitialiseBuffersAndTextures()
@@ -195,6 +202,8 @@ public class BrushingAndLinking : Photon.PunBehaviour
         computeShader.SetTexture(kernelHandleBrushTexture, "Result", BrushedIndicesTexture);
         computeShader.SetTexture(kernelHandleBrushArrayIndices, "Result", BrushedIndicesTexture);
         computeShader.SetTexture(kernelResetBrushTexture, "Result", BrushedIndicesTexture);
+        computeShader.SetTexture(kernelSetHighlightedIndex, "Result", BrushedIndicesTexture);
+
         computeShader.SetFloat("_size", (float)texSize);
         computeShader.SetFloats("brushColor", privateBrushColor.r, privateBrushColor.g, privateBrushColor.b, privateBrushColor.a);
         if (photonView.isMine)
@@ -345,36 +354,7 @@ public class BrushingAndLinking : Photon.PunBehaviour
 
             //run the compute shader with all the filtering parameters
             computeShader.Dispatch(kernelHandleBrushTexture, Mathf.CeilToInt(texSize / 32), Mathf.CeilToInt(texSize / 32), 1);
-
-            //brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial
-            //    .SetTexture("_BrushedTexture", BrushedIndicesTexture);
-            //brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial
-            //    .SetFloat("_DataWidth", texSize);
-            //brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial
-            //    .SetFloat("_DataHeight", texSize);
-            //brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial
-            //    .SetFloat("showBrush", Convert.ToSingle(showBrush));
-            //brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial
-            //    .SetColor("brushColor", brushColor);
         }
-        
-        //foreach (var item in brushedLinkingVisualisations)
-        //{
-        //    item.View.BigMesh.SharedMaterial.SetTexture("_BrushedTexture", brushedIndicesTexture);
-        //    item.View.BigMesh.SharedMaterial.SetFloat("_DataWidth", texSize);
-        //    item.View.BigMesh.SharedMaterial.SetFloat("_DataHeight", texSize);
-        //    item.View.BigMesh.SharedMaterial.SetFloat("showBrush", Convert.ToSingle(showBrush));
-        //    item.View.BigMesh.SharedMaterial.SetColor("brushColor", brushColor);
-        //}
-
-        //cachedTexture = (brushingVisualisation.theVisualizationObject.viewList[0].BigMesh.SharedMaterial.GetTexture("_BrushedTexture") as Texture2D);
-        //if (cachedTexture.GetPixel(0, 0).r > 0f) print("selected!!");
-        //float t = Time.time;
-        //brushedIndicesBuffer.GetData(brushIni);
-        //  if (brushIni[0] > 0f) print("Selected");
-        //getDetailsOnDemand();
-        //debugObjectTexture.SetTexture("_MainTex", brushedIndicesTexture);
-
     }
 
     public void getDetailsOnDemand()
@@ -383,17 +363,12 @@ public class BrushingAndLinking : Photon.PunBehaviour
         {
             if (!detailsOnDemandRequest.hasError)
             {
-                // Get data
-                int[] result = detailsOnDemandRequest.GetData<int>().ToArray();
-                //Debug.Log(result.Length);
-                //brushedIndices = Enumerable.Range(0, result.Length)
-                //    .Where(x => result[x] == 1)
-                //    .ToList();
-                brushedIndices = result.ToList();
+                brushedIndices = detailsOnDemandRequest.GetData<int>().ToList();
+                detailsOnDemand.BrushedIndicesChanged(brushedIndices);
             }
 
             // Dispatch again
-            computeShader.Dispatch(kernelHandleBrushArrayIndices, Mathf.CeilToInt(brushedIndicesBuffer.count / 16f), 1,
+            computeShader.Dispatch(kernelHandleBrushArrayIndices, Mathf.CeilToInt(brushedIndicesBuffer.count / 32f), 1,
                 1);
             detailsOnDemandRequest = AsyncGPUReadback.Request(brushedIndicesBuffer);
         }
@@ -402,6 +377,31 @@ public class BrushingAndLinking : Photon.PunBehaviour
     public void ResetBrushTexture()
     {
         computeShader.Dispatch(kernelResetBrushTexture, Mathf.CeilToInt(texSize / 32), Mathf.CeilToInt(texSize / 32), 1);
+    }
+
+    private void GenerateDetailsOnDemandPanel()
+    {
+        if (photonView.isMine)
+        {
+            // Get the hand that the ranged interactions script is on
+            GameObject controller = FindObjectOfType<RangedInteractions>().gameObject;
+
+            GameObject go = PhotonNetwork.Instantiate("DetailsOnDemand", Vector3.zero, Quaternion.identity, 0);
+            detailsOnDemand = go.GetComponent<DetailsOnDemand>();
+            detailsOnDemand.transform.SetParent(controller.transform);
+            detailsOnDemand.transform.localPosition = Vector3.zero;
+            detailsOnDemand.transform.localRotation = Quaternion.identity;
+            detailsOnDemand.SetBrushingAndLinking(this);
+        }
+    }
+    
+    public void HighlightIndex(int index)
+    {
+        computeShader.SetInt("previousIndex", highlightedIndex);
+        highlightedIndex = index;
+        computeShader.SetInt("highlightedIndex", highlightedIndex);
+
+        computeShader.Dispatch(kernelSetHighlightedIndex, 1, 1, 1);
     }
 
     /// <summary>

@@ -2,6 +2,7 @@
 #pragma kernel CSMain
 #pragma kernel ComputeBrushedIndicesArray
 #pragma kernel ResetBrushTexture
+#pragma kernel SetHighlightedIndex
 #include "UnityCG.cginc"
 
 // Create a RenderTexture with enableRandomWrite flag and set it
@@ -60,6 +61,9 @@ int SelectionMode;
 float4 brushColor;
 float4 sharedBrushColor;
 bool shareBrushing;
+
+int previousIndex;
+int highlightedIndex;
 
 RWStructuredBuffer<float3> dataBuffer;
 RWStructuredBuffer<int> brushedIndices;
@@ -166,19 +170,6 @@ float normaliseValue(float value, float i0, float i1, float j0, float j1)
 	return (j0 - (L * i0) + (L * value));
 }
 
-[numthreads(16, 1, 1)]
-void ComputeBrushedIndicesArray(uint3 id : SV_DispatchThreadID)
-{
-	int x = id.x % _size;
-	int y = floor(id.x / _size);
-	float2 pos = float2(x, y);
-
-	if (Result.Load(pos).x == 1.0)
-		brushedIndices[id.x] = 1;
-	else
-		brushedIndices[id.x] = -1;
-}
-
 [numthreads(32, 32, 1)]
 void CSMain(uint3 id : SV_DispatchThreadID)
 {
@@ -224,7 +215,8 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 					// subtractive selection
 					case 2:
 						if (!shareBrushing) {
-							if (IsEqual(Result[id.xy], brushColor, 0.001)) {  // private brush can only deselect private brushed points
+							if (IsEqual(Result[id.xy], brushColor, 0.001)  // private brush can only deselect private brushed points
+								|| IsEqual(float4(Result[id.xy].x, Result[id.xy].y, Result[id.xy].z, 1.0), brushColor, 0.001)) {  // also check for ones being inspected
 								Result[id.xy] = float4(0.0, 0.0, 0.0, 0.0);
 							}
 						}
@@ -247,10 +239,45 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 	}
 }
 
+[numthreads(32, 1, 1)]
+void ComputeBrushedIndicesArray(uint3 id : SV_DispatchThreadID)
+{
+	int x = id.x % _size;
+	int y = floor(id.x / _size);
+	float2 pos = float2(x, y);
+
+	if (Result[pos].w > 0.0)
+		brushedIndices[id.x] = 1;
+	else
+		brushedIndices[id.x] = -1;
+}
+
 [numthreads(32, 32, 1)]
 void ResetBrushTexture(uint3 id : SV_DispatchThreadID) {
 
 	int idx = id.x + id.y * _size;
 
 	Result[id.xy] = float4(0.0, 0.0, 0.0, 0.0);
+}
+
+[numthreads(1, 1, 1)]
+void SetHighlightedIndex(uint3 id : SV_DispatchThreadID) {
+
+	if (previousIndex >= 0) {
+		int previousX = previousIndex % _size;
+		int previousY = floor(previousIndex / _size);
+		float2 previousPos = float2(previousX, previousY);
+
+		// If the previous position is still highlighted, revert it back to being normally brushed 
+		if (0.89 <= Result[previousPos].w && Result[previousPos].w <= 0.91)
+			Result[previousPos] = float4(Result[previousPos].x, Result[previousPos].y, Result[previousPos].z, 1.0);
+	}
+	
+	if (highlightedIndex >= 0) {
+		int x = highlightedIndex % _size;
+		int y = floor(highlightedIndex / _size);
+		float2 pos = float2(x, y);
+
+		Result[pos] = float4(Result[pos].x, Result[pos].y, Result[pos].z, 0.9);
+	}
 }

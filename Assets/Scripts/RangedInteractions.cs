@@ -310,11 +310,11 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                     break;
             }
         }
-        // Otherwise this would've interrupted a user's active interaction, therefore vibrate hard to warn them of this
-        else
-        {
-            VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(gameObject), 0.75f, 0.05f, 0.005f);
-        }
+        //// Otherwise this would've interrupted a user's active interaction, therefore vibrate hard to warn them of this
+        //else
+        //{
+        //    VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(gameObject), 0.75f, 0.05f, 0.005f);
+        //}
     }
 
     /// <summary>

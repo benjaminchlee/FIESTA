@@ -112,4 +112,6 @@ MonoBehaviour:
   - PropagateSetColor
   - PropagateText
   - PropagateSprite
+  - PropagateSetDetailsPage
+  - PropagateTogglePanel
   DisableAutoOpenWizard: 1
