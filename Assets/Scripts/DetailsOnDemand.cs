@@ -186,7 +186,8 @@ public class DetailsOnDemand : Photon.MonoBehaviour {
         }
         else
         {
-            brushingAndLinking.HighlightIndex(-1);
+            if (brushingAndLinking != null)
+                brushingAndLinking.HighlightIndex(-1);
         }
     }
 

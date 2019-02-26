@@ -39,12 +39,10 @@ public class Chart : Photon.MonoBehaviour
     private List<GameObject> facetLabels;
     private Key facetSplomKey;
 
-    private DisplayScreen displayScreen;
-
     private Vector3 previousPosition;
-    private Vector3 currentVelocity;
     private bool isThrowing = false;
     private bool isTouchingDisplayScreen = false;
+    private DisplayScreen touchingDisplayScreen;
     private bool isResizing = false;
     private bool isTouchingDashboard = false;
     private Dashboard touchingDashboard;
@@ -1053,8 +1051,6 @@ public class Chart : Photon.MonoBehaviour
     
     private void Awake()
     {
-        displayScreen = GameObject.FindGameObjectWithTag("DisplayScreen").GetComponent<DisplayScreen>();
-
         // Set blank values
         visualisation.colourDimension = "Undefined";
         visualisation.sizeDimension = "Undefined";
@@ -1355,6 +1351,8 @@ public class Chart : Photon.MonoBehaviour
                 subChart.ColorDimension = ColorDimension;
                 subChart.Color = Color;
                 subChart.Gradient = Gradient;
+                subChart.ColorPaletteDimension = ColorPaletteDimension;
+                subChart.ColorPalette = ColorPalette;
                 subChart.IsPrototype = true;
                 
                 subChart.transform.SetParent(transform);
@@ -1457,7 +1455,6 @@ public class Chart : Photon.MonoBehaviour
         }
 
         previousPosition = transform.position;
-        rigidbody.isKinematic = false;
         InteractionsManager.Instance.GrabbingStarted();  // TODO: FIX
     }
 
@@ -1468,27 +1465,26 @@ public class Chart : Photon.MonoBehaviour
         // Animate the work shelf prototype back to its position
         if (isPrototype)
         {
-            rigidbody.isKinematic = true;
-
+            rigidbody.velocity = Vector3.zero;
+            rigidbody.angularVelocity = Vector3.zero;
             AnimateTowards(originalPos, originalRot, 0.4f);
         }
         else
         {
             // Check to see if the chart was thrown
-            Vector3 velocity = VRTK_DeviceFinder.GetControllerVelocity(VRTK_ControllerReference.GetControllerReference(e.interactingObject));
-            float speed = velocity.magnitude;
+            //Vector3 velocity = VRTK_DeviceFinder.GetControllerVelocity(VRTK_ControllerReference.GetControllerReference(e.interactingObject));
+            float speed = rigidbody.velocity.sqrMagnitude;
 
-            if (speed > 2.5f)
+            if (speed > 10f)
             {
                 rigidbody.useGravity = true;
-                rigidbody.isKinematic = false;
-                rigidbody.velocity = currentVelocity;
                 isThrowing = true;
                 deletionTimer = 0;
             }
             else
             {
-                rigidbody.isKinematic = true;
+                rigidbody.velocity = Vector3.zero;
+                rigidbody.angularVelocity = Vector3.zero;
 
                 // If it wasn't thrown, check to see if it is being placed on the display screen
                 if (isTouchingDisplayScreen)
@@ -1511,12 +1507,17 @@ public class Chart : Photon.MonoBehaviour
         interactableObject.InteractableObjectUngrabbed -= ChartUngrabbed;
     }
 
+    private void FixedUpdate()
+    {
+        if (interactableObject.IsGrabbed())
+            previousPosition = transform.position;
+    }
+
     private void Update()
     {
         if (interactableObject.IsGrabbed())
         {
             // Check if the chart is being pulled from the dashboard
-            currentVelocity = rigidbody.velocity;
             if (isPrototype && Vector3.Distance(transform.position, originalWorldPos) > 0.25f)
             {
                 // Create a duplicate of this visualisation
@@ -1563,8 +1564,8 @@ public class Chart : Photon.MonoBehaviour
                 Vector3 handleLocalPos = transform.InverseTransformPoint(topLeftInteractableHandle.transform.position);
 
                 // Don't allow the handle to get too small
-                if (handleLocalPos.y < 0.1f)
-                    handleLocalPos.y = 0.1f;
+                if (handleLocalPos.y < 0.15f)
+                    handleLocalPos.y = 0.15f;
 
                 scale.y = (handleLocalPos.y - 0.08f) * 2;
 
@@ -1579,8 +1580,8 @@ public class Chart : Photon.MonoBehaviour
                 Vector3 handleLocalPos = transform.InverseTransformPoint(bottomRightInteractableHandle.transform.position);
 
                 // Don't allow the handle to get too small
-                if (handleLocalPos.x < 0.1f)
-                    handleLocalPos.x = 0.1f;
+                if (handleLocalPos.x < 0.15f)
+                    handleLocalPos.x = 0.15f;
 
                 scale.x = (handleLocalPos.x - 0.08f) * 2;
 
@@ -1673,6 +1674,7 @@ public class Chart : Photon.MonoBehaviour
         if (other.CompareTag("DisplayScreen"))
         {
             isTouchingDisplayScreen = true;
+            touchingDisplayScreen = other.GetComponent<DisplayScreen>();
 
             // If the chart was thrown at the screen, attach it to the screen
             if (isThrowing)
@@ -1701,6 +1703,7 @@ public class Chart : Photon.MonoBehaviour
         if (other.CompareTag("DisplayScreen"))
         {
             isTouchingDisplayScreen = false;
+            touchingDisplayScreen = null;
         }
         else if (!isPrototype && other.CompareTag("DashboardCollider"))
         {
@@ -1710,8 +1713,8 @@ public class Chart : Photon.MonoBehaviour
 
     private void AttachToDisplayScreen()
     {
-        Vector3 pos = displayScreen.CalculatePositionOnScreen(this);
-        Quaternion rot = displayScreen.CalculateRotationOnScreen(this);
+        Vector3 pos = touchingDisplayScreen.CalculatePositionOnScreen(this);
+        Quaternion rot = touchingDisplayScreen.CalculateRotationOnScreen(this);
 
         AnimateTowards(pos, rot, 0.2f);
     }

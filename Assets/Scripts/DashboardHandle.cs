@@ -4,32 +4,60 @@ using System.Collections.Generic;
 using UnityEngine;
 using VRTK;
 
-public class DashboardHandle : MonoBehaviour {
+public class DashboardHandle : Photon.MonoBehaviour {
 
-    private Transform parent;
+    [SerializeField]
+    private Dashboard parent;
+    [SerializeField]
     private VRTK_InteractableObject interactableObject;
+
+    private Vector3 localParentPosition;
+    private bool isGrabbed = false;
 
     private void Start()
     {
-        parent = transform.parent;
-
-        interactableObject = GetComponent<VRTK_InteractableObject>();
-
         interactableObject.InteractableObjectGrabbed += OnHandleGrabbed;
         interactableObject.InteractableObjectUngrabbed += OnHandleUngrabbed;
+
+        localParentPosition = transform.InverseTransformPoint(parent.transform.position);
     }
 
     private void OnHandleGrabbed(object sender, InteractableObjectEventArgs e)
     {
-        parent.gameObject.GetComponent<PhotonView>().TransferOwnership(PhotonNetwork.player);
+        if (!photonView.isMine)
+            photonView.TransferOwnership(PhotonNetwork.player);
 
-        transform.parent = null;
-        parent.SetParent(transform);
+        if (!parent.photonView.isMine)
+            parent.photonView.TransferOwnership(PhotonNetwork.player);
+
+        isGrabbed = true;
+        SetPositionAndRotation();
+    }
+
+    private void Update()
+    {
+        if (isGrabbed)
+        {
+            if (photonView.isMine)
+            {
+                SetPositionAndRotation();
+            }
+            else
+            {
+                interactableObject.ForceStopInteracting();
+                transform.rotation = Quaternion.identity;
+            }
+        }
+    }
+
+    private void SetPositionAndRotation()
+    {
+        parent.transform.position = transform.TransformPoint(localParentPosition);
+        parent.transform.rotation = transform.rotation;
     }
 
     private void OnHandleUngrabbed(object sender, InteractableObjectEventArgs e)
     {
-        parent.transform.parent = null;
-        transform.SetParent(parent);
+        isGrabbed = false;
     }
 }

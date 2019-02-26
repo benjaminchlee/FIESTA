@@ -262,6 +262,11 @@ public class BrushingAndLinking : Photon.PunBehaviour
     {
         yield return null;
 
+        while (chart.Visualisation.theVisualizationObject == null)
+        {
+            yield return null;
+        }
+
         while (chart.Visualisation.theVisualizationObject.viewList.Count == 0)
         {
             yield return null;

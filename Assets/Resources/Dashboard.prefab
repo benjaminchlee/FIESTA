@@ -1509,8 +1509,12 @@ GameObject:
   - component: {fileID: 65223663458997274}
   - component: {fileID: 114856682082224050}
   - component: {fileID: 114219026317776114}
-  - component: {fileID: 114018658594603202}
+  - component: {fileID: 114910485993568488}
   - component: {fileID: 114142969836132638}
+  - component: {fileID: 114911338896654232}
+  - component: {fileID: 114817439555830870}
+  - component: {fileID: 54007662760476810}
+  - component: {fileID: 114570502322567648}
   m_Layer: 0
   m_Name: Handle
   m_TagString: Untagged
@@ -6083,6 +6087,21 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1088103860664602}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!54 &54007662760476810
+Rigidbody:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1820659918598814}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!54 &54042723513110360
 Rigidbody:
   m_ObjectHideFlags: 1
@@ -6707,23 +6726,6 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1.0000002, y: 1, z: 4.6566134e-10}
   m_Center: {x: -0.00000023841858, y: 0.00000023841858, z: -0.000000014901161}
---- !u!114 &114018658594603202
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1820659918598814}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5ec2ac476f2fc9a45a4e69712580a603, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  precisionGrab: 1
-  rightSnapHandle: {fileID: 0}
-  leftSnapHandle: {fileID: 0}
-  throwVelocityWithAttachDistance: 0
-  throwMultiplier: 1
-  onGrabCollisionDelay: 0
 --- !u!114 &114024594227684280
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -8703,7 +8705,7 @@ MonoBehaviour:
   validDrop: 1
   grabOverrideButton: 0
   allowedGrabControllers: 0
-  grabAttachMechanicScript: {fileID: 114018658594603202}
+  grabAttachMechanicScript: {fileID: 0}
   secondaryGrabActionScript: {fileID: 0}
   isUsable: 0
   holdButtonToUse: 0
@@ -8973,7 +8975,7 @@ MonoBehaviour:
   synchronization: 3
   onSerializeTransformOption: 3
   onSerializeRigidBodyOption: 2
-  ownershipTransfer: 0
+  ownershipTransfer: 1
   ObservedComponents:
   - {fileID: 114627453110938774}
   ObservedComponentsFoldoutOpen: 1
@@ -11006,7 +11008,6 @@ MonoBehaviour:
   interactableObject: {fileID: 114868769602437876}
   topLeftInteractableHandle: {fileID: 114194994828249264}
   bottomRightInteractableHandle: {fileID: 114582251755183036}
-  resizerLineRenderer: {fileID: 0}
 --- !u!114 &114546421643279330
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -11339,6 +11340,25 @@ MonoBehaviour:
         m_CallState: 2
     m_TypeName: DashboardSlider+DashboardSliderValueChangedEvent, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+--- !u!114 &114570502322567648
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1820659918598814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af018577f438cf542b899ec9138bf9e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parent: 0
+  position: 1
+  rotation: 1
+  scale: 0
+  velocity: 0
+  angularVelocity: 0
+  useLocalValues: 1
+  onChangeOnly: 1
 --- !u!114 &114576518673766848
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -11848,7 +11868,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af018577f438cf542b899ec9138bf9e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parent: 0
+  parent: 1
   position: 2
   rotation: 2
   scale: 0
@@ -12724,6 +12744,18 @@ MonoBehaviour:
   objectToHighlight: {fileID: 0}
   objectHighlighter: {fileID: 114118697663467378}
   objectToAffect: {fileID: 0}
+--- !u!114 &114817439555830870
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1820659918598814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f2581cbf5437cd44903d1d4b83020e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ownAdditionalPhotonviews: []
 --- !u!114 &114836859445881370
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -12787,7 +12819,6 @@ MonoBehaviour:
   interactableObject: {fileID: 114536958867233060}
   topLeftInteractableHandle: {fileID: 114699270791971738}
   bottomRightInteractableHandle: {fileID: 114723952205089922}
-  resizerLineRenderer: {fileID: 0}
 --- !u!114 &114843988932244282
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -12984,6 +13015,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5608949625c8019418287e842ba032d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  parent: {fileID: 114948587602899260}
+  interactableObject: {fileID: 114219026317776114}
 --- !u!114 &114857755495529116
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -13592,6 +13625,49 @@ MonoBehaviour:
   objectToHighlight: {fileID: 0}
   objectHighlighter: {fileID: 114079943335234774}
   objectToAffect: {fileID: 0}
+--- !u!114 &114910485993568488
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1820659918598814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ec2ac476f2fc9a45a4e69712580a603, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  precisionGrab: 1
+  rightSnapHandle: {fileID: 0}
+  leftSnapHandle: {fileID: 0}
+  throwVelocityWithAttachDistance: 0
+  throwMultiplier: 1
+  onGrabCollisionDelay: 0
+--- !u!114 &114911338896654232
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1820659918598814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ownerId: 0
+  group: 0
+  OwnerShipWasTransfered: 0
+  prefixBackup: -1
+  synchronization: 0
+  onSerializeTransformOption: 3
+  onSerializeRigidBodyOption: 2
+  ownershipTransfer: 1
+  ObservedComponents:
+  - {fileID: 0}
+  ObservedComponentsFoldoutOpen: 1
+  viewIdField: 0
+  instantiationId: -1
+  currentMasterID: -1
+  isRuntimeInstantiated: 0
 --- !u!114 &114914510688352380
 MonoBehaviour:
   m_ObjectHideFlags: 1

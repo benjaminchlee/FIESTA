@@ -7,7 +7,7 @@ using UnityEngine.Events;
 using VRTK;
 using TMPro;
 
-public class SpinMenu : MonoBehaviour {
+public class SpinMenu : Photon.MonoBehaviour {
     
     [SerializeField] [Tooltip("The buttons that are part of the spin menu. Note that the cancel button should be the last element of this list.")]
     private List<SpinMenuButton> buttons = new List<SpinMenuButton>();
@@ -44,27 +44,34 @@ public class SpinMenu : MonoBehaviour {
 
     private void Start()
     {
-        // If the cancel button is not the last element in the last, move it to the end
-        if (buttons.IndexOf(cancelButton) != buttons.Count - 1)
+        if (photonView.isMine)
         {
-            buttons.Remove(cancelButton);
-            buttons.Add(cancelButton);
+            // If the cancel button is not the last element in the last, move it to the end
+            if (buttons.IndexOf(cancelButton) != buttons.Count - 1)
+            {
+                buttons.Remove(cancelButton);
+                buttons.Add(cancelButton);
+            }
+
+            cancelButton.transform.position = topPosition;
+            cancelButton.Color = selectedColor;
+            activeButton = cancelButton;
+
+            // Make all other buttons size 0
+            for (int i = 0; i < buttons.Count; i++)
+            {
+                if (buttons[i] != cancelButton)
+                    buttons[i].transform.localScale = Vector3.zero;
+            }
+
+            controllerEvents = GetComponentInParent<VRTK_ControllerEvents>();
+            controllerEvents.TouchpadPressed += OnTouchpadPressed;
+            controllerEvents.TouchpadReleased += OnTouchpadReleased;
         }
-
-        cancelButton.transform.position = topPosition;
-        cancelButton.Color = selectedColor;
-        activeButton = cancelButton;
-
-        // Make all other buttons size 0
-        for (int i = 0; i < buttons.Count; i++)
+        else
         {
-            if (buttons[i] != cancelButton)
-                buttons[i].transform.localScale = Vector3.zero;
+            isEnabled = false;
         }
-
-        controllerEvents = GetComponentInParent<VRTK_ControllerEvents>();
-        controllerEvents.TouchpadPressed += OnTouchpadPressed;
-        controllerEvents.TouchpadReleased += OnTouchpadReleased;
     }
 
     /// <summary>
@@ -131,7 +138,6 @@ public class SpinMenu : MonoBehaviour {
             // If the menu is open, choose the clicked button
             else
             {
-                Debug.Log(spinMenuButton.Text);
                 // But if it is the details on demand, toggle it instead
                 if (spinMenuButton == detailsOnDemandButton)
                 {

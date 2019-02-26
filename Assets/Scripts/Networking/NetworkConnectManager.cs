@@ -85,7 +85,6 @@ namespace PlayoVR {
 
         public override void OnDisconnectedFromPhoton() {
             Debug.Log("We got disconnected form the Photon network");
-            PhotonNetwork.ReconnectAndRejoin();
         }
     }
 }
