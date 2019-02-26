@@ -289,6 +289,7 @@ namespace IATK
             textualDimensionsList = new Dictionary<string, Dictionary<int, string>>();
             textualDimensionsListReverse = new Dictionary<string, Dictionary<string, int>>();
 
+            Dictionary<string, List<string>> distinctStringValues = new Dictionary<string, List<string>>();  // key: dimension, value: list of distinct values
 
             string[] lines = data.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
             if (loadHeaderImpl(lines))
@@ -357,57 +358,24 @@ namespace IATK
                                         }
                                     case DataType.String:
                                         {
-                                            //check if we have a dictionnary for this dimension
-                                            if (textualDimensionsList.ContainsKey(dimensionData[k].Identifier))
+                                            List<string> stringValues;
+
+                                            // Check if there is already a list of distinct string values for this dimension
+                                            if (distinctStringValues.ContainsKey(dimensionData[k].Identifier))
                                             {
-                                                //if encoded
-                                                //get the dictionary
-                                                int valueToEncode;
-                                                Dictionary<string, int> dimensionDictionaryReverse = textualDimensionsListReverse[dimensionData[k].Identifier];
-                                                Dictionary<int, string> dimensionDictionary = textualDimensionsList[dimensionData[k].Identifier];
-
-                                                if (dimensionDictionaryReverse.ContainsKey(cleanedValue))
-                                                {
-                                                    valueToEncode = dimensionDictionaryReverse[cleanedValue];
-                                                    dataArray[i - 1, k] = valueToEncode;
-                                                }
-                                                else
-                                                {
-                                                    //increment from the last added element
-                                                    int lastEncodedValue = dimensionDictionaryReverse.Values.OrderBy(x => x).Last() + 1;
-
-                                                    dimensionDictionaryReverse.Add(cleanedValue, lastEncodedValue);
-                                                    dimensionDictionary.Add(lastEncodedValue, cleanedValue);
-                                                    textualDimensionsListReverse[dimensionData[k].Identifier] = dimensionDictionaryReverse;
-                                                    textualDimensionsList[dimensionData[k].Identifier] = dimensionDictionary;
-
-                                                    dataArray[i - 1, k] = lastEncodedValue;
-                                                }
+                                                stringValues = distinctStringValues[dimensionData[k].Identifier];
                                             }
-                                            else //if not create one and add the first value
+                                            // Otherwise create a new list
+                                            else
                                             {
-                                                Dictionary<int, string> newEntry = new Dictionary<int, string>();
-                                                Dictionary<string, int> newEntryReverse = new Dictionary<string, int>();
-
-                                                newEntry.Add(0, cleanedValue);
-                                                newEntryReverse.Add(cleanedValue, 0);
-
-                                                textualDimensionsList.Add(dimensionData[k].Identifier, newEntry);
-                                                textualDimensionsListReverse.Add(dimensionData[k].Identifier, newEntryReverse);
+                                                stringValues = new List<string>();
+                                                distinctStringValues[dimensionData[k].Identifier] = stringValues;
                                             }
-                                            ////lookup if already encoded
-                                            //if (textualDimensionsReverse.ContainsKey(cleanedValue))
-                                            //{
-                                            //    dataArray[i - 1, k] = textualDimensionsReverse[cleanedValue];// textualDimensions.FirstOrDefault(x => x.Value == cleanedValue).Key;
-                                            //}
-                                            //else
-                                            //{
-                                            //    //new key
-                                            //    textualPointer++;
-                                            //    textualDimensions.Add((int)textualPointer, cleanedValue);
-                                            //    textualDimensionsReverse.Add(cleanedValue, (int)textualPointer);
-                                            //    dataArray[i - 1, k] = textualPointer;
-                                            //}
+
+                                            if (!stringValues.Contains(cleanedValue))
+                                            {
+                                                stringValues.Add(cleanedValue);
+                                            }
                                             break;
                                         }
                                     default:
@@ -421,6 +389,39 @@ namespace IATK
                     }
                 }
 
+                // Populate textual dimensions list
+                foreach (string textualDimension in distinctStringValues.Keys)
+                {
+                    // Create dictionaries that will be added to the textualDimensionsLists
+                    Dictionary<int, string> textualDimensionsEntry = new Dictionary<int, string>();
+                    Dictionary<string, int> textualDimensionsEntryReverse = new Dictionary<string, int>();
+
+                    // Sort the string values for this dimension
+                    List<string> distinctSortedValues = distinctStringValues[textualDimension];
+                    distinctSortedValues.Sort();
+                    
+                    // Populate the dictionaries
+                    for (int i = 0; i < distinctSortedValues.Count; i++)
+                    {
+                        textualDimensionsEntry[i] = distinctSortedValues[i];
+                        textualDimensionsEntryReverse[distinctSortedValues[i]] = i;
+                    }
+
+                    // Add the dictionaries to the textual dimensions list
+                    textualDimensionsList[textualDimension] = textualDimensionsEntry;
+                    textualDimensionsListReverse[textualDimension] = textualDimensionsEntryReverse;
+
+                    // Get dimension index
+                    int index = dimensionData.FindIndex(d => d.Identifier == textualDimension);
+
+                    // Fill in the data array
+                    for (int i = 1; i < lines.Length; i++)
+                    {
+                        string value = lines[i].Split(split)[index];
+                        dataArray[i - 1, index] = textualDimensionsEntryReverse[value];
+                    }
+                }
+                
                 // Populate data structure
                 //float[] output = new float[dataCount];
                 for (int i = 0; i < DimensionCount; ++i)
