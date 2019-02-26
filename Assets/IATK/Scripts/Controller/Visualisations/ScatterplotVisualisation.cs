@@ -440,6 +440,8 @@ namespace IATK
                 default:
                     break;
             }
+
+            UpdateAxes();
         }
         
         /// <summary>
@@ -540,6 +542,11 @@ namespace IATK
         // Use this for initialization
         
         private void Update()
+        {
+            //UpdateAxes();
+        }
+
+        private void UpdateAxes()
         {
             // handle update to persistent properties
             if (X_AXIS != null && X_AXIS.activeSelf)

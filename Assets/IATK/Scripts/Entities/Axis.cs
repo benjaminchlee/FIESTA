@@ -82,7 +82,7 @@ public class Axis : MonoBehaviour {
 
     private void GenerateAxisLabels()
     {
-        labelDelegate = new BasicAxisLabelDelegate(AttributeFilter, visualisationReference.dataSource);
+        labelDelegate = new BasicAxisLabelDelegate(AttributeFilter, visualisationReference.dataSource, Length);
 
         List<GameObject> children = new List<GameObject>();
         foreach (Transform child in axisValueLabels.transform)
@@ -113,7 +113,10 @@ public class Axis : MonoBehaviour {
 
     private void UpdateAxisLabels()
     {
-        labelDelegate = new BasicAxisLabelDelegate(AttributeFilter, visualisationReference.dataSource);
+        labelDelegate = new BasicAxisLabelDelegate(AttributeFilter, visualisationReference.dataSource, Length);
+
+        if (labelDelegate.NumberOfLabels() != axisLabels.Count)
+            GenerateAxisLabels();
 
         for (int i = 0; i < labelDelegate.NumberOfLabels(); ++i)
         {
@@ -332,11 +335,13 @@ public class Axis : MonoBehaviour {
     {
         public AttributeFilter attributeFilter;
         public DataSource dataSource;
+        public float axisLength;
 
-        public BasicAxisLabelDelegate(AttributeFilter attributeFilter, DataSource dataSource)
+        public BasicAxisLabelDelegate(AttributeFilter attributeFilter, DataSource dataSource, float axisLength)
         {
             this.attributeFilter = attributeFilter;
             this.dataSource = dataSource;
+            this.axisLength = axisLength;
         }
         
         bool IsDiscreet()
@@ -351,73 +356,36 @@ public class Axis : MonoBehaviour {
 
         public override int NumberOfLabels()
         {
-            if (IsDiscreet())
-            {
-                CSVDataSource csvdatasoure = (CSVDataSource)dataSource;
-                return Mathf.Min(csvdatasoure.TextualDimensionsListReverse[attributeFilter.Attribute].Count, 6);
-            }
-            else
-            {
-                return 4;
-            }
+            return Mathf.CeilToInt(axisLength / 0.075f);
         }
 
         public override float LabelPosition(int labelIndex)
         {
-            if (IsDiscreet())
-            {
-                float n = labelIndex / (float)(NumberOfLabels());            
-                float v = (n - attributeFilter.minScale) / (attributeFilter.maxScale - attributeFilter.minScale);
-                return v;                    
-            }
-            else
-            {
-                return labelIndex / (float)(NumberOfLabels() - 1);
-            }
+            return (labelIndex / (float) (NumberOfLabels() - 1));
         }
 
         public override string LabelText(int labelIndex)
         {
-            if (IsDiscreet())
+            //object v = dataSource.getOriginalValue(Mathf.Lerp(attributeFilter.minScale, attributeFilter.maxScale, labelIndex / 3.0f), attributeFilter.Attribute);
+            object v = dataSource.getOriginalValue(Mathf.Lerp(attributeFilter.minScale, attributeFilter.maxScale, labelIndex / (NumberOfLabels() - 1f)), attributeFilter.Attribute);
+            string s = "";
+
+            if (v is Single)
             {
-                CSVDataSource csvdatasource = (CSVDataSource)dataSource;
-
-                if (csvdatasource.TextualDimensionsListReverse[attributeFilter.Attribute].Count > 6)
-                {
-                    return csvdatasource.getOriginalValue(labelIndex / 5f, attributeFilter.Attribute).ToString();
-                }
-
-                return csvdatasource.TextualDimensionsListReverse[attributeFilter.Attribute].Keys.ToList()[labelIndex];
+                s = ((Single)v).ToString("0.00");
             }
             else
             {
-                object v = dataSource.getOriginalValue(Mathf.Lerp(attributeFilter.minScale, attributeFilter.maxScale, labelIndex / 3.0f), attributeFilter.Attribute);
-                string s = "";
-                if (v is Single)
-                {
-                    s = ((Single)v).ToString("0.00");
-                }
-                else
-                {
-                    s = v.ToString();
-                }
-                return s;                
+                s = v.ToString();
             }
+            return s;
         }
 
         public override bool IsFiltered(int labelIndex)
         {
-            if (IsDiscreet())
-            {
-                float n = labelIndex / (float)(NumberOfLabels() - 1);
-                return n < attributeFilter.minFilter || n > attributeFilter.maxFilter;
-            }
-            else
-            {
-                float n = labelIndex / (float)(NumberOfLabels() - 1);
-                float delta = Mathf.Lerp(attributeFilter.minScale, attributeFilter.maxScale, n);
-                return delta < attributeFilter.minFilter || delta > attributeFilter.maxFilter;
-            }
+            float n = labelIndex / (float)(NumberOfLabels() - 1);
+            float delta = Mathf.Lerp(attributeFilter.minScale, attributeFilter.maxScale, n);
+            return delta < attributeFilter.minFilter || delta > attributeFilter.maxFilter;
         }
     }
 
