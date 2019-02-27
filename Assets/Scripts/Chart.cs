@@ -1540,7 +1540,7 @@ public class Chart : Photon.MonoBehaviour
                 interactGrab.AttemptGrab();
             }
             // Check if the chart is being held next to the dashboard for transfer
-            else if (!isPrototype && isTouchingDashboard)
+            else if (!isPrototype && (isTouchingDashboard || isTouchingDisplayScreen))
             {
                 VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(interactableObject.GetGrabbingObject()), 0.4f);
             }

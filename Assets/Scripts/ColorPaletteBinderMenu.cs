@@ -146,11 +146,12 @@ public class ColorPaletteBinderMenu : Photon.PunBehaviour {
 
         ToggleColorButtons(false);
         confirmButton.gameObject.SetActive(true);
-        colorPicker.gameObject.SetActive(true);
         label.gameObject.SetActive(true);
         label.text = "Picking Colour for Value: \n<b>" + button.Text + "</b>";
 
-        colorPicker.SetColor(button.Color);
+        Color col = button.Color;
+        colorPicker.gameObject.SetActive(true);
+        colorPicker.SetColor(col);
     }
 
     public void ButtonClicked(MenuButton button)

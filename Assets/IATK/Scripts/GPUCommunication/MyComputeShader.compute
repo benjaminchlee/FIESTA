@@ -36,13 +36,8 @@ float _MaxNormY;
 float _MinNormZ;
 float _MaxNormZ;
 
-float pointer1x;
-float pointer1y;
-float pointer1z;
-
-float pointer2x;
-float pointer2y;
-float pointer2z;
+float3 pointer1;
+float3 pointer2;
 
 float height;
 float width;
@@ -121,16 +116,16 @@ bool Brush(int brushType, float3 filteredPosition)
 	{
 		//brush sphere
 	case 0:
-		return brushSphere(float3(pointer1x, pointer1y, pointer1z), RadiusSphere, filteredPosition);
+		return brushSphere(float3(pointer1.x, pointer1.y, pointer1.z), RadiusSphere, filteredPosition);
 		//brush cube
 	case 1:
-		float3 TL = float3(pointer1x, pointer1y, pointer1z);
-		float3 BR = float3(pointer2x, pointer2y, pointer2z);
+		float3 TL = float3(pointer1.x, pointer1.y, pointer1.z);
+		float3 BR = float3(pointer2.x, pointer2.y, pointer2.z);
 
 		if (TL.x > BR.x || TL.y < BR.y || TL.z > BR.z)
 		{
 			TL = BR;
-			BR = float3(pointer1x, pointer1y, pointer1z);
+			BR = float3(pointer1.x, pointer1.y, pointer1.z);
 		}
 
 		return brushCube(TL, BR, filteredPosition);
@@ -317,7 +312,7 @@ void ComputeNearestDistances(uint3 id: SV_DispatchThreadID) {
 			filteredPosition.z <= _MaxZ * depth
 			)
 		{
-			float3 displacementToCenter = filteredPosition - float3(pointer1x, pointer1y, pointer1z);
+			float3 displacementToCenter = filteredPosition - float3(pointer1.x, pointer1.y, pointer1.z);
 			float radiusSqr = RadiusInspector * RadiusInspector;
 			float magnitudeSqr = dot(displacementToCenter, displacementToCenter);
 			if (magnitudeSqr < radiusSqr) {

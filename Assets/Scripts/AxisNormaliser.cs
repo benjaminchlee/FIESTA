@@ -22,10 +22,13 @@ public class AxisNormaliser : MonoBehaviour {
     private Quaternion storedRotation;
     private Chart parentChart;
 
+    private bool isLeftTouched = false;
+    private bool isRightTouched = false;
+
     private void Awake()
     {
-        interactableObject.InteractableObjectNearTouched += NormaliserNearTouched;
-        interactableObject.InteractableObjectNearUntouched += NormaliserNearUntouched;
+        interactableObject.InteractableObjectTouched += NormaliserTouched;
+        interactableObject.InteractableObjectUntouched += NormaliserUntouched;
 
         interactableObject.InteractableObjectUngrabbed += NormaliserUngrabbed;
     }
@@ -48,8 +51,8 @@ public class AxisNormaliser : MonoBehaviour {
 
     private void OnDestroy()
     {
-        interactableObject.InteractableObjectNearTouched -= NormaliserNearTouched;
-        interactableObject.InteractableObjectNearUntouched -= NormaliserNearUntouched;
+        interactableObject.InteractableObjectNearTouched -= NormaliserTouched;
+        interactableObject.InteractableObjectNearUntouched -= NormaliserUntouched;
 
         interactableObject.InteractableObjectUngrabbed -= NormaliserUngrabbed;
     }
@@ -125,13 +128,25 @@ public class AxisNormaliser : MonoBehaviour {
     //    transform.position = newP;
     //}
 
-    private void NormaliserNearTouched(object sender, InteractableObjectEventArgs e)
+    private void NormaliserTouched(object sender, InteractableObjectEventArgs e)
     {
-        transform.DOScale(rescaled, 0.35f);
+        if (VRTK_DeviceFinder.IsControllerLeftHand(e.interactingObject))
+            isLeftTouched = true;
+        else
+            isRightTouched = true;
+
+        if (isLeftTouched ^ isRightTouched)
+            transform.DOScale(rescaled, 0.35f);
     }
 
-    private void NormaliserNearUntouched(object sender, InteractableObjectEventArgs e)
+    private void NormaliserUntouched(object sender, InteractableObjectEventArgs e)
     {
-        transform.DOScale(initialScale, 0.35f);
+        if (VRTK_DeviceFinder.IsControllerLeftHand(e.interactingObject))
+            isLeftTouched = false;
+        else
+            isRightTouched = false;
+
+        if (!isLeftTouched && !isRightTouched)
+            transform.DOScale(initialScale, 0.35f);
     }
 }

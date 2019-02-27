@@ -118,7 +118,7 @@ public class BrushingAndLinking : Photon.PunBehaviour {
         brushingVisualisations = new List<Visualisation>();
 
         ResetBrushTexture();
-        //GenerateDetailsOnDemandPanel();
+        GenerateDetailsOnDemandPanel();
     }
 
     // Update is called once per frame
@@ -146,10 +146,15 @@ public class BrushingAndLinking : Photon.PunBehaviour {
         if (input1 != null && input2 != null)
         {
             if (brushButtonController && brushingVisualisations.Count != 0)
+            {
                 updateBrushTexture();
+                getDetailsOnDemand();
+            }
 
             if (inspectButtonController && visualisationToInspect != null)
+            {
                 updateNearestDistances();
+            }
         }
     }
 
@@ -324,9 +329,7 @@ public class BrushingAndLinking : Photon.PunBehaviour {
                     projectedPointer1 =
                         brushingVisualisation.transform.InverseTransformPoint(input1.transform.position);
                     //  Vector3 
-                    computeShader.SetFloat("pointer1x", projectedPointer1.x);
-                    computeShader.SetFloat("pointer1y", projectedPointer1.y);
-                    computeShader.SetFloat("pointer1z", projectedPointer1.z);
+                    computeShader.SetFloats("pointer1", projectedPointer1.x, projectedPointer1.y, projectedPointer1.z);
 
                     break;
                 case BrushType.BOX:
@@ -336,13 +339,8 @@ public class BrushingAndLinking : Photon.PunBehaviour {
                         brushingVisualisation.transform.InverseTransformPoint(input2.transform.position);
 
                     //  Vector3 
-                    computeShader.SetFloat("pointer1x", projectedPointer1.x);
-                    computeShader.SetFloat("pointer1y", projectedPointer1.y);
-                    computeShader.SetFloat("pointer1z", projectedPointer1.z);
-
-                    computeShader.SetFloat("pointer2x", projectedPointer2.x);
-                    computeShader.SetFloat("pointer2y", projectedPointer2.y);
-                    computeShader.SetFloat("pointer2z", projectedPointer2.z);
+                    computeShader.SetFloats("pointer1", projectedPointer1.x, projectedPointer1.y, projectedPointer1.z);
+                    computeShader.SetFloats("pointer2", projectedPointer2.x, projectedPointer2.y, projectedPointer2.z);
                     break;
                 default:
                     break;
@@ -394,9 +392,7 @@ public class BrushingAndLinking : Photon.PunBehaviour {
 
             projectedPointer = visualisationToInspect.transform.InverseTransformPoint(input1.transform.position);
 
-            computeShader.SetFloat("pointer1x", projectedPointer.x);
-            computeShader.SetFloat("pointer1y", projectedPointer.y);
-            computeShader.SetFloat("pointer1z", projectedPointer.z);
+            computeShader.SetFloats("pointer1", projectedPointer.x, projectedPointer.y, projectedPointer.z);
 
             //set the filters and normalisation values of the brushing visualisation to the computer shader
             computeShader.SetFloat("_MinNormX", visualisationToInspect.xDimension.minScale);
@@ -419,7 +415,6 @@ public class BrushingAndLinking : Photon.PunBehaviour {
             computeShader.SetFloat("height", visualisationToInspect.height);
             computeShader.SetFloat("depth", visualisationToInspect.depth);
 
-            //computeShader.Dispatch(kernelComputeNearestDistances, Mathf.CeilToInt(texSize / 32f), 1, 1);
             computeShader.Dispatch(kernelComputeNearestDistances, Mathf.CeilToInt(nearestDistancesBuffer.count / 32f), 1, 1);
             nearestDistancesRequest = AsyncGPUReadback.Request(nearestDistancesBuffer);
         }

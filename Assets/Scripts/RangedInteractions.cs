@@ -323,10 +323,10 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                     break;
 
                 case "detailsondemand":
-                    toolJustActivated = true;
-                    SetInteractionState(InteractionState.DetailsOnDemand);
                     break;
             }
+
+            TriggerControllerVibration(0.3f);
         }
         //// Otherwise this would've interrupted a user's active interaction, therefore vibrate hard to warn them of this
         //else
@@ -689,6 +689,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             rangedBrush.transform.position = hit.point;
             brushingInput1.position = hit.point;
             brushingAndLinking.brushButtonController = true;
+
+            TriggerControllerVibration(0.05f);
         }
         else
         {
@@ -974,10 +976,14 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 {
                     collidedObject.GetComponent<ColorPaletteBinderButton>().Click();
                 }
+
+                TriggerControllerVibration(0.3f);
             }
             else if (collidedObject.CompareTag("SPLOMButton"))
             {
-                collidedObject.GetComponent<SPLOMButton>().Click();;
+                collidedObject.GetComponent<SPLOMButton>().Click(); ;
+
+                TriggerControllerVibration(0.3f);
             }
             // Otherwise, if it is a physics based menu button, start to drag it
             else if (collidedObject.CompareTag("PhysicsMenuButton"))
@@ -986,7 +992,10 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 rangedPullGameObject = collidedObject;
 
                 // As we will be sending updates on it, we need to take ownership of it
-                rangedPullGameObject.GetComponent<PhotonView>().TransferOwnership(PhotonNetwork.player);
+                if (!rangedPullGameObject.GetComponent<PhotonView>().isMine)
+                    rangedPullGameObject.GetComponent<PhotonView>().TransferOwnership(PhotonNetwork.player);
+
+                rangedPullGameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
 
                 SetInteractionState(InteractionState.RangedInteracting);
             }
@@ -1020,13 +1029,20 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         if (isDraggable)
         {
             RaycastHit hit = GetDestinationHit();
-
             rangedPullGameObject.GetComponent<Rigidbody>().MovePosition(hit.point);
+
+            TriggerControllerVibration(0.1f);
         }
     }
 
     private void RangedInteractionTriggerEnd(ControllerInteractionEventArgs e)
     {
+        if (isDraggable && rangedPullGameObject != null)
+        {
+            rangedPullGameObject.layer = LayerMask.NameToLayer("Default");
+            rangedPullGameObject = null;
+        }
+
         if (previousState != InteractionState.None)
         {
             SetInteractionState(previousState);
@@ -1047,7 +1063,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
         // Vibrate the controller based on how far away it is from the origin
         float vibrateAmount = 0.75f * (distance / rangedPullCompleteThreshold);
-        VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(gameObject), vibrateAmount);
+        TriggerControllerVibration(vibrateAmount);
 
         // If the object has been pulled sufficiently far, grab it
         if (distance > rangedPullCompleteThreshold)
@@ -1220,5 +1236,10 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                       ((pointX - endX) < (pointY - endY) * (startX - endX) / (startY - endY));
         }
         return inside;
+    }
+
+    private void TriggerControllerVibration(float strength)
+    {
+        VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(gameObject), strength);
     }
 }

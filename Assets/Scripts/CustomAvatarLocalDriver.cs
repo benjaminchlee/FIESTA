@@ -39,7 +39,9 @@ public class CustomAvatarLocalDriver : OvrAvatarDriver
         //if (controller.touchpadPressed) touches |= ovrAvatarTouch.Joystick;
         //if (OVRInput.Get(OVRInput.Touch.PrimaryThumbRest, controller)) touches |= ovrAvatarTouch.ThumbRest;
         if (controller.triggerPressed) touches |= ovrAvatarTouch.Index;
+        if (controller.gripPressed) touches |= ovrAvatarTouch.Joystick;
         if (controller.touchpadPressed) touches |= ovrAvatarTouch.Pointing;
+        if (controller.triggerPressed && controller.gripPressed) touches = ovrAvatarTouch.ThumbUp;
         //if (!OVRInput.Get(OVRInput.NearTouch.PrimaryThumbButtons, controller)) touches |= ovrAvatarTouch.ThumbUp;
 
         return new ControllerPose
