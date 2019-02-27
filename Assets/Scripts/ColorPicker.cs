@@ -26,7 +26,7 @@ public class ColorPicker : MonoBehaviour {
 
     private void Start()
     {
-        SetColor(startColor);
+        //SetColor(startColor);
     }
     
     private void Update()

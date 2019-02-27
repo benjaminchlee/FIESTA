@@ -21,10 +21,6 @@
             if (remoteAvatar == null) {
                 Debug.LogError("AvatarSpawnManager is missing a reference to the remote avatar prefab!");
             }
-            spawnPoints = GameObject.FindGameObjectsWithTag("Respawn");
-            if (spawnPoints.Length == 0) {
-                Debug.LogError("No spawn points were found!");
-            }
         }
 
         void OnEnable() {

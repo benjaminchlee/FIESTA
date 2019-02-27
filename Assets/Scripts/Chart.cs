@@ -250,12 +250,14 @@ public class Chart : Photon.MonoBehaviour
     [PunRPC]
     private void PropagateXNormaliser(Vector2 value)
     {
-        visualisation.xDimension.minScale = value.x;
-        visualisation.xDimension.maxScale = value.y;
-        visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
-
         switch (chartType)
         {
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                visualisation.xDimension.minScale = value.x;
+                visualisation.xDimension.maxScale = value.y;
+                visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
+                break;
+
             case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
             case AbstractVisualisation.VisualisationTypes.FACET:
                 foreach (Chart chart in subCharts)
@@ -281,13 +283,14 @@ public class Chart : Photon.MonoBehaviour
     [PunRPC]
     private void PropagateYNormaliser(Vector2 value)
     {
-
-        visualisation.yDimension.minScale = value.x;
-        visualisation.yDimension.maxScale = value.y;
-        visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
-
         switch (chartType)
         {
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                visualisation.yDimension.minScale = value.x;
+                visualisation.yDimension.maxScale = value.y;
+                visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
+                break;
+
             case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
             case AbstractVisualisation.VisualisationTypes.FACET:
                 foreach (Chart chart in subCharts)
@@ -313,12 +316,14 @@ public class Chart : Photon.MonoBehaviour
     [PunRPC]
     private void PropagateZNormaliser(Vector2 value)
     {
-        visualisation.zDimension.minScale = value.x;
-        visualisation.zDimension.maxScale = value.y;
-        visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
-
         switch (chartType)
         {
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                visualisation.zDimension.minScale = value.x;
+                visualisation.zDimension.maxScale = value.y;
+                visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
+                break;
+
             case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
             case AbstractVisualisation.VisualisationTypes.FACET:
                 foreach (Chart chart in subCharts)
@@ -1045,6 +1050,7 @@ public class Chart : Photon.MonoBehaviour
     private void PropagateColliderActiveState(bool value)
     {
         GetComponent<Collider>().enabled = value;
+        transform.Find("RaycastCollider").GetComponent<Collider>().enabled = value;
     }
 
     #endregion
@@ -1187,7 +1193,7 @@ public class Chart : Photon.MonoBehaviour
                             subChart.GeometryType = AbstractVisualisation.GeometryType.Undefined;
                             subChart.XDimension = (splomButtons[i] != null) ? splomButtons[i].Text : DataSource[i].Identifier;
                             subChart.YDimension = (splomButtons[j] != null) ? splomButtons[j].Text : DataSource[j].Identifier;
-                            subChart.GetComponent<Collider>().enabled = false;
+                            subChart.ColliderActiveState = false;
                             subChart.KeyVisiblility = false;
                             subChart.transform.SetParent(transform);
                             splomCharts[i, j] = subChart;
@@ -1624,7 +1630,7 @@ public class Chart : Photon.MonoBehaviour
         float zSize = (z != "Undefined") ? depth + 0.015f : 0.1f;
         
         boxCollider.size = new Vector3(xSize, ySize, zSize);
-        raycastCollider.size = new Vector3(xSize, ySize, 0.01f);
+        raycastCollider.size = new Vector3(xSize + 0.05f, ySize + 0.05f, 0.01f);
 
         // Disable colliders if this is not a scatterplot
         if (VisualisationType != AbstractVisualisation.VisualisationTypes.SCATTERPLOT)
@@ -1680,8 +1686,9 @@ public class Chart : Photon.MonoBehaviour
             if (isThrowing)
             {
                 isThrowing = false;
-                rigidbody.isKinematic = true;
                 rigidbody.useGravity = false;
+                rigidbody.velocity = Vector3.zero;
+                rigidbody.angularVelocity = Vector3.zero;
                 AttachToDisplayScreen();
             }
         }

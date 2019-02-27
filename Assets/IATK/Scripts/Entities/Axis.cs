@@ -356,7 +356,29 @@ public class Axis : MonoBehaviour {
 
         public override int NumberOfLabels()
         {
-            return Mathf.CeilToInt(axisLength / 0.075f);
+            if (IsDiscreet())
+            {
+                if (attributeFilter.minScale > 0.001f || attributeFilter.maxScale < 0.999f)
+                {
+                    return 0;
+                }
+                
+                CSVDataSource csvDataSource = (CSVDataSource) dataSource;
+                int numValues = csvDataSource.TextualDimensionsListReverse[attributeFilter.Attribute].Count;
+
+                if (numValues < (Mathf.CeilToInt(axisLength / 0.075f)))
+                {
+                    return numValues;
+                }
+                else
+                {
+                    return 2;
+                }
+            }
+            else
+            {
+                return Mathf.CeilToInt(axisLength / 0.075f);
+            }
         }
 
         public override float LabelPosition(int labelIndex)
@@ -366,7 +388,6 @@ public class Axis : MonoBehaviour {
 
         public override string LabelText(int labelIndex)
         {
-            //object v = dataSource.getOriginalValue(Mathf.Lerp(attributeFilter.minScale, attributeFilter.maxScale, labelIndex / 3.0f), attributeFilter.Attribute);
             object v = dataSource.getOriginalValue(Mathf.Lerp(attributeFilter.minScale, attributeFilter.maxScale, labelIndex / (NumberOfLabels() - 1f)), attributeFilter.Attribute);
             string s = "";
 
@@ -386,6 +407,12 @@ public class Axis : MonoBehaviour {
             float n = labelIndex / (float)(NumberOfLabels() - 1);
             float delta = Mathf.Lerp(attributeFilter.minScale, attributeFilter.maxScale, n);
             return delta < attributeFilter.minFilter || delta > attributeFilter.maxFilter;
+        }
+
+        private float NormaliseValue(float value, float min1, float max1, float min2, float max2)
+        {
+            float i = (min2 - max2) / (min1 - max1);
+            return (min2 - (i * min1) + (i * value));
         }
     }
 

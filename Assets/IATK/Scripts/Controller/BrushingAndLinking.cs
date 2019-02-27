@@ -5,28 +5,30 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using System.Linq;
+using UnityEngine.Events;
 using UnityEngine.Rendering;
 using VRTK.Examples;
 
-public class BrushingAndLinking : Photon.PunBehaviour
-{
+public class BrushingAndLinking : Photon.PunBehaviour {
 
     [SerializeField]
     public ComputeShader computeShader;
-
-    ComputeBuffer buffer;
-    ComputeBuffer brushedIndicesBuffer;
-    ComputeBuffer filteredIndicesBuffer;
-
-    [SerializeField]
-    public Material myRenderMaterial;
-
-    public RenderTexture BrushedIndicesTexture { get; private set; }
 
     private int kernelHandleBrushTexture;
     private int kernelHandleBrushArrayIndices;
     private int kernelResetBrushTexture;
     private int kernelSetHighlightedIndex;
+    private int kernelComputeNearestDistances;
+
+    ComputeBuffer buffer;
+    ComputeBuffer brushedIndicesBuffer;
+    ComputeBuffer filteredIndicesBuffer;
+    ComputeBuffer nearestDistancesBuffer;
+
+    [SerializeField]
+    public Material myRenderMaterial;
+
+    public RenderTexture BrushedIndicesTexture { get; private set; }
 
     GameObject viewHolder;
     int texSize;
@@ -60,23 +62,24 @@ public class BrushingAndLinking : Photon.PunBehaviour
     [SerializeField]
     public bool brushButtonController;
 
+
+    public Visualisation visualisationToInspect;
+    [SerializeField] [Range(0f, 1f)]
+    public float radiusInspector;
+    [SerializeField]
+    public bool inspectButtonController;
+
     private DetailsOnDemand detailsOnDemand;
     private int highlightedIndex = -1;
 
-    public struct VecIndexPair
-    {
-        public Vector3 point;
-        public int index;
-    }
-
+    public BrushType BRUSH_TYPE;
     public enum BrushType
     {
         SPHERE = 0,
         BOX = 1
     };
 
-    public BrushType BRUSH_TYPE;
-
+    public SelectionType SELECTION_TYPE;
     public enum SelectionType
     {
         FREE = 0,
@@ -84,17 +87,16 @@ public class BrushingAndLinking : Photon.PunBehaviour
         SUBTRACTIVE
     };
 
-    public SelectionType SELECTION_TYPE;
-
-    int computeTextureSize(int sizeDatast)
-    {
-        return NextPowerOf2((int) Mathf.Sqrt((float) sizeDatast));
-    }
-
     public Material debugObjectTexture;
 
     private AsyncGPUReadbackRequest detailsOnDemandRequest;
     public List<int> brushedIndices;
+    private AsyncGPUReadbackRequest nearestDistancesRequest;
+    public List<float> nearestDistances;
+    
+    [Serializable]
+    public class NearestDistancesComputedEvent : UnityEvent<List<float>> { }
+    public NearestDistancesComputedEvent NearestDistancesComputed;
 
     // private fields
     private bool activated = false;
@@ -116,7 +118,7 @@ public class BrushingAndLinking : Photon.PunBehaviour
         brushingVisualisations = new List<Visualisation>();
 
         ResetBrushTexture();
-        GenerateDetailsOnDemandPanel();
+        //GenerateDetailsOnDemandPanel();
     }
 
     // Update is called once per frame
@@ -141,12 +143,13 @@ public class BrushingAndLinking : Photon.PunBehaviour
             }
         }
 
-        if (brushingVisualisations.Count != 0 && (brushButtonController) && input1 != null && input2 != null)
+        if (input1 != null && input2 != null)
         {
-            updateBrushTexture();
+            if (brushButtonController && brushingVisualisations.Count != 0)
+                updateBrushTexture();
 
-            if (photonView.isMine)
-                getDetailsOnDemand();
+            if (inspectButtonController && visualisationToInspect != null)
+                updateNearestDistances();
         }
     }
 
@@ -156,6 +159,7 @@ public class BrushingAndLinking : Photon.PunBehaviour
         kernelHandleBrushArrayIndices = computeShader.FindKernel("ComputeBrushedIndicesArray");
         kernelResetBrushTexture = computeShader.FindKernel("ResetBrushTexture");
         kernelSetHighlightedIndex = computeShader.FindKernel("SetHighlightedIndex");
+        kernelComputeNearestDistances = computeShader.FindKernel("ComputeNearestDistances");
     }
 
     public void InitialiseBuffersAndTextures()
@@ -175,8 +179,13 @@ public class BrushingAndLinking : Photon.PunBehaviour
         filteredIndicesBuffer = new ComputeBuffer(datasetSize, 4);
         filteredIndicesBuffer.SetData(new float[datasetSize]);
 
+        nearestDistancesBuffer = new ComputeBuffer(datasetSize, 4);
+        nearestDistancesBuffer.SetData(new float[datasetSize]);
+
         computeShader.SetBuffer(kernelHandleBrushArrayIndices, "dataBuffer", buffer);
         computeShader.SetBuffer(kernelHandleBrushArrayIndices, "brushedIndices", brushedIndicesBuffer);
+        computeShader.SetBuffer(kernelComputeNearestDistances, "dataBuffer", buffer);
+        computeShader.SetBuffer(kernelComputeNearestDistances, "nearestDistances", nearestDistancesBuffer);
 
         texSize = computeTextureSize(datasetSize);
 
@@ -217,6 +226,11 @@ public class BrushingAndLinking : Photon.PunBehaviour
         computeShader.SetFloats("sharedBrushColor", sharedBrushColor.r, sharedBrushColor.g, sharedBrushColor.b, sharedBrushColor.a);
     }
 
+    int computeTextureSize(int sizeDatast)
+    {
+        return NextPowerOf2((int)Mathf.Sqrt((float)sizeDatast));
+    }
+
     /// <summary>
     /// finds the next power of 2 for 
     /// </summary>
@@ -242,6 +256,7 @@ public class BrushingAndLinking : Photon.PunBehaviour
 
         filteredIndicesBuffer.SetData(visualisation.theVisualizationObject.viewList[0].GetFilterChannel());
         computeShader.SetBuffer(kernelHandleBrushTexture, "filteredIndices", filteredIndicesBuffer);
+        computeShader.SetBuffer(kernelComputeNearestDistances, "filteredIndices", filteredIndicesBuffer);
     }
 
 
@@ -358,7 +373,55 @@ public class BrushingAndLinking : Photon.PunBehaviour
             computeShader.SetBool("shareBrushing", shareBrushing);
 
             //run the compute shader with all the filtering parameters
-            computeShader.Dispatch(kernelHandleBrushTexture, Mathf.CeilToInt(texSize / 32), Mathf.CeilToInt(texSize / 32), 1);
+            computeShader.Dispatch(kernelHandleBrushTexture, Mathf.CeilToInt(texSize / 32f), Mathf.CeilToInt(texSize / 32f), 1);
+        }
+    }
+
+    public void updateNearestDistances()
+    {
+        if (nearestDistancesRequest.done)
+        {
+            if (!nearestDistancesRequest.hasError)
+            {
+                nearestDistances = nearestDistancesRequest.GetData<float>().ToList();
+                NearestDistancesComputed.Invoke(nearestDistances);
+            }
+
+            // Dispatch again
+            Vector3 projectedPointer;
+
+            UpdateComputeBuffers(visualisationToInspect);
+
+            projectedPointer = visualisationToInspect.transform.InverseTransformPoint(input1.transform.position);
+
+            computeShader.SetFloat("pointer1x", projectedPointer.x);
+            computeShader.SetFloat("pointer1y", projectedPointer.y);
+            computeShader.SetFloat("pointer1z", projectedPointer.z);
+
+            //set the filters and normalisation values of the brushing visualisation to the computer shader
+            computeShader.SetFloat("_MinNormX", visualisationToInspect.xDimension.minScale);
+            computeShader.SetFloat("_MaxNormX", visualisationToInspect.xDimension.maxScale);
+            computeShader.SetFloat("_MinNormY", visualisationToInspect.yDimension.minScale);
+            computeShader.SetFloat("_MaxNormY", visualisationToInspect.yDimension.maxScale);
+            computeShader.SetFloat("_MinNormZ", visualisationToInspect.zDimension.minScale);
+            computeShader.SetFloat("_MaxNormZ", visualisationToInspect.zDimension.maxScale);
+
+            computeShader.SetFloat("_MinX", visualisationToInspect.xDimension.minFilter);
+            computeShader.SetFloat("_MaxX", visualisationToInspect.xDimension.maxFilter);
+            computeShader.SetFloat("_MinY", visualisationToInspect.yDimension.minFilter);
+            computeShader.SetFloat("_MaxY", visualisationToInspect.yDimension.maxFilter);
+            computeShader.SetFloat("_MinZ", visualisationToInspect.zDimension.minFilter);
+            computeShader.SetFloat("_MaxZ", visualisationToInspect.zDimension.maxFilter);
+
+            computeShader.SetFloat("RadiusInspector", radiusInspector);
+
+            computeShader.SetFloat("width", visualisationToInspect.width);
+            computeShader.SetFloat("height", visualisationToInspect.height);
+            computeShader.SetFloat("depth", visualisationToInspect.depth);
+
+            //computeShader.Dispatch(kernelComputeNearestDistances, Mathf.CeilToInt(texSize / 32f), 1, 1);
+            computeShader.Dispatch(kernelComputeNearestDistances, Mathf.CeilToInt(nearestDistancesBuffer.count / 32f), 1, 1);
+            nearestDistancesRequest = AsyncGPUReadback.Request(nearestDistancesBuffer);
         }
     }
 

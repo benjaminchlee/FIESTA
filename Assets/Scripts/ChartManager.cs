@@ -144,6 +144,9 @@ public class ChartManager : MonoBehaviour {
         chart.XDimension = dupe.XDimension;
         chart.YDimension = dupe.YDimension;
         chart.ZDimension = dupe.ZDimension;
+        chart.XNormaliser = dupe.XNormaliser;
+        chart.YNormaliser = dupe.YNormaliser;
+        chart.ZNormaliser = dupe.ZNormaliser;
         chart.ColorDimension = dupe.ColorDimension;
         chart.ColorPaletteDimension = dupe.ColorPaletteDimension;
         chart.Color = dupe.Color;
@@ -152,7 +155,8 @@ public class ChartManager : MonoBehaviour {
         chart.SizeDimension = dupe.SizeDimension;
         chart.Size = dupe.Size;
         chart.Scale = dupe.Scale;
-        chart.AttributeFilters = dupe.AttributeFilters;
+        if (dupe.AttributeFilters[0].minScale > 0.001f || dupe.AttributeFilters[0].maxScale < 0.999f)
+            chart.AttributeFilters = dupe.AttributeFilters;
         chart.ResizeHandleVisibility = true;
 
         vis.transform.position = dupe.transform.position;

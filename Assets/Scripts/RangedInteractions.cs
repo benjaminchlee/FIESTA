@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using IATK;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
@@ -92,13 +94,17 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     private bool pullObjectIsPrototype;
 
     [Header("Details on Demand Parameters")]
+    [SerializeField] [Tooltip("The line renderer that acts as the leader line for details on demand.")]
+    private LineRenderer leaderLineRenderer;
+    
     [SerializeField] [Tooltip("The gameobject that acts as the panel for the details on demand.")]
     private GameObject detailsOnDemandGameObject;
     [SerializeField] [Tooltip("The textmesh which displays the details on demand.")]
     private TextMeshPro detailsOnDemandTextMesh;
 
     private bool isTouchpadDown = false;
-    private int previousInspectedIndex;
+    private Visualisation visualisationToInspect;
+    private DetailsOnDemandLabel detailsOnDemandLabel;
 
     private VRTK_ControllerEvents controllerEvents;
     private VRTK_Pointer vrtkPointer;
@@ -222,6 +228,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             brushingAndLinking = bal.GetComponent<BrushingAndLinking>();
             brushingInput1 = brushingAndLinking.input1;
             brushingInput2 = brushingAndLinking.input2;
+            brushingAndLinking.NearestDistancesComputed.AddListener(DetailsOnDemandUpdated);
 
             // Instantiate networked tracer
             GameObject tracer = PhotonNetwork.Instantiate("NetworkedTracer", Vector3.zero, Quaternion.identity, 0);
@@ -314,6 +321,11 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                     brushingAndLinking.shareBrushing = true;
                     SetInteractionState(InteractionState.RangedBrush);
                     break;
+
+                case "detailsondemand":
+                    toolJustActivated = true;
+                    SetInteractionState(InteractionState.DetailsOnDemand);
+                    break;
             }
         }
         //// Otherwise this would've interrupted a user's active interaction, therefore vibrate hard to warn them of this
@@ -402,7 +414,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     /// <returns>True if the user is currently performing an interaction, otherwise returns false</returns>
     private bool IsInteracting()
     {
-        return new string[] { "rangedbrushing", "lassoselecting", "rectangleselecting", "rangedinteracting", "rangedpulling" }.Contains(activeState.ToString().ToLower());
+        return new string[] { "rangedbrushing", "lassoselecting", "rectangleselecting", "rangedinteracting", "rangedpulling", "detailsondemand" }.Contains(activeState.ToString().ToLower());
     }
 
     /// <summary>
@@ -543,7 +555,6 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         angle = e.touchpadAngle;
 
         isTouchpadDown = true;
-        previousInspectedIndex = -1;
     }
 
     private void OnTouchpadAxisChange(object sender, ControllerInteractionEventArgs e)
@@ -577,57 +588,6 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     {
         isTouchpadDown = false;
     }
-
-    /* DETAILS ON DEMAND
-    private void Update()
-    {
-        if (activeState == InteractionState.None && !wandController.IsDragging() && isTouchpadDown)
-        {
-            tracerVisibility = VisibilityStates.AlwaysOn;
-
-            RaycastHit hit;
-            GameObject collidedObject = GetCollidedObject(out hit);
-
-            if (collidedObject != null && collidedObject.tag == "Shape")
-            {
-                if (!detailsOnDemandGameObject.activeSelf)
-                    detailsOnDemandGameObject.SetActive(true);
-
-                // If this shape is not the currently displayed one
-                int index = collidedObject.GetComponent<InteractableShape>().Index;
-                if (index != previousInspectedIndex)
-                {
-                    DataBinding.DataObject dataObject = SceneManager.Instance.dataObject;
-
-                    List<string> values = new List<string>();
-                    values.Add("Index: " + index);
-
-                    for (int i = 0; i < dataObject.NbDimensions; i++)
-                    {
-                        string name = dataObject.Identifiers[i];
-                        string value = dataObject.getRawValue(i, index);
-
-                        values.Add(string.Format("{0}: {1}", name, value));
-                    }
-
-                    detailsOnDemandTextMesh.text = string.Join("\n", values);
-                    previousInspectedIndex = index;
-                }
-            }
-        }
-        else
-        {
-            if (activeState == InteractionState.None && (wandController.IsDragging() || !isTouchpadDown))
-            {
-                tracerVisibility = VisibilityStates.AlwaysOff;
-                if (detailsOnDemandGameObject.activeSelf)
-                {
-                    detailsOnDemandGameObject.SetActive(false);
-                }
-            }
-        }
-    }
-    */
 
     private void Update()
     {
@@ -673,6 +633,33 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             case InteractionState.RangedPulling:
                 RangedPullLoop();
                 break;
+        }
+
+        //Details on demand
+        if (brushingAndLinking != null)
+        {
+            if (IsInteractionToolActive() && isTouchpadDown)
+            {
+                RaycastHit hit;
+                GameObject collidedObject = GetCollidedObject(out hit);
+
+                if (collidedObject != null && collidedObject.CompareTag("ChartRaycastCollider"))
+                {
+                    brushingInput1.position = hit.point;
+                    brushingAndLinking.inspectButtonController = true;
+                    visualisationToInspect = collidedObject.GetComponentInParent<Chart>().Visualisation;
+                    brushingAndLinking.visualisationToInspect = visualisationToInspect;
+                    brushingAndLinking.radiusInspector = 0.2f;
+                }
+            }
+            else if (!isTouchpadDown)
+            {
+                brushingAndLinking.visualisationToInspect = null;
+                brushingAndLinking.inspectButtonController = false;
+                leaderLineRenderer.enabled = false;
+                if (detailsOnDemandLabel != null)
+                    detailsOnDemandLabel.gameObject.SetActive(false);
+            }
         }
     }
 
@@ -1097,6 +1084,88 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         }
 
         rangedPullGameObject.GetComponent<Chart>().AnimateTowards(rangedPullObjectStartPosition, rangedPullObjectStartRotation, 0.1f, pullObjectIsPrototype);
+    }
+    
+    private void DetailsOnDemandUpdated(List<float> nearestDistances)
+    {
+        if (IsInteractionToolActive())
+        {
+            // Get list of indices that share the closest distance
+            List<int> nearestIndices = new List<int>();
+            float minDistance = 100;
+            
+            for (int i = 0; i < nearestDistances.Count; i++)
+            {
+                if (nearestDistances[i] < minDistance)
+                {
+                    nearestIndices.Clear();
+                    nearestIndices.Add(i);
+                    minDistance = nearestDistances[i];
+                }
+                else if (IsFloatEqual(nearestDistances[i], minDistance, 0.0001f))
+                {
+                    nearestIndices.Add(i);
+                }
+            }
+
+            if (nearestIndices.Count > 0)
+            {
+                // Get position of the original point
+                Vector3 originalPos = visualisationToInspect.theVisualizationObject.viewList[0].BigMesh.getBigMeshVertices()[nearestIndices[0]];
+
+                // Normalise it based on visualisation properties
+                float minNormX = visualisationToInspect.xDimension.minScale;
+                float maxNormX = visualisationToInspect.xDimension.maxScale;
+                float minNormY = visualisationToInspect.yDimension.minScale;
+                float maxNormY = visualisationToInspect.yDimension.maxScale;
+                float minNormZ = visualisationToInspect.zDimension.minScale;
+                float maxNormZ = visualisationToInspect.zDimension.maxScale;
+                float width = visualisationToInspect.width;
+                float height = visualisationToInspect.height;
+                float depth = visualisationToInspect.depth;
+
+                float normX = NormaliseValue(originalPos.x, minNormX, maxNormX, 0, width);
+                float normY = NormaliseValue(originalPos.y, minNormY, maxNormY, 0, height);
+                float normZ = NormaliseValue(originalPos.z, minNormZ, maxNormZ, 0, depth);
+                Vector3 normalisedPos = new Vector3(normX, normY, normZ);
+
+                // Convert to world space
+                Vector3 worldPos = visualisationToInspect.transform.TransformPoint(normalisedPos);
+
+                // Draw leader line from laser hit position to point
+                Vector3 hitPos = GetDestinationHit().point;
+                leaderLineRenderer.enabled = true;
+                leaderLineRenderer.SetPositions(new[] { hitPos, worldPos });
+
+                // Draw label at the point
+                if (detailsOnDemandLabel == null)
+                {
+                    detailsOnDemandLabel = ((GameObject)Instantiate(Resources.Load("DetailsOnDemandLabel"))).GetComponent<DetailsOnDemandLabel>();
+                }
+
+                detailsOnDemandLabel.gameObject.SetActive(true);
+                detailsOnDemandLabel.SetText(nearestIndices, visualisationToInspect);
+                detailsOnDemandLabel.transform.position = hitPos;
+                detailsOnDemandLabel.transform.rotation = visualisationToInspect.transform.rotation;
+            }
+            else
+            {
+                leaderLineRenderer.enabled = false;
+                if (detailsOnDemandLabel != null)
+                    detailsOnDemandLabel.gameObject.SetActive(false);
+            }
+        }
+    }
+
+    private float NormaliseValue(float value, float min1, float max1, float min2, float max2)
+    {
+        float i = (min2 - max2) / (min1 - max1);
+        return (min2 - (i * min1) + (i * value));
+    }
+
+    private bool IsFloatEqual(float value1, float value2, float tolerance)
+    {
+        return (Mathf.Abs(value1 - value2) < tolerance);
     }
 
     // Override the color of the laser such that it is still invalid when hitting the just the screen itself

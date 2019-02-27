@@ -3,6 +3,7 @@
 #pragma kernel ComputeBrushedIndicesArray
 #pragma kernel ResetBrushTexture
 #pragma kernel SetHighlightedIndex
+#pragma kernel ComputeNearestDistances
 #include "UnityCG.cginc"
 
 // Create a RenderTexture with enableRandomWrite flag and set it
@@ -48,6 +49,7 @@ float width;
 float depth;
 
 float RadiusSphere;
+float RadiusInspector;
 
 //struct VecIndexPair
 //{
@@ -68,6 +70,7 @@ int highlightedIndex;
 RWStructuredBuffer<float3> dataBuffer;
 RWStructuredBuffer<int> brushedIndices;
 StructuredBuffer<float> filteredIndices;
+RWStructuredBuffer<float> nearestDistances;
 
 //brush circle
 bool brush2DInCircle(float3 center, float radius, float4 testPoint)
@@ -85,7 +88,6 @@ bool brushSphere(float3 center, float radius, float3 testPoint)
 	bool intersects = dot(displacementToCenter, displacementToCenter) < radiusSqr;
 
 	return intersects;
-
 }
 
 bool brushCube(float3 TFL, float3 BBR, float3 testPoint)
@@ -289,5 +291,48 @@ void SetHighlightedIndex(uint3 id : SV_DispatchThreadID) {
 		float2 pos = float2(x, y);
 
 		Result[pos] = float4(Result[pos].x, Result[pos].y, Result[pos].z, 0.9);
+	}
+}
+
+[numthreads(32, 1, 1)]
+void ComputeNearestDistances(uint3 id: SV_DispatchThreadID) {
+
+	int idx = id.x;
+
+	// Only test if the point is not filtered
+	if (!filteredIndices[idx]) {
+		// DOES NOT WORK WITH NEGATIVE WIDTH/HEIGHT/DEPTH
+
+		float3 filteredPosition = float3(
+			normaliseValue(dataBuffer[idx].x, _MinNormX, _MaxNormX, 0, width),
+			normaliseValue(dataBuffer[idx].y, _MinNormY, _MaxNormY, 0, height),
+			normaliseValue(dataBuffer[idx].z, _MinNormZ, _MaxNormZ, 0, depth));
+
+		//filters out dots 
+		if (filteredPosition.x >= _MinX &&
+			filteredPosition.x <= _MaxX * width &&
+			filteredPosition.y >= _MinY &&
+			filteredPosition.y <= _MaxY * height &&
+			filteredPosition.z >= _MinZ &&
+			filteredPosition.z <= _MaxZ * depth
+			)
+		{
+			float3 displacementToCenter = filteredPosition - float3(pointer1x, pointer1y, pointer1z);
+			float radiusSqr = RadiusInspector * RadiusInspector;
+			float magnitudeSqr = dot(displacementToCenter, displacementToCenter);
+			if (magnitudeSqr < radiusSqr) {
+				nearestDistances[id.x] = sqrt(magnitudeSqr);
+			}
+			else {
+				nearestDistances[id.x] = 9999;
+			}
+		}
+		else
+		{
+			nearestDistances[id.x] = 9999;
+		}
+	}
+	else {
+		nearestDistances[id.x] = 9999;
 	}
 }

@@ -95,6 +95,13 @@ namespace IATK
             }
         }
 
+        public object getOriginalValue(int index, string identifier)
+        {
+            float[] data = this[identifier].Data;
+
+            return getOriginalValue(data[index], identifier);
+        }
+
         /// <summary>
         /// Returns the orginal value from the data dimension range
         /// </summary>
