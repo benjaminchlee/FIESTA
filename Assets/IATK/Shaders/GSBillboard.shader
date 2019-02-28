@@ -31,6 +31,7 @@ Shader "IATK/OutlineDots"
 		_MaxNormZ("_MaxNormZ",Range(0, 1)) = 1.0
 		_MySrcMode("_SrcMode", Float) = 5
 		_MyDstMode("_DstMode", Float) = 10
+		_BrushedDepthOffset("_BrushedDepthOffset", Range(-1,1)) = 0.00003
 
 		_Tween("_Tween", Range(0, 1)) = 1
 		_TweenSize("_TweenSize", Range(0, 1)) = 1
@@ -139,6 +140,8 @@ Shader "IATK/OutlineDots"
 				float _Tween;
 				float _TweenSize;
 
+				float _BrushedDepthOffset;
+
 				//*********************************
 				// helper functions
 				//*********************************
@@ -183,15 +186,15 @@ Shader "IATK/OutlineDots"
 					//precision filtering
 					float epsilon = -0.00001; 
 
-					//filtering
-					if(
-					 normalisedPosition.x < (_MinX + epsilon) ||
-					 normalisedPosition.x > (_MaxX - epsilon) || 
-					 normalisedPosition.y < (_MinY + epsilon) || 
-					 normalisedPosition.y > (_MaxY - epsilon) || 
-					 normalisedPosition.z < (_MinZ + epsilon) || 
-					 normalisedPosition.z > (_MaxZ - epsilon) || isFiltered
-					 )
+					////filtering
+					if (
+						normalisedPosition.x < (_MinX + epsilon) ||
+						normalisedPosition.x >(_MaxX - epsilon) ||
+						normalisedPosition.y < (_MinY + epsilon) ||
+						normalisedPosition.y >(_MaxY - epsilon) ||
+						normalisedPosition.z < (_MinZ + epsilon) ||
+						normalisedPosition.z >(_MaxZ - epsilon) || isFiltered
+						)
 					{
 						output.color.w = 0;
 					}
@@ -284,7 +287,13 @@ Shader "IATK/OutlineDots"
 					o.color = tex2D(_MainTex, input.tex0.xy) *input.color;
 					*/
 
-					o.depth = o.color.a > 0.5 ? input.pos.z : 0;
+					if (o.color.a > 0.5) {
+						o.depth = input.brushedColor > 0.0 ? input.pos.z + _BrushedDepthOffset : input.pos.z;
+					}
+					else {
+						o.depth = 0;
+					}
+
 					return o;
 				}
 

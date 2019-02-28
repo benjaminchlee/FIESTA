@@ -42,6 +42,8 @@ public class ColorPaletteBinderButton : MonoBehaviour {
         }
     }
 
+    public float NormalisedValue { get; set; }
+
     private void Start()
     {
         interactableObject = GetComponent<VRTK_InteractableObject>();

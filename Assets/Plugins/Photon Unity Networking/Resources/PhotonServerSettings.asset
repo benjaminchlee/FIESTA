@@ -114,4 +114,6 @@ MonoBehaviour:
   - PropagateSprite
   - PropagateSetDetailsPage
   - PropagateTogglePanel
+  - PropagateSetLinePosition
+  - PropagateToggleState
   DisableAutoOpenWizard: 1

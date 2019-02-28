@@ -2,15 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Net.Sockets;
 using DG.Tweening;
-using DG.Tweening.Plugins;
 using IATK;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Rendering;
-using UnityEngine.XR.WSA.WebCam;
 
 public enum DashboardDimension
 {
@@ -46,10 +41,6 @@ public class Dashboard : Photon.MonoBehaviour
     private Transform standardTransform;
     [SerializeField]
     private Transform splomTransform;
-    [SerializeField]
-    private Renderer transferColliderRenderer;
-    [SerializeField]
-    private Color transferColliderColor;
 
     [SerializeField]
     private List<GameObject> standardButtons;
@@ -108,24 +99,24 @@ public class Dashboard : Photon.MonoBehaviour
             standardChart.transform.position = standardTransform.position;
             standardChart.transform.rotation = standardTransform.rotation;
 
-            // Configure scatterplot matrix
-            splomChart.DataSource = ChartManager.Instance.DataSource;
-            ChartManager.Instance.RegisterVisualisation(splomChart);
-            splomChart.VisualisationType = AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX;
-            splomChart.GeometryType = AbstractVisualisation.GeometryType.Points;
-            splomChart.Size = 0.3f;
-            splomChart.transform.position = splomTransform.position;
-            splomChart.transform.rotation = splomTransform.rotation;
-            splomChart.Width = splomTransform.localScale.x;
-            splomChart.Height = splomTransform.localScale.y;
-            splomChart.Depth = splomTransform.localScale.z;
+            //// Configure scatterplot matrix
+            //splomChart.DataSource = ChartManager.Instance.DataSource;
+            //ChartManager.Instance.RegisterVisualisation(splomChart);
+            //splomChart.VisualisationType = AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX;
+            //splomChart.GeometryType = AbstractVisualisation.GeometryType.Points;
+            //splomChart.Size = 0.3f;
+            //splomChart.transform.position = splomTransform.position;
+            //splomChart.transform.rotation = splomTransform.rotation;
+            //splomChart.Width = splomTransform.localScale.x;
+            //splomChart.Height = splomTransform.localScale.y;
+            //splomChart.Depth = splomTransform.localScale.z;
 
             ChangePage(DashboardPage.STANDARD);
         }
         else
         {
             ChartManager.Instance.RegisterVisualisation(standardChart);
-            ChartManager.Instance.RegisterVisualisation(splomChart);
+            //ChartManager.Instance.RegisterVisualisation(splomChart);
         }
     }
 
@@ -183,13 +174,13 @@ public class Dashboard : Photon.MonoBehaviour
             case DashboardPage.STANDARD:
                 standardChart.transform.position = standardTransform.position;
                 standardChart.transform.rotation = standardTransform.rotation;
-                splomChart.transform.position = Vector3.one * 9999;
+               // splomChart.transform.position = Vector3.one * 9999;
                 break;
 
             case DashboardPage.SPLOM:
                 standardChart.transform.position = Vector3.one * 9999;
-                splomChart.transform.position = splomTransform.position;
-                splomChart.transform.rotation = splomTransform.rotation;
+                //splomChart.transform.position = splomTransform.position;
+                //splomChart.transform.rotation = splomTransform.rotation;
                 break;
 
             default:
@@ -282,17 +273,17 @@ public class Dashboard : Photon.MonoBehaviour
 
                 case DashboardDimension.COLORBY:
                     standardChart.ColorDimension = dimensionName;
-                    splomChart.ColorDimension = dimensionName;
+                    //splomChart.ColorDimension = dimensionName;
                     break;
 
                 case DashboardDimension.SIZEBY:
                     standardChart.SizeDimension = dimensionName;
-                    splomChart.SizeDimension = dimensionName;
+                    //splomChart.SizeDimension = dimensionName;
                     break;
 
                 case DashboardDimension.COLORPALETTE:
                     standardChart.ColorPaletteDimension = dimensionName;
-                    splomChart.ColorPaletteDimension = dimensionName;
+                    //splomChart.ColorPaletteDimension = dimensionName;
                     break;
             }
         }
@@ -311,7 +302,7 @@ public class Dashboard : Photon.MonoBehaviour
             ResetChartOwnership();
 
             standardChart.Size = value;
-            splomChart.Size = value;
+            //splomChart.Size = value;
         }
         // Otherwise, inform the original owner
         else
@@ -328,7 +319,7 @@ public class Dashboard : Photon.MonoBehaviour
             ResetChartOwnership();
 
             standardChart.Color = value;
-            splomChart.Color = value;
+            //splomChart.Color = value;
         }
         else
         {
@@ -343,7 +334,7 @@ public class Dashboard : Photon.MonoBehaviour
         {
             ResetChartOwnership();
 
-            splomChart.ScatterplotMatrixSize = value;
+            //splomChart.ScatterplotMatrixSize = value;
         }
         else
         {
@@ -373,7 +364,7 @@ public class Dashboard : Photon.MonoBehaviour
             ResetChartOwnership();
 
             standardChart.Gradient = gradient;
-            splomChart.Gradient = gradient;
+            //splomChart.Gradient = gradient;
         }
         else
         {
@@ -417,7 +408,7 @@ public class Dashboard : Photon.MonoBehaviour
             ResetChartOwnership();
 
             standardChart.Gradient = gradient;
-            splomChart.Gradient = gradient;
+            //splomChart.Gradient = gradient;
         }
     }
 
@@ -429,7 +420,7 @@ public class Dashboard : Photon.MonoBehaviour
             ResetChartOwnership();
 
             standardChart.ColorPalette = palette;
-            splomChart.ColorPalette = palette;
+            //splomChart.ColorPalette = palette;
         }
         else
         {
@@ -454,12 +445,12 @@ public class Dashboard : Photon.MonoBehaviour
             }
 
             //splomChart.photonView.TransferOwnership(PhotonNetwork.player);
-            photonViews = splomChart.GetComponentsInChildren<PhotonView>();
-            foreach (PhotonView pv in photonViews)
-            {
-                if (!pv.isMine)
-                    pv.TransferOwnership(PhotonNetwork.player);
-            }
+            //photonViews = splomChart.GetComponentsInChildren<PhotonView>();
+            //foreach (PhotonView pv in photonViews)
+            //{
+            //    if (!pv.isMine)
+            //        pv.TransferOwnership(PhotonNetwork.player);
+            //}
         }
     }
     
@@ -490,15 +481,15 @@ public class Dashboard : Photon.MonoBehaviour
         standardChart.Size = chart.Size;
         //standardChart.AttributeFilters = chart.AttributeFilters;
 
-        splomChart.GeometryType = chart.GeometryType;
-        splomChart.ColorDimension = chart.ColorDimension;
-        splomChart.ColorPaletteDimension = chart.ColorPaletteDimension;
-        splomChart.Color = chart.Color;
-        splomChart.Gradient = chart.Gradient;
-        splomChart.ColorPalette = chart.ColorPalette;
-        splomChart.SizeDimension = chart.SizeDimension;
-        splomChart.Size = chart.Size;
-        //splomChart.AttributeFilters = chart.AttributeFilters;
+        //splomChart.GeometryType = chart.GeometryType;
+        //splomChart.ColorDimension = chart.ColorDimension;
+        //splomChart.ColorPaletteDimension = chart.ColorPaletteDimension;
+        //splomChart.Color = chart.Color;
+        //splomChart.Gradient = chart.Gradient;
+        //splomChart.ColorPalette = chart.ColorPalette;
+        //splomChart.SizeDimension = chart.SizeDimension;
+        //splomChart.Size = chart.Size;
+        ////splomChart.AttributeFilters = chart.AttributeFilters;
 
         ChartTransferred.Invoke(chart);
 

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 namespace IATK
@@ -44,15 +45,22 @@ namespace IATK
             {
                 gradientColorLineRenderer.gameObject.SetActive(false);
                 legend += "<b>Colour:</b> " + v.colorPaletteDimension + "\n";
-                float[] uniqueValues = v.dataSource[v.colorPaletteDimension].MetaData.categories;
-                string[] stringValues = new string[uniqueValues.Length];
 
-                for (int i = 0; i < uniqueValues.Length; i++)
-                    stringValues[i] = v.dataSource.getOriginalValue(uniqueValues[i], v.colorPaletteDimension).ToString();
+                List<float> categories = v.dataSource[v.colorPaletteDimension].MetaData.categories.ToList();
+                string[] values = new string[categories.Count];
+
+                for (int i = 0; i < categories.Count; i++)
+                {
+                    values[i] = v.dataSource.getOriginalValue(categories[i], v.colorPaletteDimension).ToString();
+                }
+
+                // Sort categories
+                List<float> sortedCategories = categories.OrderBy(x => x).ToList();
 
                 for (int i = 0; i < v.coloursPalette.Length; i++)
                 {
-                    legend += "<color=#" + ColorUtility.ToHtmlStringRGB(v.coloursPalette[i]) + "> ||||| </color>" + stringValues[i] + "\n";
+                    int idx = categories.IndexOf(sortedCategories[i]);
+                    legend += "<color=#" + ColorUtility.ToHtmlStringRGB(v.coloursPalette[idx]) + "> ||||| </color>" + values[idx] + "\n";
                 }
             }
 

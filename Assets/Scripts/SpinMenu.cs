@@ -141,7 +141,7 @@ public class SpinMenu : Photon.MonoBehaviour {
                 // But if it is the details on demand, toggle it instead
                 if (spinMenuButton == detailsOnDemandButton)
                 {
-                    SpinMenuToolChanged.Invoke(spinMenuButton.RangedInteractionsToolName);
+                   // SpinMenuToolChanged.Invoke(spinMenuButton.RangedInteractionsToolName);
                 }
                 else
                 {
@@ -183,7 +183,7 @@ public class SpinMenu : Photon.MonoBehaviour {
             }
             else if (buttons[i] == detailsOnDemandButton)
             {
-                detailsOnDemandButton.AnimateToPosition(detailsOnDemandPosition, Vector3.one, animationDuration);
+                //detailsOnDemandButton.AnimateToPosition(detailsOnDemandPosition, Vector3.one, animationDuration);
             }
             else
             {

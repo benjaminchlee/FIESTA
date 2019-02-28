@@ -17,16 +17,19 @@ public class ColorPicker : MonoBehaviour {
     [SerializeField]
     private int framesBetweenUpdates = 5;
 
-    public float currentHue;
-    public float currentSaturation;
-    public float currentBrightness;
+    private float currentHue = -1;
+    private float currentSaturation = -1;
+    private float currentBrightness = -1;
 
     private int previousEventFrameCount = 0;
     private bool isEventQueued = false;
 
     private void Start()
     {
-        SetColor(startColor);
+        if (currentHue < 0 || currentBrightness < 0 || currentBrightness < 0)
+        {
+            SetColor(startColor);
+        }
     }
     
     private void Update()

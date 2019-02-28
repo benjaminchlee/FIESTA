@@ -208,7 +208,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1091000436777800
 GameObject:
   m_ObjectHideFlags: 1
@@ -347,7 +347,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1195183450865508
 GameObject:
   m_ObjectHideFlags: 1
@@ -1208,7 +1208,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1678401679942236
 GameObject:
   m_ObjectHideFlags: 1
@@ -2028,7 +2028,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1223782023905464}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.1, y: 0.0909, z: 0.001}
+  m_LocalPosition: {x: -0.1, y: 0.2023, z: 0.001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 224094722486237298}
@@ -2060,7 +2060,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1582828742873328}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.1, y: 0.0909, z: 0.001}
+  m_LocalPosition: {x: -0.1, y: 0.2023, z: 0.001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 224331263788285814}
@@ -2305,7 +2305,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1468390420430844}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.095, y: 0.1268, z: 0.001}
+  m_LocalPosition: {x: -0.095, y: 0.215, z: 0.001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 224774149450985146}
@@ -2433,7 +2433,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1934212935256722}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.1, y: 0.0909, z: 0.001}
+  m_LocalPosition: {x: -0.1, y: 0.2023, z: 0.001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 224369758844619000}
@@ -2463,7 +2463,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1835435675655802}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.732, y: 0.3465, z: -0.009}
+  m_LocalPosition: {x: -0.732, y: 0.4617, z: -0.009}
   m_LocalScale: {x: 0.05000003, y: 0.05, z: 0.020000014}
   m_Children:
   - {fileID: 224945042056131942}
@@ -2593,7 +2593,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1688257905981570}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.1, y: 0.0909, z: 0.001}
+  m_LocalPosition: {x: -0.1, y: 0.2023, z: 0.001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 224433144286808452}
@@ -7067,7 +7067,7 @@ MonoBehaviour:
         m_CallState: 2
     m_TypeName: Menu+DimensionChangedEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
-  maxNumberOfDistinctValues: 10
+  maxNumberOfDistinctValues: 20
   paletteBinderMenu: {fileID: 114840491811119958}
 --- !u!114 &114075709578730684
 MonoBehaviour:
@@ -7152,9 +7152,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_text: 'Displaying
-
-    Standard Chart'
+  m_text: Main Menu
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2100000, guid: e73a58f6e2794ae7b1b7e50b7fb811b0, type: 2}
@@ -7199,7 +7197,7 @@ MonoBehaviour:
   m_enableWordWrapping: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
-  m_firstOverflowCharacterIndex: 11
+  m_firstOverflowCharacterIndex: -1
   m_linkedTextComponent: {fileID: 0}
   m_isLinkedTextComponent: 0
   m_isTextTruncated: 0
@@ -7222,12 +7220,12 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_textInfo:
     textComponent: {fileID: 114084424346542434}
-    characterCount: 25
+    characterCount: 9
     spriteCount: 0
-    spaceCount: 2
-    wordCount: 3
+    spaceCount: 1
+    wordCount: 2
     linkCount: 0
-    lineCount: 2
+    lineCount: 1
     pageCount: 1
     materialCount: 1
   m_havePropertiesChanged: 0
@@ -8550,9 +8548,6 @@ MonoBehaviour:
   saturationBrightnessPicker: {fileID: 114962809457191050}
   startColor: {r: 1, g: 1, b: 1, a: 1}
   framesBetweenUpdates: 5
-  currentHue: 0
-  currentSaturation: 0
-  currentBrightness: 0
 --- !u!114 &114202767700051234
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -9917,11 +9912,11 @@ MonoBehaviour:
     lineCount: 1
     pageCount: 1
     materialCount: 1
-  m_havePropertiesChanged: 0
+  m_havePropertiesChanged: 1
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_spriteAnimator: {fileID: 0}
-  m_isInputParsingRequired: 0
+  m_isInputParsingRequired: 1
   m_inputSource: 0
   m_hasFontAssetChanged: 0
   m_renderer: {fileID: 23548775994060902}
@@ -10538,9 +10533,6 @@ MonoBehaviour:
   saturationBrightnessPicker: {fileID: 114639850360110294}
   startColor: {r: 1, g: 1, b: 1, a: 1}
   framesBetweenUpdates: 5
-  currentHue: 0
-  currentSaturation: 0
-  currentBrightness: 0
 --- !u!114 &114483806895184934
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -11138,11 +11130,11 @@ MonoBehaviour:
     lineCount: 1
     pageCount: 1
     materialCount: 1
-  m_havePropertiesChanged: 0
+  m_havePropertiesChanged: 1
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_spriteAnimator: {fileID: 0}
-  m_isInputParsingRequired: 0
+  m_isInputParsingRequired: 1
   m_inputSource: 0
   m_hasFontAssetChanged: 0
   m_renderer: {fileID: 23354342745627428}
@@ -11873,8 +11865,8 @@ MonoBehaviour:
   position: 2
   rotation: 2
   scale: 0
-  velocity: 1
-  angularVelocity: 1
+  velocity: 0
+  angularVelocity: 0
   useLocalValues: 0
   onChangeOnly: 1
 --- !u!114 &114628548380929688
@@ -12781,6 +12773,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buttons: []
+  sortedButtons: []
   confirmButton: {fileID: 114355109746889970}
   colorPicker: {fileID: 114199535646082576}
   label: {fileID: 114281894631477598}
@@ -13873,12 +13866,9 @@ MonoBehaviour:
   splomChart: {fileID: 114543932704751862}
   standardTransform: {fileID: 4090615463487722}
   splomTransform: {fileID: 4269435415340536}
-  transferColliderRenderer: {fileID: 23309314743084500}
-  transferColliderColor: {r: 0.6981132, g: 0.6981132, b: 0.6981132, a: 0.2509804}
   standardButtons:
   - {fileID: 1468390420430844}
-  splomButtons:
-  - {fileID: 1944250594314906}
+  splomButtons: []
   dimensionsButtons:
   - {fileID: 1688257905981570}
   - {fileID: 1835435675655802}
@@ -14940,7 +14930,7 @@ ConfigurableJoint:
   m_Anchor: {x: 0, y: 0, z: 0}
   m_Axis: {x: 0, y: 0, z: 0}
   m_AutoConfigureConnectedAnchor: 1
-  m_ConnectedAnchor: {x: -0.0000003725288, y: -0.00000009313226, z: 0.00000008800998}
+  m_ConnectedAnchor: {x: -0.0000003725288, y: -0.000000074505806, z: 0.00000008800998}
   serializedVersion: 2
   m_SecondaryAxis: {x: 0, y: 1, z: 0}
   m_XMotion: 2
@@ -15034,7 +15024,7 @@ ConfigurableJoint:
   m_Anchor: {x: 0, y: 0, z: 0}
   m_Axis: {x: 1, y: 0, z: 0}
   m_AutoConfigureConnectedAnchor: 1
-  m_ConnectedAnchor: {x: -0.000000093132265, y: 0.00000059604633, z: 0.000000028405339}
+  m_ConnectedAnchor: {x: -0.000000074505806, y: 0.0000005960462, z: 0.000000028405339}
   serializedVersion: 2
   m_SecondaryAxis: {x: 0, y: 1, z: 0}
   m_XMotion: 0

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using ExitGames.UtilityScripts;
 using TMPro;
@@ -11,6 +12,8 @@ public class ColorPaletteBinderMenu : Photon.PunBehaviour {
 
     [SerializeField]
     private List<ColorPaletteBinderButton> buttons;
+    [SerializeField]
+    private List<ColorPaletteBinderButton> sortedButtons;
     [SerializeField]
     private MenuButton confirmButton;
     [SerializeField]
@@ -52,26 +55,37 @@ public class ColorPaletteBinderMenu : Photon.PunBehaviour {
 
             DestroyColorButtons();
 
-            float[] paletteValues = ChartManager.Instance.DataSource[dimension].MetaData.categories;
+            List<float> paletteValues = ChartManager.Instance.DataSource[dimension].MetaData.categories.ToList();
 
-            for (int i = 0; i < paletteValues.Length; i++)
+            for (int i = 0; i < paletteValues.Count; i++)
             {
                 GameObject button = (GameObject) Instantiate(Resources.Load("ColorPaletteBinderButton"));
                 button.transform.SetParent(transform);
                 ColorPaletteBinderButton paletteButton = button.GetComponent<ColorPaletteBinderButton>();
 
-                paletteButton.Color = Color.HSVToRGB((i * 0.13f), 1, 1);
                 paletteButton.Text = ChartManager.Instance.DataSource.getOriginalValue(paletteValues[i], dimension).ToString();
+                paletteButton.NormalisedValue = paletteValues[i];
                 paletteButton.ButtonClicked.AddListener(ColorButtonClicked);
 
-                float height = paletteButton.transform.localScale.y;
-                Vector3 targetPos = Vector3.zero;
-                targetPos.y -= (i * (height + spacing));
-                paletteButton.transform.localPosition = targetPos;
-                paletteButton.transform.localRotation = Quaternion.identity;;
 
                 buttons.Add(paletteButton);
             }
+
+            // Sort the buttons
+            sortedButtons = buttons.OrderBy(x => x.NormalisedValue).ToList();
+
+            // Position the buttons
+            for (int i = 0; i < sortedButtons.Count; i++)
+            {
+                sortedButtons[i].Color = Color.HSVToRGB((i * 0.09f) % 1, 1, 1);
+
+                float height = sortedButtons[i].transform.localScale.y;
+                Vector3 targetPos = Vector3.zero;
+                targetPos.y -= (i * (height + spacing));
+                sortedButtons[i].transform.localPosition = targetPos;
+                sortedButtons[i].transform.localRotation = Quaternion.identity; ;
+            }
+
 
             ColorPaletteChanged.Invoke(GetColorPalette());
             // Reset the page

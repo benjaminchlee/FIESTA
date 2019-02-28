@@ -93,7 +93,10 @@ public class ChartManager : MonoBehaviour {
             //}
 
             pos = headset.TransformPoint(Vector3.forward * 0.5f);
-            rot = headset.rotation;
+            Vector3 euler = headset.eulerAngles;
+            euler.x = 0;
+            euler.z = 0;
+            rot = Quaternion.Euler(euler);
 
             PhotonNetwork.Instantiate("Dashboard", pos, rot, 0);
         }

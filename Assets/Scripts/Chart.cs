@@ -38,8 +38,7 @@ public class Chart : Photon.MonoBehaviour
     private SPLOMButton[] splomButtons;
     private List<GameObject> facetLabels;
     private Key facetSplomKey;
-
-    private Vector3 previousPosition;
+    
     private bool isThrowing = false;
     private bool isTouchingDisplayScreen = false;
     private DisplayScreen touchingDisplayScreen;
@@ -142,6 +141,7 @@ public class Chart : Photon.MonoBehaviour
                 return;
 
             photonView.RPC("PropagateXDimension", PhotonTargets.All, value);
+            photonView.RPC("PropagateXNormaliser", PhotonTargets.All, new Vector2(0, 1));
         }
     }
 
@@ -176,6 +176,7 @@ public class Chart : Photon.MonoBehaviour
                 return;
 
             photonView.RPC("PropagateYDimension", PhotonTargets.All, value);
+            photonView.RPC("PropagateXNormaliser", PhotonTargets.All, new Vector2(0, 1));
         }
     }
 
@@ -210,6 +211,7 @@ public class Chart : Photon.MonoBehaviour
                 return;
 
             photonView.RPC("PropagateZDimension", PhotonTargets.All, value);
+            photonView.RPC("PropagateZNormaliser", PhotonTargets.All, new Vector2(0, 1));
         }
     }
 
@@ -1460,7 +1462,6 @@ public class Chart : Photon.MonoBehaviour
             originalRot = transform.localRotation;
         }
 
-        previousPosition = transform.position;
         InteractionsManager.Instance.GrabbingStarted();  // TODO: FIX
     }
 
@@ -1511,12 +1512,6 @@ public class Chart : Photon.MonoBehaviour
         //Unsubscribe to events
         interactableObject.InteractableObjectGrabbed -= ChartGrabbed;
         interactableObject.InteractableObjectUngrabbed -= ChartUngrabbed;
-    }
-
-    private void FixedUpdate()
-    {
-        if (interactableObject.IsGrabbed())
-            previousPosition = transform.position;
     }
 
     private void Update()
@@ -1630,7 +1625,7 @@ public class Chart : Photon.MonoBehaviour
         float zSize = (z != "Undefined") ? depth + 0.015f : 0.1f;
         
         boxCollider.size = new Vector3(xSize, ySize, zSize);
-        raycastCollider.size = new Vector3(xSize + 0.05f, ySize + 0.05f, 0.01f);
+        raycastCollider.size = new Vector3(xSize + 0.125f, ySize + 0.125f, 0.01f);
 
         // Disable colliders if this is not a scatterplot
         if (VisualisationType != AbstractVisualisation.VisualisationTypes.SCATTERPLOT)
