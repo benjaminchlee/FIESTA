@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using VRTK;
 
 public class HueSlider : MonoBehaviour {
 
@@ -16,6 +17,25 @@ public class HueSlider : MonoBehaviour {
     private float maxClamp = 0.5f;
 
     private float previousX;
+
+    [SerializeField]
+    private VRTK_InteractableObject interactableObject;
+
+    private void Awake()
+    {
+        interactableObject.InteractableObjectGrabbed += SliderGrabbed;
+        interactableObject.InteractableObjectUngrabbed += SliderUngrabbed;
+    }
+
+    private void SliderGrabbed(object sender, InteractableObjectEventArgs e)
+    {
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Dashboard>().OriginalOwner, gameObject.name + " drag start");
+    }
+
+    private void SliderUngrabbed(object sender, InteractableObjectEventArgs e)
+    {
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Dashboard>().OriginalOwner, gameObject.name + " drag end");
+    }
 
     public void SetHue(float value)
     {

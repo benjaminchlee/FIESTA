@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using VRTK;
 
 public class SaturationBrightnessPicker : MonoBehaviour {
 
@@ -31,9 +32,25 @@ public class SaturationBrightnessPicker : MonoBehaviour {
     private float previousX;
     private float previousY;
 
+    [SerializeField]
+    private VRTK_InteractableObject interactableObject;
+
     private void Awake()
     {
         InitialiseComputeShader();
+
+        interactableObject.InteractableObjectGrabbed += PickerGrabbed;
+        interactableObject.InteractableObjectUngrabbed += PickerUngrabbed;
+    }
+
+    private void PickerGrabbed(object sender, InteractableObjectEventArgs e)
+    {
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Dashboard>().OriginalOwner, gameObject.name + " drag start");
+    }
+
+    private void PickerUngrabbed(object sender, InteractableObjectEventArgs e)
+    {
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Dashboard>().OriginalOwner, gameObject.name + " drag end");
     }
 
     private void InitialiseComputeShader()

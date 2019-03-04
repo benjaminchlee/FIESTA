@@ -1463,11 +1463,15 @@ public class Chart : Photon.MonoBehaviour
         }
 
         InteractionsManager.Instance.GrabbingStarted();  // TODO: FIX
+
+        DataLogger.Instance.LogActionData(this, photonView.owner, "Vis Grab Start");
     }
 
     private void ChartUngrabbed(object sender, InteractableObjectEventArgs e)
     {
         InteractionsManager.Instance.GrabbingFinished(); // TODO: FIX
+
+        DataLogger.Instance.LogActionData(this, photonView.owner, "Vis Grab End");
 
         // Animate the work shelf prototype back to its position
         if (isPrototype)
@@ -1479,7 +1483,6 @@ public class Chart : Photon.MonoBehaviour
         else
         {
             // Check to see if the chart was thrown
-            //Vector3 velocity = VRTK_DeviceFinder.GetControllerVelocity(VRTK_ControllerReference.GetControllerReference(e.interactingObject));
             float speed = rigidbody.velocity.sqrMagnitude;
 
             if (speed > 10f)
@@ -1487,6 +1490,8 @@ public class Chart : Photon.MonoBehaviour
                 rigidbody.useGravity = true;
                 isThrowing = true;
                 deletionTimer = 0;
+
+                DataLogger.Instance.LogActionData(this, photonView.owner, "Vis Thrown");
             }
             else
             {
@@ -1501,7 +1506,7 @@ public class Chart : Photon.MonoBehaviour
                 // If it isn't being placed on the display screen, check if it is being transferred onto a dashboard
                 else if (!isPrototype && isTouchingDashboard)
                 {
-                    touchingDashboard.LoadChart(this, true);
+                    TransferChartToDashboard();
                 }
             }
         }
@@ -1533,6 +1538,8 @@ public class Chart : Photon.MonoBehaviour
                 // Grab the duplicate
                 interactTouch.ForceTouch(dupe.gameObject);
                 interactGrab.AttemptGrab();
+
+                DataLogger.Instance.LogActionData(this, photonView.owner, "Vis created");
             }
             // Check if the chart is being held next to the dashboard for transfer
             else if (!isPrototype && (isTouchingDashboard || isTouchingDisplayScreen))
@@ -1545,7 +1552,10 @@ public class Chart : Photon.MonoBehaviour
             if (1 < deletionTimer)
             {
                 isThrowing = false;
+                ColliderActiveState = false;
                 transform.DOScale(0, 1f).OnComplete(() => ChartManager.Instance.RemoveVisualisation(this));
+                
+                DataLogger.Instance.LogActionData(this, photonView.owner, "Vis destroyed");
             }
             else
             {
@@ -1555,6 +1565,13 @@ public class Chart : Photon.MonoBehaviour
 
         if (topLeftInteractableHandle.IsGrabbed() || bottomRightInteractableHandle.IsGrabbed())
         {
+            if (!isResizing)
+            {
+                isResizing = true;
+
+                DataLogger.Instance.LogActionData(this, photonView.owner, "Vis resize start");
+            }
+
             if (!photonView.isMine)
                 photonView.RequestOwnership();
 
@@ -1594,6 +1611,12 @@ public class Chart : Photon.MonoBehaviour
             }
 
             Scale = scale;
+        }
+        else if (isResizing)
+        {
+            isResizing = false;
+
+            DataLogger.Instance.LogActionData(this, photonView.owner, "Vis resize end");
         }
     }
     
@@ -1695,7 +1718,7 @@ public class Chart : Photon.MonoBehaviour
             // If the chart was thrown at the dashboard, immediately transfer it
             if (isThrowing)
             {
-                touchingDashboard.LoadChart(this, true);
+                TransferChartToDashboard();
             }
         }
     }
@@ -1719,6 +1742,15 @@ public class Chart : Photon.MonoBehaviour
         Quaternion rot = touchingDisplayScreen.CalculateRotationOnScreen(this);
 
         AnimateTowards(pos, rot, 0.2f);
+
+        DataLogger.Instance.LogActionData(this, photonView.owner, "Vis attached");
+    }
+
+    private void TransferChartToDashboard()
+    {
+        touchingDashboard.LoadChart(this, true);
+
+        DataLogger.Instance.LogActionData(this, photonView.owner, "Vis transferred");
     }
 
     public void AnimateTowards(Vector3 targetPos, Quaternion targetRot, float duration, bool toDestroy = false)

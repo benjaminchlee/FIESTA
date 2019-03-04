@@ -141,7 +141,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     private enum InteractionState
     {
         None,
-        RangedBrush,
+        RangedPrivateBrush,
+        RangedSharedBrush,
         LassoSelection,
         RectangleSelection,
         RangedInteraction,
@@ -297,7 +298,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
                 case "rangedbrush":
                     toolJustActivated = true;
-                    SetInteractionState(InteractionState.RangedBrush);
+                    SetInteractionState(InteractionState.RangedPrivateBrush);
                     break;
 
                 case "lassoselection":
@@ -318,13 +319,13 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 case "privaterangedbrush":
                     toolJustActivated = true;
                     brushingAndLinking.shareBrushing = false;
-                    SetInteractionState(InteractionState.RangedBrush);
+                    SetInteractionState(InteractionState.RangedPrivateBrush);
                     break;
 
                 case "sharedrangedbrush":
                     toolJustActivated = true;
                     brushingAndLinking.shareBrushing = true;
-                    SetInteractionState(InteractionState.RangedBrush);
+                    SetInteractionState(InteractionState.RangedSharedBrush);
                     break;
 
                 case "detailsondemand":
@@ -351,6 +352,38 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         if (!isEnabled)
             state = InteractionState.None;
 
+        if (activeState == state)
+            return;
+
+        if (hiddenState == InteractionState.None)
+        {
+            // If tool is being enabled
+            if (activeState == InteractionState.None && IsInteractionTool(state))
+            {
+                DataLogger.Instance.LogActionData(this, PhotonNetwork.player, state + " start");
+            }
+
+            // If tool is being swapped
+            if (IsInteractionTool(activeState) && IsInteractionTool(state))
+            {
+                DataLogger.Instance.LogActionData(this, PhotonNetwork.player, activeState + " end");
+                DataLogger.Instance.LogActionData(this, PhotonNetwork.player, state + " start");
+            }
+
+            // If tool is being removed
+            else if (IsInteractionTool(activeState) && state == InteractionState.None)
+            {
+                DataLogger.Instance.LogActionData(this, PhotonNetwork.player, activeState + " end");
+            }
+
+            // If was ranged pulling and pull was finished
+            else if (activeState == InteractionState.RangedPulling && state == InteractionState.None)
+            {
+                DataLogger.Instance.LogActionData(this, PhotonNetwork.player, InteractionState.RangedInteraction + " end");
+            }
+
+        }
+
         switch (state)
         {
             case InteractionState.None:
@@ -360,12 +393,13 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 selectionMode = SelectionMode.None;
                 break;
 
-            case InteractionState.RangedBrush:
-                // TODO: make a bit cleaner
-                if (brushingAndLinking.shareBrushing)
-                    selectedInteractionRenderer.Sprite = sharedBrushSprite;
-                else
-                    selectedInteractionRenderer.Sprite = privateBrushSprite;
+            case InteractionState.RangedPrivateBrush:
+                selectedInteractionRenderer.Sprite = privateBrushSprite;
+                tracerVisibility = VisibilityStates.AlwaysOn;
+                break;
+
+            case InteractionState.RangedSharedBrush:
+                selectedInteractionRenderer.Sprite = sharedBrushSprite;
                 tracerVisibility = VisibilityStates.AlwaysOn;
                 break;
 
@@ -423,6 +457,16 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     }
 
     /// <summary>
+    /// Checks if the given state is one of the base tools
+    /// </summary>
+    /// <param name="state"></param>
+    /// <returns></returns>
+    private bool IsInteractionTool(InteractionState state)
+    {
+        return new[] { InteractionState.RangedPrivateBrush, InteractionState.RangedSharedBrush, InteractionState.LassoSelection, InteractionState.RectangleSelection, InteractionState.RangedInteraction, InteractionState.DetailsOnDemand }.Contains(state);
+    }
+
+    /// <summary>
     /// Called when the user presses the trigger enough until it clicks. This will call the respective function depending on which
     /// interaction tool was originally selected by the user.
     /// </summary>
@@ -446,7 +490,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             {
                 switch (activeState)
                 {
-                    case InteractionState.RangedBrush:
+                    case InteractionState.RangedPrivateBrush:
+                    case InteractionState.RangedSharedBrush:
                         RangedBrushTriggerStart(e);
                         break;
 
@@ -520,7 +565,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             
             switch (activeState)
             {
-                case InteractionState.RangedBrush:
+                case InteractionState.RangedPrivateBrush:
+                case InteractionState.RangedSharedBrush:
                     RangedBrushTriggerStart(e);
                     break;
 
@@ -633,7 +679,12 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         {
             if (isTouchpadDown)
             {
-                isDetailsOnDemandActive = true;
+                if (!isDetailsOnDemandActive)
+                {
+                    isDetailsOnDemandActive = true;
+
+                    DataLogger.Instance.LogActionData(this, PhotonNetwork.player, "Details on demand start");
+                }
 
                 if (!IsInteractionToolActive())
                 {
@@ -656,6 +707,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             else if (!isTouchpadDown && isDetailsOnDemandActive)
             {
                 isDetailsOnDemandActive = false;
+
+                DataLogger.Instance.LogActionData(this, PhotonNetwork.player, "Details on demand end");
 
                 if (!IsInteractionToolActive())
                 {
@@ -705,9 +758,17 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         brushingInput1.position = rangedBrush.transform.position;
 
         if (IsSelecting)
+        {
             brushingAndLinking.SELECTION_TYPE = BrushingAndLinking.SelectionType.ADDITIVE;
+
+            DataLogger.Instance.LogActionData(this, PhotonNetwork.player, brushingAndLinking.shareBrushing ? "Shared additive brush start" : "Private additive brush start");
+        }
         else if (IsDeselecting)
+        {
             brushingAndLinking.SELECTION_TYPE = BrushingAndLinking.SelectionType.SUBTRACTIVE;
+
+            DataLogger.Instance.LogActionData(this, PhotonNetwork.player, brushingAndLinking.shareBrushing ? "Shared subtractive brush start" : "Private subtractive brush start");
+        }
     }
 
     private void RangedBrushLoop()
@@ -741,11 +802,20 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
     private void RangedBrushTriggerEnd(ControllerInteractionEventArgs e)
     {
-        SetInteractionState(InteractionState.RangedBrush);
+        SetInteractionState(brushingAndLinking.shareBrushing ? InteractionState.RangedSharedBrush : InteractionState.RangedPrivateBrush);
 
         brushingAndLinking.brushButtonController = false;
 
         rangedBrush.SetActive(false);
+
+        if (IsSelecting)
+        {
+            DataLogger.Instance.LogActionData(this, PhotonNetwork.player, brushingAndLinking.shareBrushing ? "Shared additive brush end" : "Private additive brush end");
+        }
+        else if (IsDeselecting)
+        {
+            DataLogger.Instance.LogActionData(this, PhotonNetwork.player, brushingAndLinking.shareBrushing ? "Shared subtractive brush end" : "Private subtractive brush end");
+        }
     }
 
     private void LassoSelectionTriggerStart(ControllerInteractionEventArgs e)
@@ -1002,22 +1072,22 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             {
                 if (collidedObject.GetComponent<MenuButton>() != null)
                 {
-                    collidedObject.GetComponent<MenuButton>().Click();
+                    collidedObject.GetComponent<MenuButton>().RangeClick();
                 }
                 else if (collidedObject.GetComponent<GradientButton>() != null)
                 {
-                    collidedObject.GetComponent<GradientButton>().Click();
+                    collidedObject.GetComponent<GradientButton>().RangeClick();
                 }
                 else if (collidedObject.GetComponent<ColorPaletteBinderButton>() != null)
                 {
-                    collidedObject.GetComponent<ColorPaletteBinderButton>().Click();
+                    collidedObject.GetComponent<ColorPaletteBinderButton>().RangeClick();
                 }
 
                 TriggerControllerVibration(0.3f);
             }
             else if (collidedObject.CompareTag("SPLOMButton"))
             {
-                collidedObject.GetComponent<SPLOMButton>().Click(); ;
+                collidedObject.GetComponent<SPLOMButton>().RangeClick(); ;
 
                 TriggerControllerVibration(0.3f);
             }
@@ -1035,6 +1105,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
                 previousState = activeState;
                 SetInteractionState(InteractionState.RangedInteracting);
+
+                DataLogger.Instance.LogActionData(GetPhysicsMenuButtonType(rangedPullGameObject), rangedPullGameObject.GetComponentInParent<Dashboard>().OriginalOwner, rangedPullGameObject.name + " ranged drag start");
             }
         }
     }
@@ -1059,7 +1131,11 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 {
                     Chart chart = ChartManager.Instance.DuplicateVisualisation(rangedPullGameObject.GetComponent<Chart>());
                     rangedPullGameObject = chart.gameObject;
+
+                    DataLogger.Instance.LogActionData(this, PhotonNetwork.player, "Vis range duplicated");
                 }
+
+                DataLogger.Instance.LogActionData(this, PhotonNetwork.player, "Vis range pull start");
             }
         }
 
@@ -1077,6 +1153,9 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         if (isDraggable && rangedPullGameObject != null)
         {
             rangedPullGameObject.layer = LayerMask.NameToLayer("Default");
+
+            DataLogger.Instance.LogActionData(GetPhysicsMenuButtonType(rangedPullGameObject), rangedPullGameObject.GetComponentInParent<Dashboard>().OriginalOwner, rangedPullGameObject.name + " ranged drag end");
+
             rangedPullGameObject = null;
         }
         
@@ -1105,6 +1184,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
             GetComponent<VRTK_InteractTouch>().ForceTouch(rangedPullGameObject);
             GetComponent<VRTK_InteractGrab>().AttemptGrab();
+            
+            DataLogger.Instance.LogActionData(this, PhotonNetwork.player, "Vis range pull end");
         }
         else
         {
@@ -1128,8 +1209,13 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         {
             SetInteractionState(InteractionState.RangedInteraction);
         }
-
+        
         rangedPullGameObject.GetComponent<Chart>().AnimateTowards(rangedPullObjectStartPosition, rangedPullObjectStartRotation, 0.1f, pullObjectIsPrototype);
+
+        DataLogger.Instance.LogActionData(this, PhotonNetwork.player, "Vis range pull end");
+
+        if (pullObjectIsPrototype)
+            DataLogger.Instance.LogActionData(this, PhotonNetwork.player, "Vis range destroyed");
     }
     
     private void DetailsOnDemandUpdated(List<float> nearestDistances)
@@ -1269,5 +1355,19 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     private void TriggerControllerVibration(float strength)
     {
         VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(gameObject), strength);
+    }
+
+    private object GetPhysicsMenuButtonType(GameObject go)
+    {
+        if (go.GetComponent<DashboardSlider>() != null)
+            return go.GetComponent<DashboardSlider>();
+
+        if (go.GetComponent<HueSlider>() != null)
+            return go.GetComponent<HueSlider>();
+
+        if (go.GetComponent<SaturationBrightnessPicker>() != null)
+            return go.GetComponent<SaturationBrightnessPicker>();
+
+        return go;
     }
 }

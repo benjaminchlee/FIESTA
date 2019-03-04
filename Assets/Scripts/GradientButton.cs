@@ -64,13 +64,17 @@ public class GradientButton : MonoBehaviour {
         gradientMeshRenderer.transform.localScale = scale;
     }
 
-    public void Click()
+    public void RangeClick()
     {
         ButtonClicked.Invoke(this);
+
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Dashboard>().OriginalOwner, transform.parent.name + " gradient button range clicked", Text);
     }
 
     private void OnButtonClicked(object sender, InteractableObjectEventArgs e)
     {
         ButtonClicked.Invoke(this);
+
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Dashboard>().OriginalOwner, transform.parent.name + " gradient button clicked", Text);
     }
 }

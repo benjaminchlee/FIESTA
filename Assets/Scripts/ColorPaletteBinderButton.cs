@@ -21,20 +21,14 @@ public class ColorPaletteBinderButton : MonoBehaviour {
 
     public string Text
     {
-        get
-        {
-            return textMesh.text;
-        }
+        get { return textMesh.text; }
         set { textMesh.text = value; }
     }
     
     private Color color;
     public Color Color
     {
-        get
-        {
-            return color;
-        }
+        get { return color; }
         set
         {
             color = value;
@@ -49,15 +43,18 @@ public class ColorPaletteBinderButton : MonoBehaviour {
         interactableObject = GetComponent<VRTK_InteractableObject>();
         interactableObject.InteractableObjectUsed += OnButtonClicked;
     }
-
-    public void Click()
+    
+    public void RangeClick()
     {
         ButtonClicked.Invoke(this);
+
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Dashboard>().OriginalOwner, transform.parent.name + " color palette button range clicked", Text);
     }
 
     private void OnButtonClicked(object sender, InteractableObjectEventArgs e)
     {
         ButtonClicked.Invoke(this);
-    }
 
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Dashboard>().OriginalOwner, transform.parent.name + " color palette button clicked", Text);
+    }
 }

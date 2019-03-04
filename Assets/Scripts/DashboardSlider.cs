@@ -43,6 +43,7 @@ public class DashboardSlider : MonoBehaviour {
     private void Initialise()
     {
         physicsSlider.ValueChanged += OnSliderValueChanged;
+        interactableObject.InteractableObjectGrabbed += OnSliderGrabbed;
         interactableObject.InteractableObjectUngrabbed += OnSliderUngrabbed;
 
         if (gameObject.activeInHierarchy)
@@ -53,10 +54,23 @@ public class DashboardSlider : MonoBehaviour {
         isInitialised = true;
     }
 
+
     private void OnDestroy()
     {
         physicsSlider.ValueChanged -= OnSliderValueChanged;
         interactableObject.InteractableObjectUngrabbed -= OnSliderUngrabbed;
+    }
+
+    private void OnSliderGrabbed(object sender, InteractableObjectEventArgs e)
+    {
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Dashboard>().OriginalOwner, gameObject.name + " drag start");
+    }
+
+    private void OnSliderUngrabbed(object sender, InteractableObjectEventArgs e)
+    {
+        physicsSlider.SetValue(physicsSlider.GetValue());
+
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Dashboard>().OriginalOwner, gameObject.name + " drag end");
     }
 
     private void OnSliderValueChanged(object sender, ControllableEventArgs e)
@@ -77,11 +91,6 @@ public class DashboardSlider : MonoBehaviour {
 
             physicsSlider.SetValue(physicsSlider.GetValue());
         }
-    }
-
-    private void OnSliderUngrabbed(object sender, InteractableObjectEventArgs e)
-    {
-        physicsSlider.SetValue(physicsSlider.GetValue());
     }
 
     public void ChartTransferred(Chart chart)

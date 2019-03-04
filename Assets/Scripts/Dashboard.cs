@@ -32,7 +32,7 @@ public enum DashboardPage
 public class Dashboard : Photon.MonoBehaviour
 {
     private DataSource dataSource;
-    private PhotonPlayer originalOwner;
+    public PhotonPlayer OriginalOwner { get; private set; }
 
     public Chart standardChart;
     public Chart splomChart;
@@ -77,7 +77,7 @@ public class Dashboard : Photon.MonoBehaviour
 
     private void Start()
     {
-        originalOwner = photonView.owner;
+        OriginalOwner = photonView.owner;
 
         if (dataSource == null)
             dataSource = ChartManager.Instance.DataSource;
@@ -122,10 +122,10 @@ public class Dashboard : Photon.MonoBehaviour
 
     private bool IsOriginalOwner()
     {
-        if (originalOwner == null)
+        if (OriginalOwner == null)
             return (photonView.owner.ID == PhotonNetwork.player.ID);
 
-        return (originalOwner.ID == PhotonNetwork.player.ID);
+        return (OriginalOwner.ID == PhotonNetwork.player.ID);
     }
 
     /// <summary>
@@ -289,7 +289,7 @@ public class Dashboard : Photon.MonoBehaviour
         }
         else
         {
-            photonView.RPC("DimensionChanged", originalOwner, dimension, dimensionName);
+            photonView.RPC("DimensionChanged", OriginalOwner, dimension, dimensionName);
         }
     }
     
@@ -307,7 +307,7 @@ public class Dashboard : Photon.MonoBehaviour
         // Otherwise, inform the original owner
         else
         {
-            photonView.RPC("SizeSliderValueChanged", originalOwner, value);
+            photonView.RPC("SizeSliderValueChanged", OriginalOwner, value);
         }
     }
     
@@ -323,7 +323,7 @@ public class Dashboard : Photon.MonoBehaviour
         }
         else
         {
-            photonView.RPC("ColorPickerValueChanged", originalOwner, value);
+            photonView.RPC("ColorPickerValueChanged", OriginalOwner, value);
         }
     }
 
@@ -338,7 +338,7 @@ public class Dashboard : Photon.MonoBehaviour
         }
         else
         {
-            photonView.RPC("ScatterplotMatrixSizeValueChanged", originalOwner, value);
+            photonView.RPC("ScatterplotMatrixSizeValueChanged", OriginalOwner, value);
         }
     }
 
@@ -353,7 +353,7 @@ public class Dashboard : Photon.MonoBehaviour
         }
         else
         {
-            photonView.RPC("FacetSizeValueChanged", originalOwner, value);
+            photonView.RPC("FacetSizeValueChanged", OriginalOwner, value);
         }
     }
 
@@ -378,7 +378,7 @@ public class Dashboard : Photon.MonoBehaviour
                 gradientList.Add(colorKey.color.b);
             }
 
-            photonView.RPC("ColorGradientChanged", originalOwner, gradientList.ToArray());
+            photonView.RPC("ColorGradientChanged", OriginalOwner, gradientList.ToArray());
         }
     }
 
@@ -424,7 +424,7 @@ public class Dashboard : Photon.MonoBehaviour
         }
         else
         {
-            photonView.RPC("ColorPaletteChanged", originalOwner, palette);
+            photonView.RPC("ColorPaletteChanged", OriginalOwner, palette);
         }
     }
 
@@ -494,7 +494,7 @@ public class Dashboard : Photon.MonoBehaviour
         ChartTransferred.Invoke(chart);
 
         if (destroyOnComplete)
-            chart.transform.DOScale(0, 0.4f).SetEase(Ease.InBack)
+            chart.transform.DOScale(0, 0.3f).SetEase(Ease.InBack)
                 .OnComplete(() => ChartManager.Instance.RemoveVisualisation(chart));
     }
 }

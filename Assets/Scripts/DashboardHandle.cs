@@ -32,6 +32,8 @@ public class DashboardHandle : Photon.MonoBehaviour {
 
         isGrabbed = true;
         SetPositionAndRotation();
+
+        DataLogger.Instance.LogActionData(parent, parent.OriginalOwner, "Dashboard grab start");
     }
 
     private void Update()
@@ -59,5 +61,7 @@ public class DashboardHandle : Photon.MonoBehaviour {
     private void OnHandleUngrabbed(object sender, InteractableObjectEventArgs e)
     {
         isGrabbed = false;
+
+        DataLogger.Instance.LogActionData(parent, parent.OriginalOwner, "Dashboard grab end");
     }
 }

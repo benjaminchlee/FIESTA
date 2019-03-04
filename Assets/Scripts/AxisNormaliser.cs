@@ -30,6 +30,7 @@ public class AxisNormaliser : MonoBehaviour {
         interactableObject.InteractableObjectTouched += NormaliserTouched;
         interactableObject.InteractableObjectUntouched += NormaliserUntouched;
 
+        interactableObject.InteractableObjectGrabbed += NormaliserGrabbed;
         interactableObject.InteractableObjectUngrabbed += NormaliserUngrabbed;
     }
 
@@ -64,7 +65,6 @@ public class AxisNormaliser : MonoBehaviour {
 
     private void SetNormaliserPosition()
     {
-
         if (interactableObject.IsGrabbed())
         {
             float offset = parentAxis.CalculateLinearMapping(interactableObject.GetGrabbingObject().transform);
@@ -102,10 +102,17 @@ public class AxisNormaliser : MonoBehaviour {
         }
     }
 
+    private void NormaliserGrabbed(object sender, InteractableObjectEventArgs e)
+    {
+        DataLogger.Instance.LogActionData(parentChart, parentChart.photonView.owner, "Vis Normalise Start");
+    }
+
     private void NormaliserUngrabbed(object sender, InteractableObjectEventArgs e)
     {
         transform.localPosition = storedPosition;
         transform.localRotation = storedRotation;
+
+        DataLogger.Instance.LogActionData(parentChart, parentChart.photonView.owner, "Vis Normalise End");
     }
 
     //public void OnEnter(WandController controller)

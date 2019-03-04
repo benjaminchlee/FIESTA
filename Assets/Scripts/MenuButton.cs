@@ -41,13 +41,17 @@ public class MenuButton : MonoBehaviour {
             transform.DOMove(targetPos, duration).SetEase(Ease.OutCirc).OnComplete(() => gameObject.SetActive(!toDisable));
     }
     
-    public void Click()
+    public void RangeClick()
     {
         ButtonClicked.Invoke(this);
+        
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Dashboard>().OriginalOwner, transform.parent.name + " button range clicked", Text);
     }
 
     private void OnButtonClicked(object sender, InteractableObjectEventArgs e)
     {
         ButtonClicked.Invoke(this);
+
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Dashboard>().OriginalOwner, transform.parent.name + " button clicked", Text);
     }
 }

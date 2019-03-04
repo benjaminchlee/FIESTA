@@ -122,6 +122,8 @@ public class SpinMenu : Photon.MonoBehaviour {
         {
             isExpanded = false;
             RetractButtons();
+
+            DataLogger.Instance.LogActionData(this, PhotonNetwork.player, "Spin menu end");
         }
     }
 
@@ -150,6 +152,8 @@ public class SpinMenu : Photon.MonoBehaviour {
                     ActiveButtonChanged(spinMenuButton);
 
                     RetractButtons();
+
+                    DataLogger.Instance.LogActionData(this, PhotonNetwork.player, "Spin menu end");
                 }
             }
         }
@@ -197,6 +201,8 @@ public class SpinMenu : Photon.MonoBehaviour {
         }
 
         InteractionsManager.Instance.RangedMenuStarted();
+
+        DataLogger.Instance.LogActionData(this, PhotonNetwork.player, "Spin Menu Start");
     }
 
     /// <summary>
