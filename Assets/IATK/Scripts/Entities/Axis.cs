@@ -393,7 +393,7 @@ public class Axis : MonoBehaviour {
 
             if (v is Single)
             {
-                s = ((Single)v).ToString("0.00");
+                s = ((Single)v).ToString("#,##0.00");
             }
             else
             {

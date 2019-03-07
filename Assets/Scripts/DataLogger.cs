@@ -6,6 +6,7 @@ using System.Linq;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using VRTK;
 
 public class DataLogger : Photon.PunBehaviour {
@@ -19,8 +20,6 @@ public class DataLogger : Photon.PunBehaviour {
 
     public static DataLogger Instance { get; private set; }
     
-    [SerializeField]
-    private TextMeshPro textMesh;
     [SerializeField]    
     public float timeBetweenLogs = 0.050f;
     [SerializeField]
@@ -51,6 +50,7 @@ public class DataLogger : Photon.PunBehaviour {
     private VRTK_ControllerEvents rightControllerEvents;
 
     private List<Dashboard> dashboards;
+    private TextMeshPro textMesh;
 
     private void Awake()
     {
@@ -62,6 +62,16 @@ public class DataLogger : Photon.PunBehaviour {
         else
         {
             Destroy(gameObject);
+        }
+
+        SceneManager.sceneLoaded += FindTaskText;
+    }
+
+    private void FindTaskText(Scene arg0, LoadSceneMode arg1)
+    {
+        if (arg0.name == "MainScene")
+        {
+            textMesh = GameObject.FindGameObjectWithTag("TaskText").GetComponent<TextMeshPro>();
         }
     }
 

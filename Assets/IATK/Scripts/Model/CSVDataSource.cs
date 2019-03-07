@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using UnityEngine;
 using System.Linq;
@@ -405,7 +406,23 @@ namespace IATK
 
                     // Sort the string values for this dimension
                     List<string> distinctSortedValues = distinctStringValues[textualDimension];
-                    distinctSortedValues.Sort();
+
+                    // Check if it's actually a date TODO: FIX THIS TO BE STREAMLINED WITH DATE CHECKING
+                    string[] vals = distinctSortedValues[0].Split('/');
+                    if (vals.Length == 3 && vals[1].Length == 2 && vals[2].Length == 4)
+                    {
+                        distinctSortedValues = distinctSortedValues.OrderBy(x =>
+                        {
+                            if (x.IndexOf('/') == 1)
+                                return DateTime.ParseExact(x, "d/MM/yyyy", null);
+                            else
+                                return DateTime.ParseExact(x, "dd/MM/yyyy", null);
+                        }).ToList();
+                    }
+                    else
+                    {
+                        distinctSortedValues.Sort();
+                    }
                     
                     // Populate the dictionaries
                     for (int i = 0; i < distinctSortedValues.Count; i++)

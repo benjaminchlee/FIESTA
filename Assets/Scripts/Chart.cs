@@ -122,6 +122,9 @@ public class Chart : Photon.MonoBehaviour
         visualisation.geometry = value;
         visualisation.updateViewProperties(AbstractVisualisation.PropertyType.GeometryType);
 
+        // TODO: Make this better such that this doesn't need to be called
+        ChartManager.Instance.RegisterVisualisation(this);
+
         switch (chartType)
         {
             case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
@@ -141,7 +144,9 @@ public class Chart : Photon.MonoBehaviour
                 return;
 
             photonView.RPC("PropagateXDimension", PhotonTargets.All, value);
-            photonView.RPC("PropagateXNormaliser", PhotonTargets.All, new Vector2(0, 1));
+
+            if (XNormaliser != new Vector2(0, 1))
+                photonView.RPC("PropagateXNormaliser", PhotonTargets.All, new Vector2(0, 1));
         }
     }
 
@@ -156,6 +161,9 @@ public class Chart : Photon.MonoBehaviour
                 visualisation.updateViewProperties(AbstractVisualisation.PropertyType.X);
                 CenterVisualisation();
                 SetColliderBounds();
+
+                if (LinkingDimension != "Undefined")
+                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.LinkingDimension);
                 break;
 
             case AbstractVisualisation.VisualisationTypes.FACET:
@@ -176,7 +184,9 @@ public class Chart : Photon.MonoBehaviour
                 return;
 
             photonView.RPC("PropagateYDimension", PhotonTargets.All, value);
-            photonView.RPC("PropagateXNormaliser", PhotonTargets.All, new Vector2(0, 1));
+
+            if (YNormaliser != new Vector2(0, 1))
+                photonView.RPC("PropagateXNormaliser", PhotonTargets.All, new Vector2(0, 1));
         }
     }
 
@@ -191,6 +201,9 @@ public class Chart : Photon.MonoBehaviour
                 visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Y);
                 CenterVisualisation();
                 SetColliderBounds();
+
+                if (LinkingDimension != "Undefined")
+                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.LinkingDimension);
                 break;
 
             case AbstractVisualisation.VisualisationTypes.FACET:
@@ -211,7 +224,9 @@ public class Chart : Photon.MonoBehaviour
                 return;
 
             photonView.RPC("PropagateZDimension", PhotonTargets.All, value);
-            photonView.RPC("PropagateZNormaliser", PhotonTargets.All, new Vector2(0, 1));
+
+            if (ZNormaliser != new Vector2(0, 1))
+                photonView.RPC("PropagateZNormaliser", PhotonTargets.All, new Vector2(0, 1));
         }
     }
 
@@ -226,6 +241,9 @@ public class Chart : Photon.MonoBehaviour
                 visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Z);
                 CenterVisualisation();
                 SetColliderBounds();
+
+                if (LinkingDimension != "Undefined")
+                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.LinkingDimension);
                 break;
 
             case AbstractVisualisation.VisualisationTypes.FACET:
@@ -597,6 +615,52 @@ public class Chart : Photon.MonoBehaviour
             case AbstractVisualisation.VisualisationTypes.FACET:
                 foreach (Chart chart in subCharts)
                     chart.Size = value;
+                break;
+        }
+    }
+
+    public string LinkingDimension
+    {
+        get { return visualisation.linkingDimension;}
+        set
+        {
+            photonView.RPC("PropagateLinkingDimension", PhotonTargets.All, value);
+        }
+    }
+
+    [PunRPC]
+    private void PropagateLinkingDimension(string value)
+    {
+        visualisation.linkingDimension = value;
+        
+        switch (chartType)
+        {
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
+                if (value != "Undefined" && GeometryType != AbstractVisualisation.GeometryType.LinesAndDots)
+                {
+                    visualisation.geometry = AbstractVisualisation.GeometryType.LinesAndDots;
+                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.GeometryType);
+                    // TODO: Make this better such that this doesn't need to be called
+                    ChartManager.Instance.RegisterVisualisation(this);
+                }
+
+                else if (value == "Undefined" && GeometryType != AbstractVisualisation.GeometryType.Points)
+                {
+                    visualisation.geometry = AbstractVisualisation.GeometryType.Points;
+                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.GeometryType);
+                    // TODO: Make this better such that this doesn't need to be called
+                    ChartManager.Instance.RegisterVisualisation(this);
+                }
+
+                visualisation.updateViewProperties(AbstractVisualisation.PropertyType.LinkingDimension);
+                break;
+
+            case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
+            case AbstractVisualisation.VisualisationTypes.FACET:
+                foreach (Chart chart in subCharts)
+                    chart.LinkingDimension = value;
+
+                facetSplomKey.UpdateProperties(AbstractVisualisation.PropertyType.None, visualisation);
                 break;
         }
     }
@@ -1517,6 +1581,8 @@ public class Chart : Photon.MonoBehaviour
         //Unsubscribe to events
         interactableObject.InteractableObjectGrabbed -= ChartGrabbed;
         interactableObject.InteractableObjectUngrabbed -= ChartUngrabbed;
+
+        ChartManager.Instance.DeregisterVisualisation(this);
     }
 
     private void Update()
@@ -1755,10 +1821,16 @@ public class Chart : Photon.MonoBehaviour
 
     public void AnimateTowards(Vector3 targetPos, Quaternion targetRot, float duration, bool toDestroy = false)
     {
+        ColliderActiveState = false;
+
         if (toDestroy)
             transform.DOMove(targetPos, duration).SetEase(Ease.OutQuint).OnComplete(() => ChartManager.Instance.RemoveVisualisation(this));
         else
-            transform.DOLocalMove(targetPos, duration).SetEase(Ease.OutQuint).OnComplete(() => photonView.RPC("ForcePosition", photonView.owner, targetPos, targetRot));
+            transform.DOLocalMove(targetPos, duration).SetEase(Ease.OutQuint).OnComplete(() =>
+                {
+                    photonView.RPC("ForcePosition", photonView.owner, targetPos, targetRot);
+                    ColliderActiveState = true;
+                });
 
         transform.DOLocalRotate(targetRot.eulerAngles, duration).SetEase(Ease.OutQuint);
     }

@@ -13,6 +13,7 @@ TagManager:
   - SPLOMButton
   - Dashboard
   - DashboardCollider
+  - TaskText
   layers:
   - Default
   - TransparentFX

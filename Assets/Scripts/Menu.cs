@@ -276,6 +276,10 @@ public class Menu : Photon.MonoBehaviour {
             case DashboardDimension.COLORPALETTE:
                 valueToCompare = chart.ColorPaletteDimension;
                 break;
+
+            case DashboardDimension.LINKING:
+                valueToCompare = chart.LinkingDimension;
+                break;
         }
 
         // If the dimension is undefined, the "None" button is the first index

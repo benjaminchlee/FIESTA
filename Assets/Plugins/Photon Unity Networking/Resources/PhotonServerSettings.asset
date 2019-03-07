@@ -119,4 +119,5 @@ MonoBehaviour:
   - LogPlayerData
   - StartLogging
   - PhotonStopLogging
+  - PropagateLinkingDimension
   DisableAutoOpenWizard: 1

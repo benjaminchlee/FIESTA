@@ -15,7 +15,8 @@ public enum DashboardDimension
     FACETBY,
     COLORBY,
     SIZEBY,
-    COLORPALETTE
+    COLORPALETTE,
+    LINKING
 }
 
 public enum DashboardPage
@@ -26,7 +27,7 @@ public enum DashboardPage
     DIMENSIONS = 3,
     SIZE = 4,
     COLOR = 5,
-    FACET = 6
+    MISC = 6
 }
 
 public class Dashboard : Photon.MonoBehaviour
@@ -155,7 +156,7 @@ public class Dashboard : Photon.MonoBehaviour
             case DashboardPage.DIMENSIONS:
             case DashboardPage.SIZE:
             case DashboardPage.COLOR:
-            case DashboardPage.FACET:
+            case DashboardPage.MISC:
                 photonView.RPC("ToggleButtons", PhotonTargets.All, page);
                 break;
         }
@@ -215,7 +216,7 @@ public class Dashboard : Photon.MonoBehaviour
                 EnableAndDisableButtons(colorButtons);
                 break;
 
-            case DashboardPage.FACET:
+            case DashboardPage.MISC:
                 EnableAndDisableButtons(facetButtons);
                 break;
         }
@@ -284,6 +285,10 @@ public class Dashboard : Photon.MonoBehaviour
                 case DashboardDimension.COLORPALETTE:
                     standardChart.ColorPaletteDimension = dimensionName;
                     //splomChart.ColorPaletteDimension = dimensionName;
+                    break;
+
+                case DashboardDimension.LINKING:
+                    standardChart.LinkingDimension = dimensionName;
                     break;
             }
         }
@@ -465,7 +470,7 @@ public class Dashboard : Photon.MonoBehaviour
     {
         Chart chart = PhotonView.Find(chartViewId).GetComponent<Chart>();
 
-        standardChart.GeometryType = chart.GeometryType;
+        standardChart.LinkingDimension = chart.LinkingDimension;
         standardChart.XDimension = chart.XDimension;
         standardChart.YDimension = chart.YDimension;
         standardChart.ZDimension = chart.ZDimension;

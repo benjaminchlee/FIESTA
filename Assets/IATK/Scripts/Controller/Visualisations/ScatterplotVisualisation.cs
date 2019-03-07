@@ -256,8 +256,90 @@ namespace IATK
                         break;
                     case AbstractVisualisation.PropertyType.LinkingDimension:
                         creationConfiguration.LinkingDimension = visualisationReference.linkingDimension;
+
+                        string xDimension = visualisationReference.xDimension.Attribute;
+                        string yDimension = visualisationReference.yDimension.Attribute;
+                        string linkingDimension = visualisationReference.linkingDimension;
+                        float[] newAggregatedYValues = new float[0];
+
+                        if (xDimension != "Undefined" && yDimension != "Undefined" && linkingDimension != "Undefined")
+                        {
+                            float[] xData = visualisationReference.dataSource[xDimension].Data;
+                            float[] yData = visualisationReference.dataSource[yDimension].Data;
+                            float[] linkingData = visualisationReference.dataSource[linkingDimension].Data;
+
+                            // Create new list of pairs where Item1 is the x dimension, Item2 is the linking dimension
+                            List<Tuple<float, float>> pairs = new List<Tuple<float, float>>();
+                            for (int i = 0; i < visualisationReference.dataSource.DataCount; i++)
+                            {
+                                pairs.Add(new Tuple<float, float>(xData[i], linkingData[i]));
+                            }
+
+                            // Sort by x dimension values, then by linking values
+                            var sort = pairs.Select((value, index) => new { value, index }).OrderBy(x => x.value.Item1).ThenBy(x => x.value.Item2).ToList();
+                            //List<float> sortedXValues = sort.Select(x => x.value.Item1).ToList();
+                            //List<float> sortedLinkingValues = sort.Select(x => x.value.Item2).ToList();
+                            //List<int> sortedIndices = sort.Select(x => x.index).ToList();
+
+                            List<int> associatedIndices = new List<int>();
+
+                            newAggregatedYValues = new float[visualisationReference.dataSource.DataCount];
+                            
+                            int count = 0;
+                            double total = 0;
+                            float previousX = Mathf.Infinity;
+                            float previousLinking = Mathf.Infinity;
+                            float avg;
+
+                            for (int i = 0; i < sort.Count; i++)
+                            {
+                                float currentX = sort[i].value.Item1;
+                                float currentLinking = sort[i].value.Item2;
+                                
+                                // If now looking at a new x, linking group
+                                if (previousLinking != currentLinking || previousX != currentX)
+                                {
+                                    // Calculate average
+                                    avg = (float)(total / count);
+
+                                    // Back-fill the values of the averages to the associated indices
+                                    foreach (int idx in associatedIndices)
+                                    {
+                                        newAggregatedYValues[idx] = avg;
+                                    }
+
+                                    associatedIndices.Clear();
+                                    count = 0;
+                                    total = 0;
+                                }
+
+                                previousX = currentX;
+                                previousLinking = currentLinking;
+
+                                int actualIndex = sort[i].index;
+
+                                total += yData[actualIndex];
+                                count++;
+
+                                associatedIndices.Add(actualIndex);
+                            }
+
+                            // Do one last final check
+                            avg = (float)(total / count);
+
+                            // Back-fill the values of the averages to the associated indices
+                            foreach (int idx in associatedIndices)
+                            {
+                                newAggregatedYValues[idx] = avg;
+                            }
+                        }
                         
                         CreateVisualisation(); // needs to recreate the visualsiation because the mesh properties have changed 
+
+                        if (newAggregatedYValues.Length > 0)
+                        {
+                            viewList[0].UpdateYPositions(newAggregatedYValues);
+                        }
                         break;
 
                     case AbstractVisualisation.PropertyType.GeometryType:

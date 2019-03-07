@@ -223,7 +223,7 @@ namespace IATK
                     {
                         throw new UnityException("The linking field 'Linkinfield' is undefined. Please select a linking field");
                     }
-                    builder.createIndicesLinkedTopology(visualisationReference.dataSource[visualisationReference.linkingDimension].Data);
+                    builder.createIndicesLinkedTopology(visualisationReference.dataSource[visualisationReference.linkingDimension].Data, visualisationReference.dataSource[visualisationReference.xDimension.Attribute].Data);
                     mt = new Material(Shader.Find("IATK/LinesShader"));
                     mt.renderQueue = 3000;
                     return builder.updateView().
@@ -242,7 +242,7 @@ namespace IATK
                     {
                         throw new UnityException("The linking field 'Linkinfield' is undefined. Please select a linking field");
                     }
-                    builder.createIndicesLinkedTopology(visualisationReference.dataSource[visualisationReference.linkingDimension].Data);
+                    builder.createIndicesLinkedTopology(visualisationReference.dataSource[visualisationReference.linkingDimension].Data, visualisationReference.dataSource[visualisationReference.xDimension.Attribute].Data);
                     mt = new Material(Shader.Find("IATK/LineAndDotsShader"));
                     mt.renderQueue = 3000;
                     return builder.updateView().

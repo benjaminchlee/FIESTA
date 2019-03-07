@@ -143,7 +143,7 @@ public class ChartManager : MonoBehaviour {
 
         chart.DataSource = DataSource;
         chart.VisualisationType = dupe.VisualisationType;
-        chart.GeometryType = dupe.GeometryType;
+        chart.LinkingDimension = dupe.LinkingDimension;
         chart.XDimension = dupe.XDimension;
         chart.YDimension = dupe.YDimension;
         chart.ZDimension = dupe.ZDimension;
@@ -195,6 +195,9 @@ public class ChartManager : MonoBehaviour {
     public void RemoveVisualisation(Chart chart)
     {
         DeregisterVisualisation(chart);
+
+        if (!chart.photonView.isMine)
+            chart.photonView.TransferOwnership(PhotonNetwork.player);
 
         PhotonNetwork.Destroy(chart.gameObject);
     }

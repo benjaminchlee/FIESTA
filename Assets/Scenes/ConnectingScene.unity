@@ -2056,6 +2056,93 @@ Transform:
   m_Father: {fileID: 1077728092}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &576802400
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 1177260965822268, guid: c7ab43152b59dc147b50c781f5b87a1b,
+    type: 2}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 576802403}
+  - component: {fileID: 576802402}
+  - component: {fileID: 576802401}
+  m_Layer: 0
+  m_Name: DataLogger
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &576802401
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 114057040464504870, guid: c7ab43152b59dc147b50c781f5b87a1b,
+    type: 2}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 576802400}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ownerId: 0
+  group: 0
+  OwnerShipWasTransfered: 0
+  prefixBackup: -1
+  synchronization: 0
+  onSerializeTransformOption: 3
+  onSerializeRigidBodyOption: 2
+  ownershipTransfer: 0
+  ObservedComponents:
+  - {fileID: 0}
+  ObservedComponentsFoldoutOpen: 1
+  viewIdField: 1
+  instantiationId: 1
+  currentMasterID: -1
+  isRuntimeInstantiated: 0
+--- !u!114 &576802402
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 114414172526063022, guid: c7ab43152b59dc147b50c781f5b87a1b,
+    type: 2}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 576802400}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85c0db1017f2aef419b28df9af50e76d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timeBetweenLogs: 0.05
+  filePath: C:\Users\ImmersiveAnalytics\Desktop
+  groupID: 0
+  participantID: 0
+  isMasterLogger: 1
+  tasks:
+  - taskName: Directed Question 1
+    taskDescription: Do the thing with the thing
+  - taskName: Directed Question 2
+    taskDescription: Do the other thing with the thing
+  - taskName: Directed Question 3
+    taskDescription: Also do the thing with the thing
+  - taskName: Open Ended Question
+    taskDescription: Lastly, do the thing with the other thing which lets you do the
+      thing with the other thing
+  taskID: 0
+--- !u!4 &576802403
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 4243674819779478, guid: c7ab43152b59dc147b50c781f5b87a1b,
+    type: 2}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 576802400}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.0018850267, y: 1.2962064, z: 1.995}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 9
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &609544094
 GameObject:
   m_ObjectHideFlags: 0

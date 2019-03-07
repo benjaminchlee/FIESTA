@@ -327,27 +327,39 @@ namespace IATK
             return this;
         }
 
-        public ViewBuilder createIndicesLinkedTopology(float[] linkingField)
+        public ViewBuilder createIndicesLinkedTopology(float[] linkingField, float[] orderField)
         {
             //the first member of the Tuple is the index in the index buffer, 
             // the second member is the index in the Vertex Buffer.
+
+            // Create new list of pairs where Item1 is the linking field, Item2 is the order field
+            List<Tuple<float, float>> pairs = new List<Tuple<float, float>>();
+
+            for (int i = 0; i < linkingField.Length; i++)
+            {
+                pairs.Add(new Tuple<float, float>(linkingField[i], orderField[i]));
+            }
+            
+            var sort = pairs.Select((value, index) => new {value, index}).OrderBy(x => x.value.Item1).ThenBy(x => x.value.Item2).ToList();
+            //float[] sortedLinkingField = sort.Select(x => x.value.Item1).ToArray();
+            //int[] sortedIndices = sort.Select(x => x.index).ToArray();
 
             List<Tuple<int, int>> indexToVertexIndex = new List<Tuple<int, int>>();
 
             int count = 0;
             int previousIndexCount = 0;
-            for (int i = 0; i < linkingField.Length - 1; i++)
+            for (int i = 0; i < sort.Count - 1; i++)
             {
                 Vector3 n = uvs[i];
                 n.x = (float)i;
                 uvs[i] = n;
 
-                if (linkingField[i] == linkingField[i + 1])
+                if (sort[i].value.Item1 == sort[i + 1].value.Item1)
                 {
-                    Indices.Add(i);
-                    Indices.Add(i + 1);
-                    indexToVertexIndex.Add(new Tuple<int, int>(i, i));
-                    indexToVertexIndex.Add(new Tuple<int, int>(i + 1, i + 1));
+                    Indices.Add(sort[i].index);
+                    Indices.Add(sort[i + 1].index);
+                    indexToVertexIndex.Add(new Tuple<int, int>(sort[i].index, sort[i].index));
+                    indexToVertexIndex.Add(new Tuple<int, int>(sort[i + 1].index + 1, sort[i + 1].index + 1));
                     count++;
                 }
                 else
