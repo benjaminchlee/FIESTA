@@ -120,4 +120,5 @@ MonoBehaviour:
   - StartLogging
   - PhotonStopLogging
   - PropagateLinkingDimension
+  - ChangeScene
   DisableAutoOpenWizard: 1

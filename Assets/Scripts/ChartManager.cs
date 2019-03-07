@@ -54,16 +54,18 @@ public class ChartManager : MonoBehaviour {
     {
         if (arg0.name == "MainScene")
         {
-            Invoke("CreateDashboard", 0.1f);
+            //SceneManager.sceneLoaded -= SceneLoaded;
+
+            Invoke("CreateDashboard", 0.15f);
         }
     }
 
     private void CreateDashboard()
     {
-        Transform headset = VRTK_DeviceFinder.HeadsetCamera();
-
-        if (PhotonNetwork.connected)
+        if (PhotonNetwork.connected && !DataLogger.Instance.isMasterLogger)
         {
+            Transform headset = VRTK_DeviceFinder.HeadsetCamera();
+
             int id = PhotonNetwork.player.ID;
 
             Vector3 pos;
@@ -195,9 +197,6 @@ public class ChartManager : MonoBehaviour {
     public void RemoveVisualisation(Chart chart)
     {
         DeregisterVisualisation(chart);
-
-        if (!chart.photonView.isMine)
-            chart.photonView.TransferOwnership(PhotonNetwork.player);
 
         PhotonNetwork.Destroy(chart.gameObject);
     }

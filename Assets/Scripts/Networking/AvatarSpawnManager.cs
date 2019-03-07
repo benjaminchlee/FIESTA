@@ -9,7 +9,7 @@
         public GameObject localAvatar;
         [Tooltip("Reference to the remote avatar prefab")]
         public GameObject remoteAvatar;
-
+        
         private GameObject[] spawnPoints;
         private bool sceneLoaded = false;
         private bool connected = false;
@@ -57,12 +57,17 @@
                 //Hashtable props = new Hashtable();
                 //props[PlayerPropNames.PLAYER_NR] = newPlayer.ID;
                 //newPlayer.SetCustomProperties(props);
+
+                if (newPlayer.ID == PhotonNetwork.player.ID && DataLogger.Instance.isMasterLogger)
+                    return;
+
                 photonView.RPC("SpawnAvatar", PhotonTargets.AllBuffered, newPlayer.ID, PhotonNetwork.AllocateViewID());
             }
         }
 
         [PunRPC]
-        void SpawnAvatar(int senderId, int newViewId) {
+        void SpawnAvatar(int senderId, int newViewId)
+        {
             //if (!PhotonNetwork.player.CustomProperties.ContainsKey(PlayerPropNames.PLAYER_NR)) {
             //    Debug.LogError("Player does not have a PLAYER_NR property!");
             //    return;

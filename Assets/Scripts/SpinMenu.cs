@@ -98,6 +98,14 @@ public class SpinMenu : Photon.MonoBehaviour {
         HideButtons();
     }
 
+    public void Show()
+    {
+        isEnabled = true;
+        isExpanded = false;
+
+        ShowButtons();
+    }
+
     public void Hide()
     {
         isEnabled = false;
@@ -229,6 +237,26 @@ public class SpinMenu : Photon.MonoBehaviour {
         cancelButton.Text = "No Tool Selected";
 
         InteractionsManager.Instance.RangedMenuFinished();
+    }
+
+    private void ShowButtons()
+    {
+        for (int i = 0; i < buttons.Count; i++)
+        {
+            // If the button is not the active one, send it back to the controller
+            if (buttons[i] != activeButton)
+            {
+                buttons[i].AnimateToPosition(Vector3.zero, Vector3.zero, animationDuration);
+            }
+            // Otherwise move it on top of the controller's touchpad
+            else
+            {
+                buttons[i].AnimateToPosition(topPosition, Vector3.one, animationDuration);
+            }
+        }
+
+        // Change the text of the cancel button
+        cancelButton.Text = "No Tool Selected";
     }
 
     /// <summary>

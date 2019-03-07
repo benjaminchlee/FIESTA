@@ -298,7 +298,7 @@ Rigidbody:
   m_UseGravity: 0
   m_IsKinematic: 1
   m_Interpolate: 0
-  m_Constraints: 122
+  m_Constraints: 112
   m_CollisionDetection: 0
 --- !u!54 &54952611948199272
 Rigidbody:
@@ -313,7 +313,7 @@ Rigidbody:
   m_UseGravity: 0
   m_IsKinematic: 1
   m_Interpolate: 0
-  m_Constraints: 124
+  m_Constraints: 112
   m_CollisionDetection: 0
 --- !u!65 &65089290071917586
 BoxCollider:
@@ -631,7 +631,7 @@ MonoBehaviour:
   parent: 1
   position: 2
   rotation: 2
-  scale: 0
+  scale: 2
   velocity: 1
   angularVelocity: 1
   useLocalValues: 0

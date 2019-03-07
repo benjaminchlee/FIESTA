@@ -17,11 +17,11 @@ namespace PlayoVR {
                 string userId = GUID.Generate().ToString();
                 PhotonNetwork.AuthValues = new AuthenticationValues(userId);
                 PhotonNetwork.autoJoinLobby = false;    // we join randomly. always. no need to join a lobby to get the list of rooms.
-                PhotonNetwork.automaticallySyncScene = true;
+                PhotonNetwork.automaticallySyncScene = false;
                 PhotonNetwork.logLevel = Loglevel;
                 PhotonNetwork.ConnectUsingSettings(gameVersion);
-                PhotonNetwork.sendRate = 30;
-                PhotonNetwork.sendRateOnSerialize = 30;
+                PhotonNetwork.sendRate = 60;
+                PhotonNetwork.sendRateOnSerialize = 60;
 
                 DontDestroyOnLoad(gameObject);
             }

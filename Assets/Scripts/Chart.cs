@@ -144,9 +144,6 @@ public class Chart : Photon.MonoBehaviour
                 return;
 
             photonView.RPC("PropagateXDimension", PhotonTargets.All, value);
-
-            if (XNormaliser != new Vector2(0, 1))
-                photonView.RPC("PropagateXNormaliser", PhotonTargets.All, new Vector2(0, 1));
         }
     }
 
@@ -173,6 +170,8 @@ public class Chart : Photon.MonoBehaviour
                 }
                 break;
         }
+
+        PropagateXNormaliser(new Vector2(0, 1));
     }
 
     public string YDimension
@@ -184,9 +183,6 @@ public class Chart : Photon.MonoBehaviour
                 return;
 
             photonView.RPC("PropagateYDimension", PhotonTargets.All, value);
-
-            if (YNormaliser != new Vector2(0, 1))
-                photonView.RPC("PropagateXNormaliser", PhotonTargets.All, new Vector2(0, 1));
         }
     }
 
@@ -213,6 +209,8 @@ public class Chart : Photon.MonoBehaviour
                 }
                 break;
         }
+
+        PropagateYNormaliser(new Vector2(0, 1));
     }
 
     public string ZDimension
@@ -224,9 +222,6 @@ public class Chart : Photon.MonoBehaviour
                 return;
 
             photonView.RPC("PropagateZDimension", PhotonTargets.All, value);
-
-            if (ZNormaliser != new Vector2(0, 1))
-                photonView.RPC("PropagateZNormaliser", PhotonTargets.All, new Vector2(0, 1));
         }
     }
 
@@ -253,6 +248,8 @@ public class Chart : Photon.MonoBehaviour
                 }
                 break;
         }
+
+        PropagateZNormaliser(new Vector2(0, 1));
     }
 
     public Vector2 XNormaliser
@@ -270,11 +267,12 @@ public class Chart : Photon.MonoBehaviour
     [PunRPC]
     private void PropagateXNormaliser(Vector2 value)
     {
+        visualisation.xDimension.minScale = value.x;
+        visualisation.xDimension.maxScale = value.y;
+
         switch (chartType)
         {
             case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
-                visualisation.xDimension.minScale = value.x;
-                visualisation.xDimension.maxScale = value.y;
                 visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
                 break;
 
@@ -303,11 +301,12 @@ public class Chart : Photon.MonoBehaviour
     [PunRPC]
     private void PropagateYNormaliser(Vector2 value)
     {
+        visualisation.yDimension.minScale = value.x;
+        visualisation.yDimension.maxScale = value.y;
+
         switch (chartType)
         {
             case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
-                visualisation.yDimension.minScale = value.x;
-                visualisation.yDimension.maxScale = value.y;
                 visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
                 break;
 
@@ -336,11 +335,12 @@ public class Chart : Photon.MonoBehaviour
     [PunRPC]
     private void PropagateZNormaliser(Vector2 value)
     {
+        visualisation.zDimension.minScale = value.x;
+        visualisation.zDimension.maxScale = value.y;
+
         switch (chartType)
         {
             case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
-                visualisation.zDimension.minScale = value.x;
-                visualisation.zDimension.maxScale = value.y;
                 visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Scaling);
                 break;
 
@@ -624,6 +624,9 @@ public class Chart : Photon.MonoBehaviour
         get { return visualisation.linkingDimension;}
         set
         {
+            if (LinkingDimension != "Undefined" && value == LinkingDimension)
+                return;
+
             photonView.RPC("PropagateLinkingDimension", PhotonTargets.All, value);
         }
     }
@@ -631,32 +634,63 @@ public class Chart : Photon.MonoBehaviour
     [PunRPC]
     private void PropagateLinkingDimension(string value)
     {
-        visualisation.linkingDimension = value;
-        
         switch (chartType)
         {
             case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
-                if (value != "Undefined" && GeometryType != AbstractVisualisation.GeometryType.LinesAndDots)
+
+                // If the chart does not already have a linking dimension
+                if (LinkingDimension == "Undefined")
                 {
-                    visualisation.geometry = AbstractVisualisation.GeometryType.LinesAndDots;
-                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.GeometryType);
-                    // TODO: Make this better such that this doesn't need to be called
-                    ChartManager.Instance.RegisterVisualisation(this);
+                    // And if it is not being changed, it can be safely ignored
+                    if (value == "Undefined")
+                    {
+                        if (GeometryType == AbstractVisualisation.GeometryType.Undefined)
+                        {
+                            visualisation.geometry = AbstractVisualisation.GeometryType.Points;
+                            visualisation.updateViewProperties(AbstractVisualisation.PropertyType.GeometryType);
+                        }
+                        return;
+                    }
+                    // Otherwise, it is being set
+                    else
+                    {
+                        visualisation.linkingDimension = value;
+                        // Change the geometry first
+                        visualisation.geometry = AbstractVisualisation.GeometryType.LinesAndDots;
+                        visualisation.updateViewProperties(AbstractVisualisation.PropertyType.GeometryType);
+                        visualisation.updateViewProperties(AbstractVisualisation.PropertyType.LinkingDimension);
+                    }
+                }
+                // Otherwise, it already has a linking dimension
+                else
+                {
+                    // And it is being removed
+                    if (value == "Undefined")
+                    {
+                        visualisation.linkingDimension = value;
+                        visualisation.geometry = AbstractVisualisation.GeometryType.Points;
+                        visualisation.updateViewProperties(AbstractVisualisation.PropertyType.GeometryType);
+                    }
+                    // Otherwise the linking dimension is being swapped
+                    else
+                    {
+                        visualisation.linkingDimension = value;
+                        visualisation.updateViewProperties(AbstractVisualisation.PropertyType.LinkingDimension);
+                    }
                 }
 
-                else if (value == "Undefined" && GeometryType != AbstractVisualisation.GeometryType.Points)
-                {
-                    visualisation.geometry = AbstractVisualisation.GeometryType.Points;
-                    visualisation.updateViewProperties(AbstractVisualisation.PropertyType.GeometryType);
-                    // TODO: Make this better such that this doesn't need to be called
-                    ChartManager.Instance.RegisterVisualisation(this);
-                }
+                ChartManager.Instance.RegisterVisualisation(this);
+                
+                // Refresh faceting as changing linking dimension resets this
+                if (AttributeFilters.Length > 0 && AttributeFilters[0] != null && AttributeFilters[0].Attribute != "Undefined")
+                        visualisation.updateViewProperties(AbstractVisualisation.PropertyType.AttributeFiltering);
 
-                visualisation.updateViewProperties(AbstractVisualisation.PropertyType.LinkingDimension);
                 break;
 
             case AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX:
             case AbstractVisualisation.VisualisationTypes.FACET:
+                visualisation.linkingDimension = value;
+
                 foreach (Chart chart in subCharts)
                     chart.LinkingDimension = value;
 
@@ -1629,6 +1663,7 @@ public class Chart : Photon.MonoBehaviour
             }
         }
 
+        // Resizing
         if (topLeftInteractableHandle.IsGrabbed() || bottomRightInteractableHandle.IsGrabbed())
         {
             if (!isResizing)
@@ -1645,7 +1680,7 @@ public class Chart : Photon.MonoBehaviour
 
             if (topLeftInteractableHandle.IsGrabbed())
             {
-                Vector3 handleLocalPos = transform.InverseTransformPoint(topLeftInteractableHandle.transform.position);
+                Vector3 handleLocalPos = topLeftInteractableHandle.transform.localPosition;
 
                 // Don't allow the handle to get too small
                 if (handleLocalPos.y < 0.15f)
@@ -1661,7 +1696,7 @@ public class Chart : Photon.MonoBehaviour
             }
             if (bottomRightInteractableHandle.IsGrabbed())
             {
-                Vector3 handleLocalPos = transform.InverseTransformPoint(bottomRightInteractableHandle.transform.position);
+                Vector3 handleLocalPos = bottomRightInteractableHandle.transform.localPosition;
 
                 // Don't allow the handle to get too small
                 if (handleLocalPos.x < 0.15f)
@@ -1683,6 +1718,21 @@ public class Chart : Photon.MonoBehaviour
             isResizing = false;
 
             DataLogger.Instance.LogActionData(this, photonView.owner, "Vis resize end");
+        }
+
+        // Facet normalisers
+        if (VisualisationType == AbstractVisualisation.VisualisationTypes.FACET && photonView.isMine)
+        {
+            // Only check if there are multiple facets
+            if (FacetSize > 1)
+            {
+                foreach (Chart chart in subCharts)
+                {
+                    XNormaliser = chart.XNormaliser;
+                    YNormaliser = chart.YNormaliser;
+                    ZNormaliser = chart.ZNormaliser;
+                }
+            }
         }
     }
     

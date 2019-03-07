@@ -462,14 +462,13 @@ public class Dashboard : Photon.MonoBehaviour
     public void LoadChart(Chart chart, bool destroyOnComplete = false)
     {
         photonView.RPC("LoadChart", PhotonTargets.All, chart.photonView.viewID, destroyOnComplete);
-
     }
 
     [PunRPC]
     private void LoadChart(int chartViewId, bool destroyOnComplete = false)
     {
         Chart chart = PhotonView.Find(chartViewId).GetComponent<Chart>();
-
+        
         standardChart.LinkingDimension = chart.LinkingDimension;
         standardChart.XDimension = chart.XDimension;
         standardChart.YDimension = chart.YDimension;
@@ -484,6 +483,13 @@ public class Dashboard : Photon.MonoBehaviour
         standardChart.ColorPalette = chart.ColorPalette;
         standardChart.SizeDimension = chart.SizeDimension;
         standardChart.Size = chart.Size;
+
+        if (chart.AttributeFilters.Length == 0)
+        {
+            standardChart.FacetSize = 1;
+            standardChart.FacetDimension = "Undefined";
+        }
+
         //standardChart.AttributeFilters = chart.AttributeFilters;
 
         //splomChart.GeometryType = chart.GeometryType;
@@ -498,7 +504,7 @@ public class Dashboard : Photon.MonoBehaviour
 
         ChartTransferred.Invoke(chart);
 
-        if (destroyOnComplete)
+        if (destroyOnComplete && chart.photonView.isMine)
             chart.transform.DOScale(0, 0.3f).SetEase(Ease.InBack)
                 .OnComplete(() => ChartManager.Instance.RemoveVisualisation(chart));
     }

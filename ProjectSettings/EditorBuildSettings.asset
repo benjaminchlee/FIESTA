@@ -11,4 +11,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/MainScene.unity
     guid: 8dd4de48cd1ad4248b45538de4099860
+  - enabled: 1
+    path: Assets/Scenes/NonVR_ConnectingScene.unity
+    guid: 5491afcbe79c4244ca248e46c2c8671c
   m_configObjects: {}

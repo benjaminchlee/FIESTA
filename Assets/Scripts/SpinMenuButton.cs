@@ -63,7 +63,6 @@ public class SpinMenuButton : Photon.MonoBehaviour {
 
     private void OnSpinMenuButtonUsed(object sender, InteractableObjectEventArgs e)
     {
-        InteractionsManager.Instance.RangedMenuFinished();
         ButtonClicked.Invoke(this);
     }
 

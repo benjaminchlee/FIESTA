@@ -105,20 +105,20 @@ public class BrushingAndLinking : Photon.PunBehaviour {
     {
         // Create a copy of the compute shader that is specfic to this brushing and linking script
         computeShader = Instantiate(computeShader);
-
-        InitialiseShaders();
-        InitialiseBuffersAndTextures();
-
-        ChartManager.Instance.ChartAdded.AddListener(ChartAdded);
     }
 
     // Use this for initialization
     void Start()
     {
+        ChartManager.Instance.ChartAdded.AddListener(ChartAdded);
+
         brushingVisualisations = new List<Visualisation>();
 
+        InitialiseShaders();
+        InitialiseBuffersAndTextures();
+
         ResetBrushTexture();
-        GenerateDetailsOnDemandPanel();
+        //GenerateDetailsOnDemandPanel();
     }
 
     // Update is called once per frame
@@ -148,7 +148,7 @@ public class BrushingAndLinking : Photon.PunBehaviour {
             if (brushButtonController && brushingVisualisations.Count != 0)
             {
                 updateBrushTexture();
-                getDetailsOnDemand();
+                // getDetailsOnDemand();
             }
 
             if (inspectButtonController && visualisationToInspect != null)
@@ -267,10 +267,7 @@ public class BrushingAndLinking : Photon.PunBehaviour {
 
     public void ChartAdded(Chart chart)
     {
-        if (photonView.isMine)
-        {
-            StartCoroutine(SetChartViewProperties(chart));
-        }
+        StartCoroutine(SetChartViewProperties(chart));
     }
 
     /// <summary>
