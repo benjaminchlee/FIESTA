@@ -99,6 +99,8 @@ public class AxisNormaliser : MonoBehaviour {
             transform.localRotation = storedRotation;
 
             storedPosition = newPos;
+
+            VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(interactableObject.GetGrabbingObject()), 0.075f);
         }
     }
 

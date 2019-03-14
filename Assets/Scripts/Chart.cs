@@ -1693,6 +1693,8 @@ public class Chart : Photon.MonoBehaviour
                 handleLocalPos.z = 0;
                 topLeftInteractableHandle.transform.localPosition = handleLocalPos;
                 topLeftInteractableHandle.transform.localRotation = Quaternion.identity;;
+
+                VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(topLeftInteractableHandle.GetGrabbingObject()), 0.075f);
             }
             if (bottomRightInteractableHandle.IsGrabbed())
             {
@@ -1709,6 +1711,8 @@ public class Chart : Photon.MonoBehaviour
                 handleLocalPos.z = 0;
                 bottomRightInteractableHandle.transform.localPosition = handleLocalPos;
                 bottomRightInteractableHandle.transform.localRotation = Quaternion.identity; ;
+
+                VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(bottomRightInteractableHandle.GetGrabbingObject()), 0.075f);
             }
 
             Scale = scale;

@@ -235,7 +235,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             GameObject tracer = PhotonNetwork.Instantiate("NetworkedTracer", Vector3.zero, Quaternion.identity, 0);
             networkedTracer = tracer.GetComponent<NetworkedTrackedObject>();
             networkedTracer.SetTrackedObject(actualTracer);
-            networkedTracer.SetColor(PlayerPreferencesManager.Instance.AvatarColor);
+            networkedTracer.SetColor(PlayerPreferencesManager.Instance.SharedBrushColor);
             // Hide the mesh for the owner (this does not get propagated)
             networkedTracer.GetComponent<Renderer>().enabled = false;
 
@@ -243,7 +243,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             GameObject brush = PhotonNetwork.Instantiate("NetworkedBrush", Vector3.zero, Quaternion.identity, 0);
             networkedBrush = brush.GetComponent<NetworkedTrackedObject>();
             networkedBrush.SetTrackedObject(rangedBrush);
-            networkedBrush.SetColor(PlayerPreferencesManager.Instance.AvatarColor);
+            networkedBrush.SetColor(PlayerPreferencesManager.Instance.SharedBrushColor);
             // Hide the mesh for the owner (this does not get propagated)
             networkedBrush.GetComponent<Renderer>().enabled = false;
 

@@ -47,6 +47,7 @@ public class DataLogger : Photon.PunBehaviour {
     private Transform headset;
     private Transform leftController;
     private Transform rightController;
+    private Transform observer;
     private VRTK_ControllerEvents leftControllerEvents;
     private VRTK_ControllerEvents rightControllerEvents;
     private Vector3 headPos;
@@ -86,12 +87,12 @@ public class DataLogger : Photon.PunBehaviour {
     {
         if (isMasterLogger)
         {
-            photonView.RPC("StartLogging", PhotonTargets.AllViaServer, groupID, taskID, tasks[taskID].taskDescription);
+            photonView.RPC("StartLogging", PhotonTargets.AllViaServer, groupID, taskID, tasks[taskID].taskName, tasks[taskID].taskDescription);
         }
     }
 
     [PunRPC]
-    private void StartLogging(int groupID, int taskID, string taskDescription, PhotonMessageInfo info)
+    private void StartLogging(int groupID, int taskID, string taskName, string taskDescription, PhotonMessageInfo info)
     {
         isLogging = true;
 
@@ -107,10 +108,11 @@ public class DataLogger : Photon.PunBehaviour {
             objectStreamWriter = new StreamWriter(path, true);
 
             // Write header for object data
-            objectStreamWriter.WriteLine("Timestamp\tObjectType\tOwner\tPosition.x\tPosition.y\tPosition.z\tRotation.x\tRotation.y\tRotation.z\tRotation.w");
+            objectStreamWriter.WriteLine("Timestamp\tObjectType\tOwner\tPosition.x\tPosition.y\tPosition.z\tRotation.x\tRotation.y\tRotation.z\tRotation.w\tWidth\tHeight\tDepth");
 
             // Save references of logged entities
             dashboards = FindObjectsOfType<Dashboard>().ToList();
+            observer = FindObjectOfType<KeyboardAndMouseAvatar>().transform;
         }
         else
         {
@@ -118,10 +120,12 @@ public class DataLogger : Photon.PunBehaviour {
             playerStreamWriter = new StreamWriter(path, true);
 
             // Write header for player data
-            playerStreamWriter.WriteLine("Timestamp\tHeadPosition\tHeadRotation\t" +
+            playerStreamWriter.WriteLine("Timestamp\t" +
+                                         "HeadPosition.x\tHeadPosition.y\tHeadPosition.z\t" +
+                                         "HeadRotation.x\tHeadRotation.y\tHeadRotation.z\tHeadRotation.w\t" +
                                          "LeftPosition.x\tLeftPosition.y\tLeftPosition.z\t" +
                                          "LeftRotation.x\tLeftRotation.y\tLeftRotation.z\tLeftRotation.w\t" +
-                                         "LeftTrigger\tLeftGrip\tLeftTouchpad\tLeftTouchpadAngle" +
+                                         "LeftTrigger\tLeftGrip\tLeftTouchpad\tLeftTouchpadAngle\t" +
                                          "RightPosition.x\tRightPosition.y\tRightPosition.z\t" +
                                          "RightRotation.x\tRightRotation.y\tRightRotation.z\tRightRotation.w\t" +
                                          "RightTrigger\tRightGrip\tRightTouchpad\tRightTouchpadAngle");
@@ -141,7 +145,7 @@ public class DataLogger : Photon.PunBehaviour {
         }
 
         startTime = info.timestamp;
-        textMesh.text = taskDescription;
+        textMesh.text = string.Format("<b>{0}</b>\n{1}", taskName, taskDescription.Replace("\\n", "\n"));
 
         Debug.Log("Logging started");
 
@@ -278,7 +282,7 @@ public class DataLogger : Photon.PunBehaviour {
 
             foreach (var dashboard in dashboards)
             {
-                objectStreamWriter.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}",
+                objectStreamWriter.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}",
                     t,
                     "Panel",
                     dashboard.photonView.ownerId,
@@ -288,13 +292,16 @@ public class DataLogger : Photon.PunBehaviour {
                     dashboard.transform.rotation.x.ToString(format),
                     dashboard.transform.rotation.y.ToString(format),
                     dashboard.transform.rotation.z.ToString(format),
-                    dashboard.transform.rotation.w.ToString(format)
+                    dashboard.transform.rotation.w.ToString(format),
+                    "",
+                    "",
+                    ""
                 );
             }
 
             foreach (var chart in ChartManager.Instance.Charts)
             {
-                objectStreamWriter.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}",
+                objectStreamWriter.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}",
                     t,
                     "Visualisation",
                     chart.photonView.ownerId,
@@ -304,9 +311,28 @@ public class DataLogger : Photon.PunBehaviour {
                     chart.transform.rotation.x.ToString(format),
                     chart.transform.rotation.y.ToString(format),
                     chart.transform.rotation.z.ToString(format),
-                    chart.transform.rotation.w.ToString(format)
+                    chart.transform.rotation.w.ToString(format),
+                    chart.Width.ToString(format),
+                    chart.Height.ToString(format),
+                    chart.Depth.ToString(format)
                 );
             }
+
+            objectStreamWriter.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}",
+                t,
+                "Observer",
+                0,
+                observer.position.x.ToString(format),
+                observer.position.y.ToString(format),
+                observer.position.z.ToString(format),
+                observer.rotation.x.ToString(format),
+                observer.rotation.y.ToString(format),
+                observer.rotation.z.ToString(format),
+                observer.rotation.w.ToString(format),
+                "",
+                "",
+                ""
+                );
 
             objectStreamWriter.Flush();
         }

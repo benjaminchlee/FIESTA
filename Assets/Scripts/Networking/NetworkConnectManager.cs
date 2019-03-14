@@ -20,8 +20,8 @@ namespace PlayoVR {
                 PhotonNetwork.automaticallySyncScene = false;
                 PhotonNetwork.logLevel = Loglevel;
                 PhotonNetwork.ConnectUsingSettings(gameVersion);
-                PhotonNetwork.sendRate = 60;
-                PhotonNetwork.sendRateOnSerialize = 60;
+                PhotonNetwork.sendRate = 30;
+                PhotonNetwork.sendRateOnSerialize = 30;
 
                 DontDestroyOnLoad(gameObject);
             }

@@ -59,9 +59,9 @@
                 //newPlayer.SetCustomProperties(props);
 
                 if (newPlayer.ID == PhotonNetwork.player.ID && DataLogger.Instance.isMasterLogger)
-                    return;
-
-                photonView.RPC("SpawnAvatar", PhotonTargets.AllBuffered, newPlayer.ID, PhotonNetwork.AllocateViewID());
+                    PhotonNetwork.Instantiate("KBMAvatar", new Vector3(5, 1.7f, 5), Quaternion.identity, 0);
+                else
+                    photonView.RPC("SpawnAvatar", PhotonTargets.AllBuffered, newPlayer.ID, PhotonNetwork.AllocateViewID());
             }
         }
 
@@ -121,7 +121,7 @@
                     if (photonView.isMine)
                     {
                         AvatarCustomiser avatarCustomiser = player.GetComponent<AvatarCustomiser>();
-                        avatarCustomiser.photonView.RPC("SetColor", PhotonTargets.AllBuffered, PlayerPreferencesManager.Instance.AvatarColor);
+                        avatarCustomiser.photonView.RPC("SetColor", PhotonTargets.AllBuffered, PlayerPreferencesManager.Instance.AvatarSkinColor, PlayerPreferencesManager.Instance.AvatarHeadsetColor, PlayerPreferencesManager.Instance.AvatarShirtColor);
                         avatarCustomiser.photonView.RPC("SetName", PhotonTargets.AllBuffered, PlayerPreferencesManager.Instance.AvatarName);
                     }
                 }

@@ -712,8 +712,8 @@ PlayerSettings:
     Unity_Ads: 0
   facebookSdkVersion: 7.9.4
   apiCompatibilityLevel: 2
-  cloudProjectId: c30a85f1-38b3-43b9-af70-70cc81c89fd8
-  projectName: Hybrid Display Analytics
+  cloudProjectId: 210f563a-98b5-418d-9f61-9bf2d88075ec
+  projectName: collab-ia
   organizationId: benjaminchlee
   cloudEnabled: 0
   enableNativePlatformBackendsForNewInputSystem: 0

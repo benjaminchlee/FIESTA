@@ -14,10 +14,24 @@ public class PlayerPreferencesManager : MonoBehaviour {
     }
 
     [SerializeField]
-    private Color avatarColor;
-    public Color AvatarColor
+    private Color avatarSkinColor;
+    public Color AvatarSkinColor
     {
-        get { return avatarColor; }
+        get { return avatarSkinColor; }
+    }
+
+    [SerializeField]
+    private Color avatarHeadsetColor;
+    public Color AvatarHeadsetColor
+    {
+        get { return avatarHeadsetColor; }
+    }
+
+    [SerializeField]
+    private Color avatarShirtColor;
+    public Color AvatarShirtColor
+    {
+        get { return avatarShirtColor; }
     }
 
     [SerializeField]

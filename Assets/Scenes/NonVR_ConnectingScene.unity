@@ -244,19 +244,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timeBetweenLogs: 0.05
   filePath: C:\Users\blee33\Desktop
-  groupID: 0
+  groupID: 2
   participantID: 0
   isMasterLogger: 1
   tasks:
-  - taskName: Directed Question 1
-    taskDescription: Do the thing with the thing
-  - taskName: Directed Question 2
-    taskDescription: Do the other thing with the thing
-  - taskName: Directed Question 3
-    taskDescription: Also do the thing with the thing
-  - taskName: Open Ended Question
-    taskDescription: Lastly, do the thing with the other thing which lets you do the
-      thing with the other thing
+  - taskName: Directed Question 1 of 3
+    taskDescription: Where is the most expensive house located?\n\nWhat about it makes
+      it so expensive?
+  - taskName: Directed Question 2 of 3
+    taskDescription: Are houses which were built more recently larger or smaller?\n\nConsider
+      this in terms of both land size and number of rooms.
+  - taskName: Directed Question 3 of 3
+    taskDescription: Suppose a family of four is moving to Victoria at the end of
+      the year and are looking for a new home. You know the following about them:\n\n-
+      They have a budget of $900,000. \n- The parents will work full time in the city.\n-
+      The area should be relatively new (built in 1960s onwards) \n- They would prefer
+      if prices kept somewhat stable for the given area before they buy.\n\nWith all
+      other implicit requirements in mind, which part of Victoria would you recommend
+      to the family?
+  - taskName: Exploratory Question
+    taskDescription: Your team has roughly 10-15 minutes to find as many insights
+      in the data set as possible. You will be expected to present these findings
+      at the end. Please state clearly when you are done.
   taskID: 0
 --- !u!4 &576802403
 Transform:
@@ -514,7 +523,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   avatarName: Red Player
-  avatarColor: {r: 1, g: 0, b: 0, a: 1}
+  avatarSkinColor: {r: 0, g: 0, b: 0, a: 0}
+  avatarHeadsetColor: {r: 0, g: 0, b: 0, a: 0}
+  avatarShirtColor: {r: 0, g: 0, b: 0, a: 0}
   sharedBrushColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!4 &1628180572
 Transform:

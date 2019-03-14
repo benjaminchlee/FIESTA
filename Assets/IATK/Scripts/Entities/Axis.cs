@@ -389,17 +389,15 @@ public class Axis : MonoBehaviour {
         public override string LabelText(int labelIndex)
         {
             object v = dataSource.getOriginalValue(Mathf.Lerp(attributeFilter.minScale, attributeFilter.maxScale, labelIndex / (NumberOfLabels() - 1f)), attributeFilter.Attribute);
-            string s = "";
 
-            if (v is Single)
+            if (v is float && v.ToString().Length > 4)
             {
-                s = ((Single)v).ToString("#,##0.00");
+                return ((float)v).ToString("#,##0.0");
             }
             else
             {
-                s = v.ToString();
+                return v.ToString();
             }
-            return s;
         }
 
         public override bool IsFiltered(int labelIndex)

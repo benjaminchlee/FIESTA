@@ -74,7 +74,15 @@ public class NetworkedDetailsOnDemandLabel : Photon.MonoBehaviour {
             for (int i = 0; i < dataSource.DimensionCount; i++)
             {
                 string dimension = dataSource[i].Identifier;
-                stringBuilder.AppendFormat("<b>{0}:</b> {1}\n", dimension, dataSource.getOriginalValue(indices[0], dimension));
+                object value = dataSource.getOriginalValue(indices[0], dimension);
+                if (dataSource[dimension].MetaData.type == DataType.Float && value.ToString().Length > 4)
+                {
+                    stringBuilder.AppendFormat("<b>{0}:</b> {1}\n", dimension, ((float)value).ToString("#,##0.00"));
+                }
+                else
+                {
+                    stringBuilder.AppendFormat("<b>{0}:</b> {1}\n", dimension, value);
+                }
             }
         }
 

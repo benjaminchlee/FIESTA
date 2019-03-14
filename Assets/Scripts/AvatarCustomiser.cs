@@ -11,7 +11,9 @@ public class AvatarCustomiser : Photon.PunBehaviour {
     public TextMeshPro nameplate;
 
     public string Name { get; private set; }
-    public Color Color { get; private set; }
+    public Color SkinColor { get; private set; }
+    public Color HeadsetColor { get; private set; }
+    public Color ShirtColor { get; private set; }
 
     private bool isDoneLoading = false;
 
@@ -55,9 +57,11 @@ public class AvatarCustomiser : Photon.PunBehaviour {
     }
 
     [PunRPC]
-    public void SetColor(Color color)
+    public void SetColor(Color skin, Color headset, Color shirt)
     {
-        Color = color;
+        SkinColor = skin;
+        HeadsetColor = headset;
+        ShirtColor = shirt;
 
         if (isDoneLoading)
         {
@@ -67,7 +71,14 @@ public class AvatarCustomiser : Photon.PunBehaviour {
                 
                 foreach (SkinnedMeshRenderer renderer in renderers)
                 {
-                    renderer.material.SetColor("_BaseColor", Color);
+                    if (renderer.gameObject.name == "body_renderPart_0")
+                        renderer.material.SetColor("_BaseColor", SkinColor);
+                    else if (renderer.gameObject.name == "body_renderPart_1")
+                        renderer.material.SetColor("_BaseColor", ShirtColor);
+                    else if (renderer.gameObject.name == "body_renderPart_2")
+                        renderer.material.SetColor("_BaseColor", HeadsetColor);
+                    else
+                        renderer.material.SetColor("_BaseColor", ShirtColor);
                 }
             }
         }
@@ -77,14 +88,14 @@ public class AvatarCustomiser : Photon.PunBehaviour {
     {
         isDoneLoading = true;
 
-        SetColor(Color);
+        SetColor(SkinColor, HeadsetColor, ShirtColor);
         SetName(Name);
     }
 
     private void OnSceneDoneLoading(Scene arg0, LoadSceneMode arg1)
     {
         if (arg0.name == "MainScene")
-            SetColor(Color);
+            SetColor(SkinColor, HeadsetColor, ShirtColor);
     }
 
 }
