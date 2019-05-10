@@ -5,11 +5,12 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using System.Linq;
+using Photon.Pun;
 using UnityEngine.Events;
 using UnityEngine.Rendering;
 using VRTK.Examples;
 
-public class BrushingAndLinking : Photon.PunBehaviour {
+public class BrushingAndLinking : MonoBehaviourPunCallbacks {
 
     [SerializeField]
     public ComputeShader computeShader;
@@ -220,8 +221,8 @@ public class BrushingAndLinking : Photon.PunBehaviour {
 
         computeShader.SetFloat("_size", (float)texSize);
         computeShader.SetFloats("brushColor", privateBrushColor.r, privateBrushColor.g, privateBrushColor.b, privateBrushColor.a);
-        if (photonView.isMine)
-            photonView.RPC("SetSharedColor", PhotonTargets.AllBuffered, PlayerPreferencesManager.Instance.SharedBrushColor);
+        if (photonView.IsMine)
+            photonView.RPC("SetSharedColor", RpcTarget.AllBuffered, PlayerPreferencesManager.Instance.SharedBrushColor);
     }
 
     [PunRPC]
@@ -441,7 +442,7 @@ public class BrushingAndLinking : Photon.PunBehaviour {
 
     private void GenerateDetailsOnDemandPanel()
     {
-        if (photonView.isMine)
+        if (photonView.IsMine)
         {
             // Get the hand that the ranged interactions script is on
             GameObject controller = FindObjectOfType<RangedInteractions>().gameObject;
@@ -492,7 +493,7 @@ public class BrushingAndLinking : Photon.PunBehaviour {
 
     void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
-        if (stream.isWriting)
+        if (stream.IsWriting)
         { 
             stream.SendNext(brushButtonController);
             stream.SendNext(shareBrushing);

@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Photon.Pun;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class GradientMenu : Photon.PunBehaviour {
+public class GradientMenu : MonoBehaviourPunCallbacks {
 
     [Serializable]
     public struct GradientTexturePair
@@ -132,11 +133,11 @@ public class GradientMenu : Photon.PunBehaviour {
             // Store the index of the selected option
             selectedIndex = gradientButtons.IndexOf(gradientButton);
 
-            photonView.RPC("CloseButtons", PhotonTargets.All, selectedIndex);
+            photonView.RPC("CloseButtons", RpcTarget.All, selectedIndex);
         }
         else
         {
-            photonView.RPC("OpenButtons", PhotonTargets.All);
+            photonView.RPC("OpenButtons", RpcTarget.All);
         }
 
         isOpen = !isOpen;
@@ -144,7 +145,7 @@ public class GradientMenu : Photon.PunBehaviour {
 
     private void ReverseButtonClicked(MenuButton button)
     {
-        photonView.RPC("ReverseGradientButtons", PhotonTargets.All);
+        photonView.RPC("ReverseGradientButtons", RpcTarget.All);
     }
 
     [PunRPC]

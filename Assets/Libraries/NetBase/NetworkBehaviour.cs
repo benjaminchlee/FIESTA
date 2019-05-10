@@ -1,5 +1,7 @@
 ﻿namespace NetBase {
     using UnityEngine;
+    using Photon.Pun;
+
     using Hashtable = ExitGames.Client.Photon.Hashtable;
 
     public abstract class NetworkBehaviour : MonoBehaviour {
@@ -55,7 +57,7 @@
         protected void SetProperties(Hashtable content) {
             Hashtable props = new Hashtable();
             props.Add(PropKey, content);
-            PhotonNetwork.room.SetCustomProperties(props);
+            PhotonNetwork.CurrentRoom.SetCustomProperties(props);
             Debug.Log("SNT PROPS: " + content.ToString());
         }
     }

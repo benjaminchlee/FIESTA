@@ -8,10 +8,64 @@ https://doc.photonengine.com
 http://forum.photonengine.com
 
 
+*** Version 4.1.2.14 (6. May 2019 - rev5088)
+    Changed: EventData now has Sender or CustomData properties as well as SenderKey and CustomDataKey. The keys can be defines according to API. The default are the Realtime API values. Sender and CustomData access is cached. If an EventData instance is reused (PhotonPeer.ReuseEventInstance), the values will reset.
+	
+*** Version 4.1.2.13 (3. May 2019 - rev5086)
+    Changed: EventData to not contain the Sender or CustomData properties anymore. They have been specific for the Realtime API and confusing for APIs like Chat. 
+    Added: PhotonPeer.ReuseEventInstance as option to use a single EventData instance for all incoming events. This reduces memory garbage. The drawback is: An event provided via OnEvent(EventData photonEvent) is invalidated right after the callback finished. That event's content will get modified. Typically this is not a problem as events are rarely cached.
+    Internal: Added caching for a EventData instance (on demand).
+Realtime / LoadBalancing
+    Changed: Renamed ClientState items which ended on "Gameserver" and "Masterserver" to using PascalCase "GameServer" and "MasterServer". The previous names are obsolete to ease upgrading this, if needed.
+    Updated: Checks if any given operation can be sent (to the currently connected server) or not. As not all operations are available on all server types, this may help avoid some mismatches.
+    Fixed: BroadcastPropsChangeToAll is applied correctly (it wasn't used properly, when false).
+    Fixed: When in offline mode, OpSetPropertiesOfActor does not get called (it failed due to not being connected).
+Chat
+    Fixed: properly add local client's UserId to public channels' Subscribers list when applicable.
+
+
+*** Version 4.1.2.12 (26. April 2019 - rev5046)
+    Fixed: A problem with the new EventData code of v4.1.2.11. It optimistically assumed that events with codes below 200 were always just containing Sender and CustomData. Photon Chat uses different codes, however.
+    Added: Access the Sender and CustomData via the EventData.Parameters dictionary, even if that is null (due to the new rules). In that case, the Sender and CustomData is accessed via the properties instead.
+
+*** Version 4.1.2.11 (15. April 2019 - rev5043)
+    Note: This version has a few changes that optimize memory usage mostly.
+    Internal: Changed EventData class (custom and Photon-defined events). Custom events set the Sender and Code and the CustomData but not Parameters (dict) now. EventData indexer checks if the "Parameters" are non-null. If the indexer is used to access non-existing Parameters, the result is null. Custom events are NOT setting Parameters anymore, saving the Dictionary<> use.
+    Internal: StreamBuffer.ReadByte() to return a byte or throw an exception when the end of the stream was reached. The -1 value was never used though.
+    Changed: EnetPeer.DispatchIncomingCommands() as optimization. When dispatching unreliable commands, the code now checks if the next command is available. If so, this is dispatched, without going through the keys of the dictionary (which was creating garbage to clean up).
+LoadBalancing:
+    Changed: InLobby property is now checking the State == JoinedLobby, which is analog to InRoom.
+    Changed: IsConnectedAndReady is now also false for ClientState.DisconnectingFromGameserver, DisconnectingFromMasterserver and DisconnectingFromNameServer.
+    Changed: GetGameList check if the filter is null or empty. It's not sent for empty filters.
+    Added: Nintendo Switch as CustomAuthenticationType.
+Chat:
+    Added: Feature: PublishSubscribers. Per channel, you can now define if the server broadcasts users joining and leaving.
+    Fixed: proper way to handle Subscribe event when channel properties are returned.
+    Added: Viveport Auth Provider enum value.
+    Added: Switch-related workaround. Setting a Thread.Name was causing a crash in some exports on console. This affects Unity to Nintendo Switch exports.
+    Added: ChannelCreationOptions class to be used in the new Subscribe overload method.
+    Changed: Chat to use the same 1.8 serialization as Realtime/PUN. This also now matches the SocketWebTcp.SerializationProtocol default.
+
+*** Version 4.1.2.10 (11. March 2019 - rev5023)
+    Fixed: A timeout issue for WS / WSS transport protocols by sending a ping.
+LoadBalancing:
+    Changed: The cached "best region" is cleared whenever a region's pinging finishes. This fixes a potential issue when the BestRegion value is used before the pinging is done. Then, you end up with a wrong selection.
+
+*** Version 4.1.2.9 (20. February 2019 - rev5003)
+    Note: Release .Net and Unity SDK from our page.
+*** Version 4.1.2.9 (13. February 2019 - rev4985)
+    Removed: Setting of Thread.Name for internally used threads. This was used for debugging only (since a while) but caused issues on a console platform (due to an issue in Unity IL2CPP exports).
+
+*** Version 4.1.2.8 (31. January 2019 - rev4975)
+    Fixed: The cap for the lastRoundtripTime. When the current roundTripTime was very low this meant the rtt wasn't going up again. This was a problem with local servers.
+    Fixed: Setting the roundTripTime when the connect-command gets acknowledged. This sets a minimum of 15ms now. Before, a local server could get a 0ms roundTripTime (due to using Environment.TickCount).
+
+*** Version 4.1.2.7 (25. January 2019 - rev4954)
+    Removed: CommandBufferSize and LimitOfUnreliableCommands. Technically, those are "Obsolete" but no longer used anywhere. See comments.
+    Fixed: MessageBufferPoolTrim() was not using a lock(), so this wasn't thread safe.
 
 *** Version 4.1.2.6 (12. December 2018 - rev4935)
     Changed: Unsequenced delivery is now available in all builds. Internally, this was wrapped in compile conditions.
-
 
 *** Version 4.1.2.5 (10. December 2018 - rev4911)
     Added: PhotonPeer.SentReliableCommandsCount - reliable commands sent but not yet acknowledged. This can be used as indicator for the quality of service, aslong with ResentReliableCommands.
@@ -75,26 +129,7 @@ LoadBalancing:
     Changes: The room list for lobbies is no longer part of the LoadBalancingClient. Instead, implement the callback for the changed room list.
     Added: AppSettings, a base class to host AppId and some settings for a title. This will help make it available across products. Right now, the LoadBalancingClient is not using it yet.
     Changed: Player.ID is now .ActorNumber, which mirrors the server's naming.
-    Fixed: Unity compile defines to support Unity 2018.
-
-*** Version 4.1.1.21 (26. October 2018 - rev4874)
-    Changed: SocketUdpAsync is now the same as in trunk. Send blocking, receiving via BeginReceive and EndReceive.
-    Adde: SocketTcpAsync.
-    Note: Both async Socket classes are a workaround for Unity with C# 4.x in Mono, which makes Socket.Receive() block.
-    Changed: TPeer.ReceiveIncomingCommands() will now use dataLength as indicator how much was received.
-    Changed: TPeer.ReceiveIncomingCommands() currently copies dataLength-bytes of the in-buffer to a message "enqueued" buffer. To be replaced with pooled buffers.
-    Changed: EnetPeer.SendOutgoingCommands() will EnqueueStatusCallback(StatusCode.TimeoutDisconnect) for timeouts. This keeps the sequence of events correct.
-	Changed: CalculateCrc() now uses a cached lookup table, which gives it much better performance (mostly for longer datagrams).
-	Changed: EventData (in Protocol .cs) now has a Sender and a CustomData property. Same as in trunk.
-	Added: List<object> support for Protocol16. Same as in the trunk.
-	Added: Special case to deserialize byte[] and int[], which should be more effective than before. Same as in trunk.
-	Changed: Arranged this. for some cases in IPhotonSocket.
-	Changed: Enet execution of a read Disconnect command. As in trunk, the state change is enqueued and Disconnect gets called right away.
-	Changed: The TPeer resets the last receive time in more cases: InitPeerBase() and OnConnect(). Same as in trunk.
-
-*** Version 4.1.1.20 (19. September 2018 - rev4808)
-    Added: SendOperation() with SendOptions to v4.1.1.x library. This minimizes the gap between this library branch and the new trunk.
-    Added: Third parameter to PhotonPeer.InitDatagramEncryption() which is not used but only present to make this API compatible with released from another branch. This feature requires v4.1.2.0 and up.
+    Fixed: Unity compile defines to support Unity 2018,
 
 *** Version 4.1.1.19 (9. April 2018 - rev4590)
     Fixed: WSS now sends an operation "ping" in SendAcksOnly() (and SendOutgoingCommands()) to avoid getting timed out. This happens right away, while other commands/operations stay in queue.

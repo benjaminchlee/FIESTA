@@ -5,16 +5,15 @@ using IATK;
 using VRTK;
 using System;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.Remoting.Lifetime;
 using DG.Tweening;
 using ExitGames.Client.Photon;
+using Photon.Pun;
 using VRTK.Examples;
 
 /// <summary>
 /// Acts as a wrapper for IATK's visualisation script
 /// </summary>
-public class Chart : Photon.MonoBehaviour
+public class Chart : MonoBehaviourPunCallbacks
 {
     [SerializeField]
     private GameObject visualisationGameObject;
@@ -77,7 +76,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == chartType)
                 return;
 
-            photonView.RPC("PropagateVisualisationType", PhotonTargets.All, value);
+            photonView.RPC("PropagateVisualisationType", RpcTarget.All, value);
         }
     }
 
@@ -112,7 +111,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == GeometryType)
                 return;
 
-            photonView.RPC("PropagateGeometryType", PhotonTargets.All, value);
+            photonView.RPC("PropagateGeometryType", RpcTarget.All, value);
         }
     }
 
@@ -143,7 +142,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == XDimension)
                 return;
 
-            photonView.RPC("PropagateXDimension", PhotonTargets.All, value);
+            photonView.RPC("PropagateXDimension", RpcTarget.All, value);
         }
     }
 
@@ -182,7 +181,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == YDimension)
                 return;
 
-            photonView.RPC("PropagateYDimension", PhotonTargets.All, value);
+            photonView.RPC("PropagateYDimension", RpcTarget.All, value);
         }
     }
 
@@ -221,7 +220,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == ZDimension)
                 return;
 
-            photonView.RPC("PropagateZDimension", PhotonTargets.All, value);
+            photonView.RPC("PropagateZDimension", RpcTarget.All, value);
         }
     }
 
@@ -260,7 +259,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == XNormaliser)
                 return;
 
-            photonView.RPC("PropagateXNormaliser", PhotonTargets.All, value);
+            photonView.RPC("PropagateXNormaliser", RpcTarget.All, value);
         }
     }
 
@@ -294,7 +293,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == YNormaliser)
                 return;
 
-            photonView.RPC("PropagateYNormaliser", PhotonTargets.All, value);
+            photonView.RPC("PropagateYNormaliser", RpcTarget.All, value);
         }
     }
 
@@ -328,7 +327,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == XNormaliser)
                 return;
 
-            photonView.RPC("PropagateZNormaliser", PhotonTargets.All, value);
+            photonView.RPC("PropagateZNormaliser", RpcTarget.All, value);
         }
     }
 
@@ -362,7 +361,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == ColorDimension)
                 return;
 
-            photonView.RPC("PropagateColorDimension", PhotonTargets.All, value);
+            photonView.RPC("PropagateColorDimension", RpcTarget.All, value);
         }
     }
 
@@ -393,7 +392,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == ColorPaletteDimension)
                 return;
 
-            photonView.RPC("PropagateColorPaletteDimension", PhotonTargets.All, value);
+            photonView.RPC("PropagateColorPaletteDimension", RpcTarget.All, value);
         }
     }
 
@@ -429,7 +428,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == Color)
                 return;
 
-            photonView.RPC("PropagateColor", PhotonTargets.All, value);
+            photonView.RPC("PropagateColor", RpcTarget.All, value);
         }
     }
 
@@ -468,7 +467,7 @@ public class Chart : Photon.MonoBehaviour
                 gradientList.Add(colorKey.color.g);
                 gradientList.Add(colorKey.color.b);
             }
-            photonView.RPC("PropagateGradient", PhotonTargets.Others, gradientList.ToArray());
+            photonView.RPC("PropagateGradient", RpcTarget.Others, gradientList.ToArray());
 
             // Run for the owner only
             switch (chartType)
@@ -530,7 +529,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == visualisation.coloursPalette)
                 return;
 
-            photonView.RPC("PropagateColorPalette", PhotonTargets.All, value);
+            photonView.RPC("PropagateColorPalette", RpcTarget.All, value);
         }
     }
 
@@ -564,7 +563,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == SizeDimension)
                 return;
             
-            photonView.RPC("PropagateSizeDimension", PhotonTargets.All, value);
+            photonView.RPC("PropagateSizeDimension", RpcTarget.All, value);
         }
     }
 
@@ -599,7 +598,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == Size)
                 return;
 
-            photonView.RPC("PropagateSize", PhotonTargets.All, value);
+            photonView.RPC("PropagateSize", RpcTarget.All, value);
         }
     }
 
@@ -627,7 +626,7 @@ public class Chart : Photon.MonoBehaviour
             if (LinkingDimension != "Undefined" && value == LinkingDimension)
                 return;
 
-            photonView.RPC("PropagateLinkingDimension", PhotonTargets.All, value);
+            photonView.RPC("PropagateLinkingDimension", RpcTarget.All, value);
         }
     }
 
@@ -707,7 +706,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == Scale)
                 return;
 
-            photonView.RPC("PropagateScale", PhotonTargets.All, value);
+            photonView.RPC("PropagateScale", RpcTarget.All, value);
         }
     }
 
@@ -766,7 +765,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == Width)
                 return;
 
-            photonView.RPC("PropagateWidth", PhotonTargets.All, value);
+            photonView.RPC("PropagateWidth", RpcTarget.All, value);
         }
     }
 
@@ -810,7 +809,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == Height)
                 return;
 
-            photonView.RPC("PropagateHeight", PhotonTargets.All, value);
+            photonView.RPC("PropagateHeight", RpcTarget.All, value);
         }
     }
 
@@ -854,7 +853,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == Depth)
                 return;
 
-            photonView.RPC("PropagateDepth", PhotonTargets.All, value);
+            photonView.RPC("PropagateDepth", RpcTarget.All, value);
         }
     }
 
@@ -901,7 +900,7 @@ public class Chart : Photon.MonoBehaviour
             // TODO: ONLY WORKS WITH ONE FILTER
             AttributeFilter af = value[0];
 
-            photonView.RPC("PropagateAttributeFilters", PhotonTargets.All, af.Attribute, af.minFilter, af.maxFilter, af.minScale, af.maxScale);
+            photonView.RPC("PropagateAttributeFilters", RpcTarget.All, af.Attribute, af.minFilter, af.maxFilter, af.minScale, af.maxScale);
         }
     }
 
@@ -932,7 +931,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == scatterplotMatrixSize)
                 return;
 
-            photonView.RPC("PropagateScatterplotMatrixSize", PhotonTargets.All, value);
+            photonView.RPC("PropagateScatterplotMatrixSize", RpcTarget.All, value);
         }
     }
 
@@ -955,7 +954,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == facetDimension)
                 return;
             
-            photonView.RPC("PropagateFacetDimension", PhotonTargets.All, value);
+            photonView.RPC("PropagateFacetDimension", RpcTarget.All, value);
         }
     }
 
@@ -988,7 +987,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == facetSize)
                 return;
 
-            photonView.RPC("PropagateFacetSize", PhotonTargets.All, value);
+            photonView.RPC("PropagateFacetSize", RpcTarget.All, value);
         }
     }
 
@@ -1012,7 +1011,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == isPrototype)
                 return;
 
-            photonView.RPC("PropagateIsPrototype", PhotonTargets.All, value);
+            photonView.RPC("PropagateIsPrototype", RpcTarget.All, value);
         }
     }
 
@@ -1034,7 +1033,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == XAxisVisibility || visualisation.theVisualizationObject.X_AXIS == null)
                 return;
 
-            photonView.RPC("PropagateXAxisVisibility", PhotonTargets.All, value);
+            photonView.RPC("PropagateXAxisVisibility", RpcTarget.All, value);
         }
     }
 
@@ -1056,7 +1055,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == YAxisVisibility || visualisation.theVisualizationObject.Y_AXIS == null)
                 return;
 
-            photonView.RPC("PropagateYAxisVisibility", PhotonTargets.All, value);
+            photonView.RPC("PropagateYAxisVisibility", RpcTarget.All, value);
         }
     }
 
@@ -1078,7 +1077,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == ZAxisVisibility || visualisation.theVisualizationObject.Z_AXIS == null)
                 return;
 
-            photonView.RPC("PropagateZAxisVisibility", PhotonTargets.All, value);
+            photonView.RPC("PropagateZAxisVisibility", RpcTarget.All, value);
         }
     }
 
@@ -1099,7 +1098,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == KeyVisiblility || visualisation.key == null)
                 return;
 
-            photonView.RPC("PropagateKeyVisibility", PhotonTargets.All, value);
+            photonView.RPC("PropagateKeyVisibility", RpcTarget.All, value);
         }
     }
 
@@ -1121,7 +1120,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == resizeHandleVisibility)
                 return;
 
-            photonView.RPC("PropagateResizeHandleVisibility", PhotonTargets.All, value);
+            photonView.RPC("PropagateResizeHandleVisibility", RpcTarget.All, value);
         }
     }
 
@@ -1142,7 +1141,7 @@ public class Chart : Photon.MonoBehaviour
             if (value == ColliderActiveState)
                 return;
 
-            photonView.RPC("PropagateColliderActiveState", PhotonTargets.All, value);
+            photonView.RPC("PropagateColliderActiveState", RpcTarget.All, value);
         }
     }
 
@@ -1171,7 +1170,7 @@ public class Chart : Photon.MonoBehaviour
             DataSource = ChartManager.Instance.DataSource;
 
         // If this chart was instantiated by someone else, register it
-        if (!photonView.isMine)
+        if (!photonView.IsMine)
         {
             ChartManager.Instance.RegisterVisualisation(this);
         }
@@ -1244,7 +1243,7 @@ public class Chart : Photon.MonoBehaviour
     /// </summary>
     private void AdjustScatterplotMatrixSize()
     {
-        if (!photonView.isMine)
+        if (!photonView.IsMine)
         {
             return;
         }
@@ -1300,7 +1299,7 @@ public class Chart : Photon.MonoBehaviour
 
                             GameObject go = PhotonNetwork.Instantiate("SPLOMButton", Vector3.zero, Quaternion.identity, 0);
                             SPLOMButton button = go.GetComponent<SPLOMButton>();
-                            button.parentSplomPhotonID = photonView.viewID;
+                            button.parentSplomPhotonID = photonView.ViewID;
                             button.Text = DataSource[i].Identifier;
                             splomButtons[i] = button;
                             go.transform.SetParent(transform);
@@ -1345,7 +1344,7 @@ public class Chart : Photon.MonoBehaviour
     /// </summary>
     private void ResizeAndPositionScatterplotMatrix()
     {
-        if (!photonView.isMine)
+        if (!photonView.IsMine)
         {
             return;
         }
@@ -1392,7 +1391,7 @@ public class Chart : Photon.MonoBehaviour
     [PunRPC]
     public void ScatterplotMatrixDimensionChanged(int splomButtonPhotonID, string text)
     {
-        if (!photonView.isMine)
+        if (!photonView.IsMine)
         {
             return;
         }
@@ -1410,8 +1409,8 @@ public class Chart : Photon.MonoBehaviour
 
             if (chart.CompareTag("Chart"))
             {
-                if (!chart.photonView.isMine)
-                    chart.photonView.TransferOwnership(PhotonNetwork.player);
+                if (!chart.photonView.IsMine)
+                    chart.photonView.TransferOwnership(PhotonNetwork.LocalPlayer);
 
                 chart.GetComponent<Chart>().YDimension = text;
             }
@@ -1424,8 +1423,8 @@ public class Chart : Photon.MonoBehaviour
 
             if (chart.CompareTag("Chart"))
             {
-                if (!chart.photonView.isMine)
-                    chart.photonView.TransferOwnership(PhotonNetwork.player);
+                if (!chart.photonView.IsMine)
+                    chart.photonView.TransferOwnership(PhotonNetwork.LocalPlayer);
 
                 chart.GetComponent<Chart>().XDimension = text;
             }
@@ -1434,7 +1433,7 @@ public class Chart : Photon.MonoBehaviour
 
     private void AdjustAndUpdateFacet()
     {
-        if (!photonView.isMine)
+        if (!photonView.IsMine)
         {
             return;
         }
@@ -1562,14 +1561,14 @@ public class Chart : Photon.MonoBehaviour
 
         InteractionsManager.Instance.GrabbingStarted();  // TODO: FIX
 
-        DataLogger.Instance.LogActionData(this, photonView.owner, "Vis Grab Start");
+        DataLogger.Instance.LogActionData(this, photonView.Owner, "Vis Grab Start");
     }
 
     private void ChartUngrabbed(object sender, InteractableObjectEventArgs e)
     {
         InteractionsManager.Instance.GrabbingFinished(); // TODO: FIX
 
-        DataLogger.Instance.LogActionData(this, photonView.owner, "Vis Grab End");
+        DataLogger.Instance.LogActionData(this, photonView.Owner, "Vis Grab End");
 
         // Animate the work shelf prototype back to its position
         if (isPrototype)
@@ -1589,7 +1588,7 @@ public class Chart : Photon.MonoBehaviour
                 isThrowing = true;
                 deletionTimer = 0;
 
-                DataLogger.Instance.LogActionData(this, photonView.owner, "Vis Thrown");
+                DataLogger.Instance.LogActionData(this, photonView.Owner, "Vis Thrown");
             }
             else
             {
@@ -1639,7 +1638,7 @@ public class Chart : Photon.MonoBehaviour
                 interactTouch.ForceTouch(dupe.gameObject);
                 interactGrab.AttemptGrab();
 
-                DataLogger.Instance.LogActionData(this, photonView.owner, "Vis created");
+                DataLogger.Instance.LogActionData(this, photonView.Owner, "Vis created");
             }
             // Check if the chart is being held next to the dashboard for transfer
             else if (!isPrototype && (isTouchingDashboard || isTouchingDisplayScreen))
@@ -1655,7 +1654,7 @@ public class Chart : Photon.MonoBehaviour
                 ColliderActiveState = false;
                 transform.DOScale(0, 1f).OnComplete(() => ChartManager.Instance.RemoveVisualisation(this));
                 
-                DataLogger.Instance.LogActionData(this, photonView.owner, "Vis destroyed");
+                DataLogger.Instance.LogActionData(this, photonView.Owner, "Vis destroyed");
             }
             else
             {
@@ -1670,10 +1669,10 @@ public class Chart : Photon.MonoBehaviour
             {
                 isResizing = true;
 
-                DataLogger.Instance.LogActionData(this, photonView.owner, "Vis resize start");
+                DataLogger.Instance.LogActionData(this, photonView.Owner, "Vis resize start");
             }
 
-            if (!photonView.isMine)
+            if (!photonView.IsMine)
                 photonView.RequestOwnership();
 
             Vector3 scale = Scale;
@@ -1692,9 +1691,15 @@ public class Chart : Photon.MonoBehaviour
                 handleLocalPos.x = -Width / 2 - 0.05f;
                 handleLocalPos.z = 0;
                 topLeftInteractableHandle.transform.localPosition = handleLocalPos;
-                topLeftInteractableHandle.transform.localRotation = Quaternion.identity;;
+                topLeftInteractableHandle.transform.localRotation = Quaternion.identity;
 
                 VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(topLeftInteractableHandle.GetGrabbingObject()), 0.075f);
+            }
+            else
+            {
+                Vector3 pos = new Vector3(-Width / 2 - 0.05f, scale.x / 2 + 0.08f, 0);
+                topLeftInteractableHandle.transform.localPosition = pos;
+                topLeftInteractableHandle.transform.localRotation = Quaternion.identity;
             }
             if (bottomRightInteractableHandle.IsGrabbed())
             {
@@ -1710,9 +1715,15 @@ public class Chart : Photon.MonoBehaviour
                 handleLocalPos.y = -Height / 2 - 0.05f;
                 handleLocalPos.z = 0;
                 bottomRightInteractableHandle.transform.localPosition = handleLocalPos;
-                bottomRightInteractableHandle.transform.localRotation = Quaternion.identity; ;
+                bottomRightInteractableHandle.transform.localRotation = Quaternion.identity;
 
                 VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(bottomRightInteractableHandle.GetGrabbingObject()), 0.075f);
+            }
+            else
+            {
+                Vector3 pos = new Vector3(scale.x / 2 + 0.08f, -Height / 2 - 0.05f, 0);
+                bottomRightInteractableHandle.transform.localPosition = pos;
+                bottomRightInteractableHandle.transform.localRotation = Quaternion.identity;
             }
 
             Scale = scale;
@@ -1721,11 +1732,18 @@ public class Chart : Photon.MonoBehaviour
         {
             isResizing = false;
 
-            DataLogger.Instance.LogActionData(this, photonView.owner, "Vis resize end");
+            Vector3 tlPos = new Vector3(-Width / 2 - 0.05f, Height / 2 + 0.08f, 0);
+            topLeftInteractableHandle.transform.localPosition = tlPos;
+            topLeftInteractableHandle.transform.localRotation = Quaternion.identity;
+
+            Vector3 brPos = new Vector3(Width / 2 + 0.08f, -Height / 2 - 0.05f, 0);
+            bottomRightInteractableHandle.transform.localPosition = brPos;
+            bottomRightInteractableHandle.transform.localRotation = Quaternion.identity;
+            DataLogger.Instance.LogActionData(this, photonView.Owner, "Vis resize end");
         }
 
         // Facet normalisers
-        if (VisualisationType == AbstractVisualisation.VisualisationTypes.FACET && photonView.isMine)
+        if (VisualisationType == AbstractVisualisation.VisualisationTypes.FACET && photonView.IsMine)
         {
             // Only check if there are multiple facets
             if (FacetSize > 1)
@@ -1863,14 +1881,14 @@ public class Chart : Photon.MonoBehaviour
 
         AnimateTowards(pos, rot, 0.2f);
 
-        DataLogger.Instance.LogActionData(this, photonView.owner, "Vis attached");
+        DataLogger.Instance.LogActionData(this, photonView.Owner, "Vis attached");
     }
 
     private void TransferChartToDashboard()
     {
         touchingDashboard.LoadChart(this, true);
 
-        DataLogger.Instance.LogActionData(this, photonView.owner, "Vis transferred");
+        DataLogger.Instance.LogActionData(this, photonView.Owner, "Vis transferred");
     }
 
     public void AnimateTowards(Vector3 targetPos, Quaternion targetRot, float duration, bool toDestroy = false)
@@ -1882,7 +1900,7 @@ public class Chart : Photon.MonoBehaviour
         else
             transform.DOLocalMove(targetPos, duration).SetEase(Ease.OutQuint).OnComplete(() =>
                 {
-                    photonView.RPC("ForcePosition", photonView.owner, targetPos, targetRot);
+                    photonView.RPC("ForcePosition", photonView.Owner, targetPos, targetRot);
                     ColliderActiveState = true;
                 });
 

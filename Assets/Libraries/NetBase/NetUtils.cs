@@ -1,4 +1,6 @@
-﻿namespace NetBase {
+﻿using Photon.Pun;
+
+namespace NetBase {
     using UnityEngine;
     using UnityEngine.SceneManagement;
 
@@ -7,10 +9,10 @@
         public static void SetPhotonViewSync(Transform trans, ViewSynchronization sync) {
             var comp = trans.gameObject.GetComponent<PhotonView>();
             if (comp != null) {
-                comp.synchronization = sync;
+                comp.Synchronization = sync;
             }
             foreach (PhotonView c in trans.gameObject.GetComponentsInChildren(typeof(PhotonView), true)) {
-                comp.synchronization = sync;
+                comp.Synchronization = sync;
             }
         }
 
@@ -267,11 +269,11 @@
                 }
                 if (script is PhotonView) {
                     PhotonView pv = (PhotonView)script;
-                    return pv.viewID;
+                    return pv.ViewID;
                 }
                 if (script is PhotonViewLink) {
                     PhotonViewLink pvl = (PhotonViewLink)script;
-                    return pvl.linkedView.viewID;
+                    return pvl.linkedView.ViewID;
                 }
             }
             return 0;

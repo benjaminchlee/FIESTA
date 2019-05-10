@@ -283,23 +283,24 @@
              Called whenever an event from the Photon Server is dispatched.
              </summary>
              <remarks>
-             Events are used for communication between clients and allow the server to update clients over time.
+             Events are used for communication between clients and allow the server to update clients anytime.
              The creation of an event is often triggered by an operation (called by this client or an other).
             
-             Each event carries its specific content in its Parameters. Your application knows which content to
-             expect by checking the event's 'type', given by the event's Code.
+             Each event carries a Code plus optional content in its Parameters.
+             Your application should identify which content to expect by the event's Code.
             
-             Events can be defined and extended server-side.
+             Events can be defined and modified server-side.
             
-             If you use the LoadBalancing application as base, several events like EvJoin and EvLeave are already defined.
-             For these events and their Parameters, the library provides constants, so check the EventCode and ParameterCode
-             classes.
+             If you use the LoadBalancing api as basis, several events like EvJoin and EvLeave are pre-defined.
+             The LoadBalancing api provides the EventCode and ParameterCode classes for pre-defined events.
             
-             Photon also allows you to come up with custom events on the fly, purely client-side. To do so, use
-             OpRaiseEvent.<para></para>
+             Photon also allows you to come up with custom events on the fly, purely client-side.
+             To do so, use OpRaiseEvent.<para></para>
             
-             Events are buffered on the client side and must be Dispatched. This way, OnEvent is always taking
-             place in the same thread as a <see cref="M:ExitGames.Client.Photon.PhotonPeer.DispatchIncomingCommands" /> call.
+             Events are incoming messages and as such buffered in the peer.
+             Calling PhotonPeer.DispatchIncomingCommands will call IPhotonPeerListener.OnEvent, to hand over received events.
+            
+             PhotonPeer.ReuseEventInstance is an option to optimize memory usage by reusing one EventData instance.
              </remarks>
              <param name="eventData">The event currently being dispatched.</param>
         </member>
@@ -401,6 +402,36 @@
             server. Each should have its own listener instance, to separate the operations, callbacks and events.
             </remarks>
         </member>
+        <member name="P:ExitGames.Client.Photon.PhotonPeer.CommandBufferSize">
+            <summary>
+            No effect anymore. Removed without replacement.
+            </summary>
+            <remarks>
+            This value was used to get/set the initial capacities of command-lists.
+            These grow on demand but knowing their capacity is of very limited use.
+            Also, various command-lists grow their capacity independent from one another.
+            </remarks>
+        </member>
+        <member name="P:ExitGames.Client.Photon.PhotonPeer.LimitOfUnreliableCommands">
+            <summary>
+            No effect anymore. Removed without replacement.
+            </summary>
+            <remarks>
+            This was used to skip some received (and buffered) unreliable commands, to avoid situations
+            where the peer has aggregated a lot of (old) messages.
+            </remarks>
+        </member>
+        <member name="F:ExitGames.Client.Photon.PhotonPeer.WarningSize">
+            <summary>
+            The WarningSize was used test all message queues for congestion.
+            </summary>
+        </member>
+        <member name="P:ExitGames.Client.Photon.PhotonPeer.LocalTimeInMilliSeconds">
+            <summary>
+            Gets a local timestamp in milliseconds by calling SupportClass.GetTickCount().
+            See LocalMsTimestampDelegate.
+            </summary>
+        </member>
         <member name="F:ExitGames.Client.Photon.PhotonPeer.NoSocket">
             <summary>False if this library build contains C# Socket code. If true, you must set some type as SocketImplementation before connecting.</summary>
         </member>
@@ -415,9 +446,6 @@
         </member>
         <member name="P:ExitGames.Client.Photon.PhotonPeer.ClientSdkIdShifted">
             <summary>For the Init-request, we shift the ClientId by one and the last bit signals a "debug" (0) or "release" build (1).</summary>
-        </member>
-        <member name="F:ExitGames.Client.Photon.PhotonPeer.AsyncKeyExchange">
-            <summary>Defines if Key Exchange for Encryption is done asynchronously in another thread.</summary>
         </member>
         <member name="P:ExitGames.Client.Photon.PhotonPeer.ClientVersion">
             <summary>Version of this library as string.</summary>
@@ -459,6 +487,18 @@
             Gets the IPhotonPeerListener of this instance (set in constructor).
             Can be used in derived classes for Listener.DebugReturn().
             </summary>
+        </member>
+        <member name="P:ExitGames.Client.Photon.PhotonPeer.ReuseEventInstance">
+             <summary>
+             Option to make the PhotonPeer reuse a single EventData instance for all incoming events.
+             </summary>
+             <remarks>
+             This reduces memory garbage.
+             If enabled, the event provided via OnEvent(EventData photonEvent) is invalid once the callback finished.
+             That event's content will get modified. Typically this is not a problem as events are rarely cached.
+            
+             Changing this value acquires the same lock that DispatchIncomingCommands() uses.
+             </remarks>
         </member>
         <member name="P:ExitGames.Client.Photon.PhotonPeer.BytesIn">
             <summary>
@@ -549,44 +589,11 @@
             </summary>
             <remarks>Used for debugging only. This value is not useful in everyday Photon usage.</remarks>
         </member>
-        <member name="P:ExitGames.Client.Photon.PhotonPeer.CommandBufferSize">
-             <summary>
-             Initial size internal lists for incoming/outgoing commands (reliable and unreliable).
-             </summary>
-             <remarks>
-             This sets only the initial size. All lists simply grow in size as needed. This means that
-             incoming or outgoing commands can pile up and consume heap size if Service is not called
-             often enough to handle the messages in either direction.
-            
-             Configure the WarningSize, to get callbacks when the lists reach a certain size.
-            
-             UDP: Incoming and outgoing commands each have separate buffers for reliable and unreliable sending.
-             There are additional buffers for &quot;sent commands&quot; and &quot;ACKs&quot;.
-             TCP: Only two buffers exist: incoming and outgoing commands.
-             </remarks>
-        </member>
         <member name="F:ExitGames.Client.Photon.PhotonPeer.RhttpMinConnections">
             <summary> (default=2) minimum number of open connections </summary>
         </member>
         <member name="F:ExitGames.Client.Photon.PhotonPeer.RhttpMaxConnections">
             <summary> (default=6) maximum number of open connections, should be > RhttpMinConnections </summary>
-        </member>
-        <member name="P:ExitGames.Client.Photon.PhotonPeer.LimitOfUnreliableCommands">
-            <summary>
-            Limits the queue of received unreliable commands within DispatchIncomingCommands before dispatching them.
-            This works only in UDP.
-            This limit is applied when you call DispatchIncomingCommands. If this client (already) received more than
-            LimitOfUnreliableCommands, it will throw away the older ones instead of dispatching them. This can produce
-            bigger gaps for unreliable commands but your client catches up faster.
-            </summary>
-            <remarks>
-            This can be useful when the client couldn't dispatch anything for some time (cause it was in a room but
-            loading a level).
-            If set to 20, the incoming unreliable queues are truncated to 20.
-            If 0, all received unreliable commands will be dispatched.
-            This is a "per channel" value, so each channel can hold up to LimitOfUnreliableCommands commands.
-            This value interacts with DispatchIncomingCommands: If that is called less often, more commands get skipped.
-            </remarks>
         </member>
         <member name="P:ExitGames.Client.Photon.PhotonPeer.QueuedIncomingCommands">
             <summary>
@@ -599,7 +606,7 @@
             Count of all commands currently queued as outgoing, including all channels and reliable, unreliable.
             </summary>
         </member>
-        <!-- Ungültiger XML-Kommentar wurde für den Member "M:ExitGames.Client.Photon.PhotonPeer.MessageBufferPoolTrim(System.Int32)" ignoriert -->
+        <!-- Badly formed XML comment ignored for member "M:ExitGames.Client.Photon.PhotonPeer.MessageBufferPoolTrim(System.Int32)" -->
         <member name="F:ExitGames.Client.Photon.PhotonPeer.ChannelCount">
             <summary>
             Gets / sets the number of channels available in UDP connections with Photon.
@@ -640,11 +647,6 @@
         <member name="P:ExitGames.Client.Photon.PhotonPeer.ResentReliableCommands">
             <summary>
             Count of commands that got repeated (due to local repeat-timing before an ACK was received).
-            </summary>
-        </member>
-        <member name="F:ExitGames.Client.Photon.PhotonPeer.WarningSize">
-            <summary>
-            The WarningSize was used test all message queues for congestion.
             </summary>
         </member>
         <member name="F:ExitGames.Client.Photon.PhotonPeer.SentCountAllowance">
@@ -719,12 +721,6 @@
             <summary>The last ConnectionTime value, when SendOutgoingCommands actually checked outgoing queues to send them. Must be connected.</summary>
             <remarks>Available for UDP and TCP connections.</remarks>
         </member>
-        <member name="P:ExitGames.Client.Photon.PhotonPeer.LocalTimeInMilliSeconds">
-            <summary>
-            Gets a local timestamp in milliseconds by calling SupportClass.GetTickCount().
-            See LocalMsTimestampDelegate.
-            </summary>
-        </member>
         <member name="P:ExitGames.Client.Photon.PhotonPeer.LocalMsTimestampDelegate">
             <summary>
             This setter for the (local-) timestamp delegate replaces the default Environment.TickCount with any equal function.
@@ -756,7 +752,14 @@
             Changes of the roundtriptime as variance value. Gives a hint about how much the time is changing.
             </summary>
         </member>
-        <!-- Ungültiger XML-Kommentar wurde für den Member "P:ExitGames.Client.Photon.PhotonPeer.TimestampOfLastSocketReceive" ignoriert -->
+        <member name="P:ExitGames.Client.Photon.PhotonPeer.TimestampOfLastSocketReceive">
+            <summary>
+            Timestamp of the last time anything (!) was received from the server (including low level Ping, ACKs, events and operation-returns).
+            </summary>
+            <remarks>
+            This is not the time when something was dispatched. If you enable NetworkSimulation, this value is affected as well.
+            </remarks>
+        </member>
         <member name="P:ExitGames.Client.Photon.PhotonPeer.ServerAddress">
             <summary>
             The server address which was used in PhotonPeer.Connect() or null (before Connect() was called).
@@ -798,7 +801,7 @@
             which uses less resoures.
             </summary>
             <remarks>
-            The size is not restricing the buffer and does not affect when poutgoing data is actually sent.
+            The size is not restricing the buffer and does not affect when outgoing data is actually sent.
             </remarks>
         </member>
         <member name="P:ExitGames.Client.Photon.PhotonPeer.MaximumTransferUnit">
@@ -824,6 +827,9 @@
             <summary>
             While true, the peer will not send any other commands except ACKs (used in UDP connections).
             </summary>
+        </member>
+        <member name="F:ExitGames.Client.Photon.PhotonPeer.AsyncKeyExchange">
+            <summary>Defines if Key Exchange for Encryption is done asynchronously in another thread.</summary>
         </member>
         <member name="P:ExitGames.Client.Photon.PhotonPeer.TrafficStatsIncoming">
             <summary>
@@ -865,6 +871,14 @@
             <summary>
             Creates new instances of TrafficStats and starts a new timer for those.
             </summary>
+        </member>
+        <member name="M:ExitGames.Client.Photon.PhotonPeer.VitalStatsToString(System.Boolean)">
+            <summary>
+            Returns a string of the most interesting connection statistics.
+            When you have issues on the client side, these might contain hints about the issue's cause.
+            </summary>
+            <param name="all">If true, Incoming and Outgoing low-level stats are included in the string.</param>
+            <returns>Stats as string.</returns>
         </member>
         <member name="F:ExitGames.Client.Photon.PhotonPeer.peerBase">
             <summary>Implements the message-protocol, based on the underlying network protocol (udp, tcp, http).</summary>
@@ -1083,14 +1097,6 @@
              calling DispatchIncomingCommands. This makes things easier in a game loop: Event execution
              won't clash with painting objects or the game logic.
              </remarks>
-        </member>
-        <member name="M:ExitGames.Client.Photon.PhotonPeer.VitalStatsToString(System.Boolean)">
-            <summary>
-            Returns a string of the most interesting connection statistics.
-            When you have issues on the client side, these might contain hints about the issue's cause.
-            </summary>
-            <param name="all">If true, Incoming and Outgoing low-level stats are included in the string.</param>
-            <returns>Stats as string.</returns>
         </member>
         <member name="M:ExitGames.Client.Photon.PhotonPeer.SendOperation(System.Byte,System.Collections.Generic.Dictionary{System.Byte,System.Object},ExitGames.Client.Photon.SendOptions)">
              <summary>
@@ -1455,7 +1461,11 @@
         <member name="T:ExitGames.Client.Photon.NCommand">
             <summary> Internal class for "commands" - the package in which operations are sent.</summary>
         </member>
-        <!-- Ungültiger XML-Kommentar wurde für den Member "P:ExitGames.Client.Photon.NCommand.IsFlaggedUnsequenced" ignoriert -->
+        <member name="P:ExitGames.Client.Photon.NCommand.SizeOfPayload">
+            <summary>Size of the Payload, which may be null.</summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "P:ExitGames.Client.Photon.NCommand.IsFlaggedUnsequenced" -->
+        <!-- Badly formed XML comment ignored for member "P:ExitGames.Client.Photon.NCommand.IsFlaggedReliable" -->
         <member name="M:ExitGames.Client.Photon.NCommand.#ctor(ExitGames.Client.Photon.EnetPeer,System.Byte,ExitGames.Client.Photon.StreamBuffer,System.Byte)">
             <summary>this variant does only create outgoing commands and increments . incoming ones are created from a DataInputStream</summary>
         </member>
@@ -1598,16 +1608,13 @@
             <returns>To be used in debug situations only, as it returns a string for each value.</returns>
         </member>
         <member name="T:ExitGames.Client.Photon.EventData">
-             <summary>A Photon Event consists of a Code value and a Parameter Dictionary. In many cases, an Event also has a Sender (key: (byte)254).</summary>
+             <summary>A Photon Event consists of a Code value and a Parameters Dictionary with the event's content (if any).</summary>
              <remarks>
-             An event's code should define what it means and what content (Parameters) it has.
-             To simplify matters, the Sender (key: (byte)254) can be accessed via a property which caches the value.
+             The indexer of this class provides access to the values in Parameters.
+             It wraps the null check for Parameters and uses TryGetValue() for the provided key.
             
-             The indexer of this class provides access to the Parameters Dictionary. Most common are the events defined
-             by the Realtime layer for Photon (the default logic for the Photon Cloud).
-            
-             The operation RaiseEvent allows you to provide custom event content. Defined in Realtime, this
-             CustomContent will be made the value of key ParameterCode.CustomEventContent.
+             Photon servers use events to send information which is not triggered by a client's operation requests (those get responses).
+             The Realtime API allows you to send custom events with any Code and content via OpRaiseEvent.
              </remarks>
         </member>
         <member name="F:ExitGames.Client.Photon.EventData.Code">
@@ -1616,29 +1623,47 @@
         <member name="F:ExitGames.Client.Photon.EventData.Parameters">
             <summary>The Parameters of an event is a Dictionary&lt;byte, object&gt;.</summary>
         </member>
-        <member name="F:ExitGames.Client.Photon.EventData.SenderKey">
-            <summary>Defined in the "Realtime" layer but made available in EventData for convenience.</summary>
-        </member>
-        <member name="F:ExitGames.Client.Photon.EventData.sender">
-            <summary>Backing field Sender.</summary>
-        </member>
-        <member name="P:ExitGames.Client.Photon.EventData.Sender">
-            <summary>Accessor to the sender's actorNumber (key (byte)254). This fetches and caches Parameters[SenderKey] as int.</summary>
-            <remarks>Defined in the uppper layer ("Realtime") but made available in EventData for convenience. Default to 0, even if the key is not present.</remarks>
-        </member>
-        <member name="F:ExitGames.Client.Photon.EventData.CustomDataKey">
-            <summary>Defined in the "Realtime" layer but made available in EventData for convenience.</summary>
-        </member>
-        <member name="P:ExitGames.Client.Photon.EventData.CustomData">
-            <summary>Accessor to the sent custom event content (key (byte)245).</summary>
-            <remarks>Defined in the uppper layer ("Realtime") but made available in EventData for convenience. Null if the key is not present.</remarks>
-        </member>
         <member name="P:ExitGames.Client.Photon.EventData.Item(System.Byte)">
             <summary>
-            Alternative access to the Parameters.
+            Access to the Parameters of a Photon-defined event. Custom Events only use Code, Sender and CustomData.
             </summary>
-            <param name="key">The key byte-code of a event value.</param>
+            <param name="key">The key byte-code of a Photon event value.</param>
             <returns>The Parameters value, or null if the key does not exist in Parameters.</returns>
+        </member>
+        <member name="F:ExitGames.Client.Photon.EventData.SenderKey">
+            <summary>
+            Defines the event key containing the Sender of the event.
+            </summary>
+            <remarks>
+            Defaults to Sender key of Realtime API events (RaiseEvent): 254.
+            Can be set to Chat API's ChatParameterCode.Sender: 5.
+            </remarks>
+        </member>
+        <member name="P:ExitGames.Client.Photon.EventData.Sender">
+            <summary>
+            Accesses the Sender of the event via the indexer and SenderKey. The result is cached.
+            </summary>
+            <remarks>
+            Accesses this event's Parameters[CustomDataKey], which may be null.
+            In that case, this returns 0 (identifying the server as sender).
+            </remarks>
+        </member>
+        <member name="F:ExitGames.Client.Photon.EventData.CustomDataKey">
+            <summary>
+            Defines the event key containing the Custom Data of the event.
+            </summary>
+            <remarks>
+            Defaults to Data key of Realtime API events (RaiseEvent): 245.
+            Can be set to any other value on demand.
+            </remarks>
+        </member>
+        <member name="P:ExitGames.Client.Photon.EventData.CustomData">
+            <summary>
+            Accesses the Custom Data of the event via the indexer and CustomDataKey. The result is cached.
+            </summary>
+            <remarks>
+            Accesses this event's Parameters[CustomDataKey], which may be null.
+            </remarks>
         </member>
         <member name="M:ExitGames.Client.Photon.EventData.ToString">
             <summary>ToString() override.</summary>

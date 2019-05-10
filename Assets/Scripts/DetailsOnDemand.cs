@@ -7,8 +7,9 @@ using TMPro;
 using System.Text;
 using System.Linq;
 using System;
+using Photon.Pun;
 
-public class DetailsOnDemand : Photon.MonoBehaviour {
+public class DetailsOnDemand : MonoBehaviourPunCallbacks {
 
     [SerializeField]
     private DataSource dataSource;
@@ -38,7 +39,7 @@ public class DetailsOnDemand : Photon.MonoBehaviour {
         if (dataSource == null)
             dataSource = ChartManager.Instance.DataSource;
 
-        if (photonView.isMine)
+        if (photonView.IsMine)
         {
             if (controllerEvents == null)
                 controllerEvents = GetComponentInParent<VRTK_ControllerEvents>();
@@ -171,7 +172,7 @@ public class DetailsOnDemand : Photon.MonoBehaviour {
 
     public void TogglePanel(bool value)
     {
-        photonView.RPC("PropagateTogglePanel", PhotonTargets.All, value);
+        photonView.RPC("PropagateTogglePanel", RpcTarget.All, value);
 
         if (value)
         {
@@ -201,7 +202,7 @@ public class DetailsOnDemand : Photon.MonoBehaviour {
     {
         brushingAndLinking.HighlightIndex(index);
 
-        photonView.RPC("PropagateSetDetailsPage", PhotonTargets.All, index, numBrushed);
+        photonView.RPC("PropagateSetDetailsPage", RpcTarget.All, index, numBrushed);
     }
 
     [PunRPC]

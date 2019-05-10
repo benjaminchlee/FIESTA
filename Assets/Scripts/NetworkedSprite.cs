@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Photon.Pun;
 using UnityEngine;
 
-public class NetworkedSprite : Photon.MonoBehaviour {
+public class NetworkedSprite : MonoBehaviourPunCallbacks {
 
     [SerializeField]
     private SpriteRenderer spriteRenderer;
@@ -14,12 +15,12 @@ public class NetworkedSprite : Photon.MonoBehaviour {
         {
             if (value == null)
             {
-                photonView.RPC("PropagateSprite", PhotonTargets.All, "");
+                photonView.RPC("PropagateSprite", RpcTarget.All, "");
             }
             else
             {
 
-                photonView.RPC("PropagateSprite", PhotonTargets.All, value.name);
+                photonView.RPC("PropagateSprite", RpcTarget.All, value.name);
             }
         }
     }

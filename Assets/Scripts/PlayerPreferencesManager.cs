@@ -18,6 +18,7 @@ public class PlayerPreferencesManager : MonoBehaviour {
     public Color AvatarSkinColor
     {
         get { return avatarSkinColor; }
+        private set { avatarSkinColor = value; }
     }
 
     [SerializeField]
@@ -25,6 +26,7 @@ public class PlayerPreferencesManager : MonoBehaviour {
     public Color AvatarHeadsetColor
     {
         get { return avatarHeadsetColor; }
+        private set { avatarHeadsetColor = value; }
     }
 
     [SerializeField]
@@ -32,6 +34,7 @@ public class PlayerPreferencesManager : MonoBehaviour {
     public Color AvatarShirtColor
     {
         get { return avatarShirtColor; }
+        private set { avatarShirtColor = value; }
     }
 
     [SerializeField]
@@ -39,8 +42,23 @@ public class PlayerPreferencesManager : MonoBehaviour {
     public Color SharedBrushColor
     {
         get { return sharedBrushColor; }
+        private set { sharedBrushColor = value; }
     }
     
+    [SerializeField]
+    private bool spawnVRAvatar;
+    public bool SpawnVRAvatar
+    {
+        get { return spawnVRAvatar; }
+    }
+
+    [SerializeField]
+    private bool spawnKBMAvatar;
+    public bool SpawnKBMAvatar
+    {
+        get { return spawnKBMAvatar; }
+    }
+
     private void Awake()
     {
         if (Instance == null)
@@ -52,5 +70,18 @@ public class PlayerPreferencesManager : MonoBehaviour {
         {
             Destroy(gameObject);
         }
+    }
+
+    private void Start()
+    {
+        GameObject go = GameObject.Find("PlayerColorPicker");
+
+        if (go != null)
+            go.GetComponent<ColorPicker>().onValueChanged.AddListener(SetSharedBrushColor);
+    }
+
+    private void SetSharedBrushColor(Color color)
+    {
+        SharedBrushColor = color;
     }
 }

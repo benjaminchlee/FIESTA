@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Photon.Pun;
 using UnityEngine;
 using VRTK;
 
-public class DashboardHandle : Photon.MonoBehaviour {
+public class DashboardHandle : MonoBehaviourPunCallbacks {
 
     [SerializeField]
     private Dashboard parent;
@@ -24,11 +25,11 @@ public class DashboardHandle : Photon.MonoBehaviour {
 
     private void OnHandleGrabbed(object sender, InteractableObjectEventArgs e)
     {
-        if (!photonView.isMine)
-            photonView.TransferOwnership(PhotonNetwork.player);
+        if (!photonView.IsMine)
+            photonView.TransferOwnership(PhotonNetwork.LocalPlayer);
 
-        if (!parent.photonView.isMine)
-            parent.photonView.TransferOwnership(PhotonNetwork.player);
+        if (!parent.photonView.IsMine)
+            parent.photonView.TransferOwnership(PhotonNetwork.LocalPlayer);
 
         isGrabbed = true;
         SetPositionAndRotation();
@@ -40,7 +41,7 @@ public class DashboardHandle : Photon.MonoBehaviour {
     {
         if (isGrabbed)
         {
-            if (photonView.isMine)
+            if (photonView.IsMine)
             {
                 SetPositionAndRotation();
             }

@@ -2,12 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Photon.Pun;
 using UnityEngine;
 using UnityEngine.Events;
 using VRTK;
 using TMPro;
 
-public class SpinMenu : Photon.MonoBehaviour {
+public class SpinMenu : MonoBehaviourPunCallbacks {
     
     [SerializeField] [Tooltip("The buttons that are part of the spin menu. Note that the cancel button should be the last element of this list.")]
     private List<SpinMenuButton> buttons = new List<SpinMenuButton>();
@@ -44,7 +45,7 @@ public class SpinMenu : Photon.MonoBehaviour {
 
     private void Start()
     {
-        if (photonView.isMine)
+        if (photonView.IsMine)
         {
             // If the cancel button is not the last element in the last, move it to the end
             if (buttons.IndexOf(cancelButton) != buttons.Count - 1)
@@ -64,7 +65,7 @@ public class SpinMenu : Photon.MonoBehaviour {
                     buttons[i].transform.localScale = Vector3.zero;
             }
 
-            controllerEvents = GetComponentInParent<VRTK_ControllerEvents>();
+            controllerEvents = transform.parent.GetComponentInChildren<VRTK_ControllerEvents>();
             controllerEvents.TouchpadPressed += OnTouchpadPressed;
             controllerEvents.TouchpadReleased += OnTouchpadReleased;
         }
@@ -131,7 +132,7 @@ public class SpinMenu : Photon.MonoBehaviour {
             isExpanded = false;
             RetractButtons();
 
-            DataLogger.Instance.LogActionData(this, PhotonNetwork.player, "Spin menu end");
+            DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, "Spin menu end");
         }
     }
 
@@ -161,7 +162,7 @@ public class SpinMenu : Photon.MonoBehaviour {
 
                     RetractButtons();
 
-                    DataLogger.Instance.LogActionData(this, PhotonNetwork.player, "Spin menu end");
+                    DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, "Spin menu end");
                 }
             }
         }
@@ -210,7 +211,7 @@ public class SpinMenu : Photon.MonoBehaviour {
 
         InteractionsManager.Instance.RangedMenuStarted();
 
-        DataLogger.Instance.LogActionData(this, PhotonNetwork.player, "Spin Menu Start");
+        DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, "Spin Menu Start");
     }
 
     /// <summary>

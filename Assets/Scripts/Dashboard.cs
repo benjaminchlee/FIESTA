@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
 using IATK;
+using Photon.Pun;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -30,10 +31,10 @@ public enum DashboardPage
     MISC = 6
 }
 
-public class Dashboard : Photon.MonoBehaviour
+public class Dashboard : MonoBehaviourPunCallbacks
 {
     private DataSource dataSource;
-    public PhotonPlayer OriginalOwner { get; private set; }
+    public Photon.Realtime.Player OriginalOwner { get; private set; }
 
     public Chart standardChart;
     public Chart splomChart;
@@ -78,12 +79,12 @@ public class Dashboard : Photon.MonoBehaviour
 
     private void Start()
     {
-        OriginalOwner = photonView.owner;
+        OriginalOwner = photonView.Owner;
 
         if (dataSource == null)
             dataSource = ChartManager.Instance.DataSource;
 
-        if (photonView.isMine)
+        if (photonView.IsMine)
         {
             // Configure standard scatterplot/standardChart
             standardChart.DataSource = ChartManager.Instance.DataSource;
@@ -124,9 +125,9 @@ public class Dashboard : Photon.MonoBehaviour
     private bool IsOriginalOwner()
     {
         if (OriginalOwner == null)
-            return (photonView.owner.ID == PhotonNetwork.player.ID);
+            return (photonView.Owner.ActorNumber == PhotonNetwork.LocalPlayer.ActorNumber);
 
-        return (OriginalOwner.ID == PhotonNetwork.player.ID);
+        return (OriginalOwner.ActorNumber == PhotonNetwork.LocalPlayer.ActorNumber);
     }
 
     /// <summary>
@@ -149,22 +150,22 @@ public class Dashboard : Photon.MonoBehaviour
 
             case DashboardPage.STANDARD:
             case DashboardPage.SPLOM:
-                photonView.RPC("ToggleCharts", PhotonTargets.All, page);
-                photonView.RPC("ToggleButtons", PhotonTargets.All, page);
+                photonView.RPC("ToggleCharts", RpcTarget.All, page);
+                photonView.RPC("ToggleButtons", RpcTarget.All, page);
                 break;
 
             case DashboardPage.DIMENSIONS:
             case DashboardPage.SIZE:
             case DashboardPage.COLOR:
             case DashboardPage.MISC:
-                photonView.RPC("ToggleButtons", PhotonTargets.All, page);
+                photonView.RPC("ToggleButtons", RpcTarget.All, page);
                 break;
         }
     }
     
     public void ChangeSpecialPage(DashboardPage page, bool activate)
     {
-        photonView.RPC("ToggleSpecialButtons", PhotonTargets.All, (int)page, activate);
+        photonView.RPC("ToggleSpecialButtons", RpcTarget.All, (int)page, activate);
     }
 
     [PunRPC]
@@ -445,23 +446,23 @@ public class Dashboard : Photon.MonoBehaviour
             PhotonView[] photonViews = standardChart.GetComponentsInChildren<PhotonView>();
             foreach (PhotonView pv in photonViews)
             {
-                if (!pv.isMine)
-                    pv.TransferOwnership(PhotonNetwork.player);
+                if (!pv.IsMine)
+                    pv.TransferOwnership(PhotonNetwork.LocalPlayer);
             }
 
-            //splomChart.photonView.TransferOwnership(PhotonNetwork.player);
+            //splomChart.photonView.TransferOwnership(PhotonNetwork.LocalPlayer);
             //photonViews = splomChart.GetComponentsInChildren<PhotonView>();
             //foreach (PhotonView pv in photonViews)
             //{
-            //    if (!pv.isMine)
-            //        pv.TransferOwnership(PhotonNetwork.player);
+            //    if (!pv.IsMine)
+            //        pv.TransferOwnership(PhotonNetwork.LocalPlayer);
             //}
         }
     }
     
     public void LoadChart(Chart chart, bool destroyOnComplete = false)
     {
-        photonView.RPC("LoadChart", PhotonTargets.All, chart.photonView.viewID, destroyOnComplete);
+        photonView.RPC("LoadChart", RpcTarget.All, chart.photonView.ViewID, destroyOnComplete);
     }
 
     [PunRPC]
@@ -504,7 +505,7 @@ public class Dashboard : Photon.MonoBehaviour
 
         ChartTransferred.Invoke(chart);
 
-        if (destroyOnComplete && chart.photonView.isMine)
+        if (destroyOnComplete && chart.photonView.IsMine)
             chart.transform.DOScale(0, 0.3f).SetEase(Ease.InBack)
                 .OnComplete(() => ChartManager.Instance.RemoveVisualisation(chart));
     }

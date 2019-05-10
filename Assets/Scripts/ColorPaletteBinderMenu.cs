@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using ExitGames.UtilityScripts;
+using Photon.Pun;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class ColorPaletteBinderMenu : Photon.PunBehaviour {
+public class ColorPaletteBinderMenu : MonoBehaviourPunCallbacks {
 
     [SerializeField]
     private List<ColorPaletteBinderButton> buttons;
@@ -17,7 +15,7 @@ public class ColorPaletteBinderMenu : Photon.PunBehaviour {
     [SerializeField]
     private MenuButton confirmButton;
     [SerializeField]
-    private ColorPicker colorPicker;
+    private VRColorPicker vrColorPicker;
     [SerializeField]
     private TextMeshPro label;
 
@@ -37,11 +35,11 @@ public class ColorPaletteBinderMenu : Photon.PunBehaviour {
         {
             if (dimensionName != "Undefined")
             {
-                photonView.RPC("CreateColorButtons", PhotonTargets.All, dimensionName);
+                photonView.RPC("CreateColorButtons", RpcTarget.All, dimensionName);
             }
             else
             {
-                photonView.RPC("DestroyColorButtons", PhotonTargets.All);
+                photonView.RPC("DestroyColorButtons", RpcTarget.All);
             }
         }
     }
@@ -149,7 +147,7 @@ public class ColorPaletteBinderMenu : Photon.PunBehaviour {
 
     public void ColorButtonClicked(ColorPaletteBinderButton button)
     {
-        photonView.RPC("ShowColorPalettePicker", PhotonTargets.All, buttons.IndexOf(button));
+        photonView.RPC("ShowColorPalettePicker", RpcTarget.All, buttons.IndexOf(button));
     }
 
     [PunRPC]
@@ -164,13 +162,13 @@ public class ColorPaletteBinderMenu : Photon.PunBehaviour {
         label.text = "Picking Colour for Value: \n<b>" + button.Text + "</b>";
 
         Color col = button.Color;
-        colorPicker.gameObject.SetActive(true);
-        colorPicker.SetColor(col);
+        vrColorPicker.gameObject.SetActive(true);
+        vrColorPicker.SetColor(col);
     }
 
     public void ButtonClicked(MenuButton button)
     {
-        photonView.RPC("HideColorPalettePicker", PhotonTargets.All);
+        photonView.RPC("HideColorPalettePicker", RpcTarget.All);
     }
 
     [PunRPC]
@@ -179,7 +177,7 @@ public class ColorPaletteBinderMenu : Photon.PunBehaviour {
         ToggleColorButtons(true);
 
         confirmButton.gameObject.SetActive(false);
-        colorPicker.gameObject.SetActive(false);
+        vrColorPicker.gameObject.SetActive(false);
         label.gameObject.SetActive(false);
     }
 

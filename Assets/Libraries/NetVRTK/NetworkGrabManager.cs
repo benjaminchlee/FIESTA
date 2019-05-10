@@ -2,6 +2,7 @@
     using UnityEngine;
     using VRTK;
     using NetBase;
+    using Photon.Pun;
     using Hashtable = ExitGames.Client.Photon.Hashtable;
 
     [RequireComponent(typeof(VRTK_InteractableObject))]
@@ -32,7 +33,7 @@
             io.InteractableObjectUsed += HandleGrab;
             io.InteractableObjectUnused += HandleUngrab;
             if (nref.IsPhotonView) {
-                InitState(nref.GetPhotonView().ownerId);
+                InitState(nref.GetPhotonView().OwnerActorNr);
             }
         }
 
@@ -43,12 +44,12 @@
 
         private void HandleGrab(object sender, InteractableObjectEventArgs e) {
             if (nref.IsPhotonView) {
-                nref.GetPhotonView().TransferOwnership(PhotonNetwork.player);
+                nref.GetPhotonView().TransferOwnership(PhotonNetwork.LocalPlayer);
             }
             foreach (PhotonView pv in ownAdditionalPhotonviews) {
-                pv.TransferOwnership(PhotonNetwork.player);
+                pv.TransferOwnership(PhotonNetwork.LocalPlayer);
             }
-            InitState(PhotonNetwork.player.ID);
+            InitState(PhotonNetwork.LocalPlayer.ActorNumber);
             SendState();
         }
 

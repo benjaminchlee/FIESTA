@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Photon.Pun;
 using UnityEngine;
 
-public class NetworkedTrackedObject : Photon.MonoBehaviour {
+public class NetworkedTrackedObject : MonoBehaviourPunCallbacks {
 
     [SerializeField]
     private Renderer renderer;
@@ -13,7 +14,7 @@ public class NetworkedTrackedObject : Photon.MonoBehaviour {
 
     public void SetTrackedObject(GameObject go)
     {
-        if (photonView.isMine)
+        if (photonView.IsMine)
         {
             gameObjectToTrack = go;
         }
@@ -21,7 +22,7 @@ public class NetworkedTrackedObject : Photon.MonoBehaviour {
 
     public void SetColor(Color col)
     {
-        photonView.RPC("PropagateSetColor", PhotonTargets.AllBuffered, col);
+        photonView.RPC("PropagateSetColor", RpcTarget.AllBuffered, col);
     }
 
     [PunRPC]

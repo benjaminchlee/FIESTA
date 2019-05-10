@@ -707,6 +707,7 @@ namespace IATK
         /// <param name="material"></param>
         public void saveMesh(GameObject theMesh, ref int indexCount, Material material)
         {
+            #if UNITY_EDITOR
             MeshFilter mf = theMesh.GetComponent<MeshFilter>();
             MeshRenderer mr = theMesh.GetComponent<MeshRenderer>();
 
@@ -729,6 +730,8 @@ namespace IATK
             {
                 saveMesh(child.gameObject, ref indexCount, material);
             }
+
+            #endif
         }
 
         public void SaveBigMesh()
@@ -802,6 +805,18 @@ namespace IATK
         // global list of all tweens callbacks
         static List<UpdateTweenDelegate> updateTweens = new List<UpdateTweenDelegate>();
 
+        private bool hasTweens = false;
+
+        private void Update()
+        {
+            #if !UNITY_EDITOR
+            if (hasTweens)
+            {
+                UpdateTweens();
+            }
+            #endif
+        }
+
         public void Tween(TweenType type)
         {
             if (type == TweenType.Position)
@@ -829,16 +844,27 @@ namespace IATK
                     updateTweens.RemoveAt(i);
                 }
             }
+            #if UNITY_EDITOR
             if (updateTweens.Count() == 0)
             {
                 EditorApplication.update = null;
             }
+            #else
+            if (updateTweens.Count() == 0)
+            {
+                hasTweens = false;
+            }
+            #endif
         }
 
         void QueueTween()
         {
             updateTweens.Add(DoTheTween);
+            #if UNITY_EDITOR
             EditorApplication.update = UpdateTweens;
+            #else
+            hasTweens = true;
+            #endif
         }
 
         // returns false if complete, else true

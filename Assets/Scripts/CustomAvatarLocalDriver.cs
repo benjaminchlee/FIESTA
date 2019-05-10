@@ -67,7 +67,7 @@ public class CustomAvatarLocalDriver : OvrAvatarDriver
             headPosition = head.position,
 
             headRotation = head.rotation,
-
+            
             handLeftPosition = left.TransformPoint(new Vector3(0.025f, 0, -0.04f)),
             handLeftRotation = left.rotation,
             handRightPosition = right.TransformPoint(new Vector3(-0.025f, 0, -0.04f)),

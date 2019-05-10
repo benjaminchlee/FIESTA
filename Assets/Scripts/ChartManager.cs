@@ -6,6 +6,7 @@ using IATK;
 using VRTK;
 using UnityEngine.Events;
 using System;
+using Photon.Pun;
 using UnityEngine.SceneManagement;
 
 public class ChartManager : MonoBehaviour {
@@ -62,11 +63,11 @@ public class ChartManager : MonoBehaviour {
 
     private void CreateDashboard()
     {
-        if (PhotonNetwork.connected && !DataLogger.Instance.isMasterLogger)
+        if (PhotonNetwork.IsConnected && VRTK_DeviceFinder.HeadsetCamera() != null)
         {
             Transform headset = VRTK_DeviceFinder.HeadsetCamera();
 
-            int id = PhotonNetwork.player.ID;
+            int id = PhotonNetwork.LocalPlayer.ActorNumber;
 
             Vector3 pos;
             Quaternion rot;
@@ -109,7 +110,7 @@ public class ChartManager : MonoBehaviour {
         GameObject vis;
         Chart chart;
 
-        if (PhotonNetwork.connected)
+        if (PhotonNetwork.IsConnected)
         {
             vis = PhotonNetwork.Instantiate("Chart", Vector3.zero, Quaternion.identity, 0);
             vis.name = name;
@@ -132,7 +133,7 @@ public class ChartManager : MonoBehaviour {
         GameObject vis;
         Chart chart;
 
-        if (PhotonNetwork.connected)
+        if (PhotonNetwork.IsConnected)
         {
             vis = PhotonNetwork.Instantiate("Chart", Vector3.zero, Quaternion.identity, 0);
             chart = vis.GetComponent<Chart>();

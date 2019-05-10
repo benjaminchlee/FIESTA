@@ -3,7 +3,7 @@
 --- !u!30 &1
 GraphicsSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 7
+  serializedVersion: 12
   m_Deferred:
     m_Mode: 1
     m_Shader: {fileID: 69, guid: 0000000000000000f000000000000000, type: 0}
@@ -35,33 +35,46 @@ GraphicsSettings:
   - {fileID: 15106, guid: 0000000000000000f000000000000000, type: 0}
   - {fileID: 10770, guid: 0000000000000000f000000000000000, type: 0}
   - {fileID: 10782, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 16000, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 17000, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 4800000, guid: d0f6e1942d3d1f946a96fd8a00175474, type: 3}
+  - {fileID: 4800000, guid: d7662dbac0646464a9b4a48e93989adb, type: 3}
+  - {fileID: 4800000, guid: 10513ef587704324487f3061a7e6699d, type: 3}
+  - {fileID: 4800000, guid: 9802c0cad0c3c6546919692cbde98c7a, type: 3}
+  - {fileID: 4800000, guid: 0b27b45c8389a554181a1390b8a6b1ec, type: 3}
+  - {fileID: 4800000, guid: a757aa4e1eef1da4b89c5017324e3360, type: 3}
+  - {fileID: 4800000, guid: 1fdb113cc5dfbe345959a05c2db42b90, type: 3}
+  - {fileID: 4800000, guid: 3f786fdf7a1bb4247acc24f781d249c3, type: 3}
+  - {fileID: 4800000, guid: 07b3f8051ce19794fbaad3c1a64137f7, type: 3}
+  - {fileID: 4800000, guid: 8f231d5eb29270140a33fbdda341e015, type: 3}
+  - {fileID: 4800000, guid: bf91d669f0162cf46921e4656fad6c39, type: 3}
+  - {fileID: 4800000, guid: ce369e23d4cf8134f848ce494a382887, type: 3}
+  - {fileID: 4800000, guid: 6e0d7e422d49848488a9f5ae6cee9895, type: 3}
+  - {fileID: 4800000, guid: 73f67c4e7bf718b4385aa6b1f8a06591, type: 3}
+  - {fileID: 4800000, guid: 5e52aa58207bbf24d8eb8ec969e9ae88, type: 3}
+  - {fileID: 4800000, guid: 176faebcc612eb147900defeda2149cb, type: 3}
+  - {fileID: 4800000, guid: 69f342b79d37541489919a19cfd8a924, type: 3}
   m_PreloadedShaders: []
   m_SpritesDefaultMaterial: {fileID: 10754, guid: 0000000000000000f000000000000000,
     type: 0}
-  m_ShaderSettings_Tier1:
-    useCascadedShadowMaps: 1
-    standardShaderQuality: 2
-    useReflectionProbeBoxProjection: 1
-    useReflectionProbeBlending: 1
-  m_ShaderSettings_Tier2:
-    useCascadedShadowMaps: 1
-    standardShaderQuality: 2
-    useReflectionProbeBoxProjection: 1
-    useReflectionProbeBlending: 1
-  m_ShaderSettings_Tier3:
-    useCascadedShadowMaps: 1
-    standardShaderQuality: 2
-    useReflectionProbeBoxProjection: 1
-    useReflectionProbeBlending: 1
-  m_BuildTargetShaderSettings: []
+  m_CustomRenderPipeline: {fileID: 0}
+  m_TransparencySortMode: 0
+  m_TransparencySortAxis: {x: 0, y: 0, z: 1}
+  m_DefaultRenderingPath: 1
+  m_DefaultMobileRenderingPath: 1
+  m_TierSettings: []
   m_LightmapStripping: 0
   m_FogStripping: 0
+  m_InstancingStripping: 0
   m_LightmapKeepPlain: 1
   m_LightmapKeepDirCombined: 1
-  m_LightmapKeepDirSeparate: 1
   m_LightmapKeepDynamicPlain: 1
   m_LightmapKeepDynamicDirCombined: 1
-  m_LightmapKeepDynamicDirSeparate: 1
+  m_LightmapKeepShadowMask: 1
+  m_LightmapKeepSubtractive: 1
   m_FogKeepLinear: 1
   m_FogKeepExp: 1
   m_FogKeepExp2: 1
+  m_AlbedoSwatchInfos: []
+  m_LightsUseLinearIntensity: 0
+  m_LightsUseColorTemperature: 0

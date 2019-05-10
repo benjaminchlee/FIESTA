@@ -1,146 +1,119 @@
-﻿namespace PlayoVR {
-    using UnityEngine;
-    using UnityEngine.SceneManagement;
-    using VRTK;
-    using Hashtable = ExitGames.Client.Photon.Hashtable;
+﻿using Oculus.Platform.Samples.VrHoops;
+using Photon.Pun;
+using UnityEngine;
+using UnityEngine.UI;
+using VRTK;
 
-    public class AvatarSpawnManager : Photon.PunBehaviour {
-        [Tooltip("Reference to the local avatar prefab")]
-        public GameObject localAvatar;
-        [Tooltip("Reference to the remote avatar prefab")]
-        public GameObject remoteAvatar;
+public class AvatarSpawnManager : MonoBehaviourPunCallbacks {
+
+    [SerializeField] [Tooltip("Reference to the local avatar prefab")]
+    private GameObject localAvatar;
+    [SerializeField] [Tooltip("Reference to the remote avatar prefab")]
+    private GameObject remoteAvatar;
+    private void Awake()
+    {
+        if (localAvatar == null) {
+            Debug.LogError("AvatarSpawnManager is missing a reference to the local avatar prefab!");
+        }
+        if (remoteAvatar == null) {
+            Debug.LogError("AvatarSpawnManager is missing a reference to the remote avatar prefab!");
+        }
+    }
+
+    public override void OnJoinedRoom()
+    {
+        int senderNo = PhotonNetwork.LocalPlayer.ActorNumber;
+        bool vrAvatar = PlayerPreferencesManager.Instance.SpawnVRAvatar;
+        bool kbmAvatar = PlayerPreferencesManager.Instance.SpawnKBMAvatar;
+
+        photonView.RPC("PlayerJoinedRoom", RpcTarget.MasterClient, senderNo, vrAvatar, kbmAvatar);
+    }
+
+    [PunRPC]
+    private void PlayerJoinedRoom(int senderNo, bool vrAvatar, bool kbmAvatar)
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            if (vrAvatar)
+                SpawnVRAvatar(senderNo);
+
+            if (kbmAvatar)
+                SpawnKBMAvatar(senderNo);
+        }
+    }
+
+    /// <summary>
+    /// This method instantiates the VR avatar gameobjects for all players.
+    ///
+    /// The method distinguishes between the master client and other clients. The master client should be the first one to run this method, which assigns a unique
+    /// view ID to the avatar. The master client then runs this method on all other clients, using the same view ID on their avatar gameobjects.
+    /// </summary>
+    /// <param name="senderNo"></param>
+    /// <param name="viewID"></param>
+    [PunRPC]
+    private void SpawnVRAvatar(int senderNo, int viewID = -1)
+    {
+        GameObject player;
+
+        // If the call to spawn the avatar was made by this player, instantiate local avatar
+        if (senderNo == PhotonNetwork.LocalPlayer.ActorNumber)
+            player = Instantiate(localAvatar) as GameObject;
+        // Otherwise it was made by another player, instantiate remote avatar instead
+        else
+            player = Instantiate(remoteAvatar) as GameObject;
         
-        private GameObject[] spawnPoints;
-        private bool sceneLoaded = false;
-        private bool connected = false;
-
-        void Awake() {
-            if (localAvatar == null) {
-                Debug.LogError("AvatarSpawnManager is missing a reference to the local avatar prefab!");
-            }
-            if (remoteAvatar == null) {
-                Debug.LogError("AvatarSpawnManager is missing a reference to the remote avatar prefab!");
-            }
-        }
-
-        void OnEnable() {
-            SceneManager.sceneLoaded += OnSceneLoaded;
-        }
-
-        void OnDisable() {
-            SceneManager.sceneLoaded -= OnSceneLoaded;
-        }
-
-        void OnSceneLoaded(Scene scene, LoadSceneMode mode) {
-            Debug.Log("Scene loaded");
-            sceneLoaded = true;
-        }
-
-        public override void OnJoinedRoom() {
-            connected = true;
-            // Player sets its own name when joining
-            PhotonNetwork.playerName = playerName(PhotonNetwork.player);
-            // Initialize the master client
-            InitPlayer(PhotonNetwork.player);
-        }
-
-        public override void OnPhotonPlayerConnected(PhotonPlayer newPlayer) {
-            InitPlayer(newPlayer);
-        }
-
-        public override void OnPhotonPlayerDisconnected(PhotonPlayer otherPlayer) {
-        }
-
-        void InitPlayer(PhotonPlayer newPlayer) {
-            if (PhotonNetwork.isMasterClient && connected && sceneLoaded) {
-                // The master client tells everyone about the new player
-                //Hashtable props = new Hashtable();
-                //props[PlayerPropNames.PLAYER_NR] = newPlayer.ID;
-                //newPlayer.SetCustomProperties(props);
-
-                if (newPlayer.ID == PhotonNetwork.player.ID && DataLogger.Instance.isMasterLogger)
-                    PhotonNetwork.Instantiate("KBMAvatar", new Vector3(5, 1.7f, 5), Quaternion.identity, 0);
-                else
-                    photonView.RPC("SpawnAvatar", PhotonTargets.AllBuffered, newPlayer.ID, PhotonNetwork.AllocateViewID());
-            }
-        }
-
-        [PunRPC]
-        void SpawnAvatar(int senderId, int newViewId)
+        // Assign view ID of player PhotonView
+        PhotonView playerPhotonView = player.GetComponent<PhotonView>();
+        if (PhotonNetwork.IsMasterClient)
         {
-            //if (!PhotonNetwork.player.CustomProperties.ContainsKey(PlayerPropNames.PLAYER_NR)) {
-            //    Debug.LogError("Player does not have a PLAYER_NR property!");
-            //    return;
-            //}
-            if (isPlayerConnected(senderId))
+            // Get view ID of master client's version of new player gameobject and instantiate on other clients
+            if (PhotonNetwork.AllocateViewID(playerPhotonView))
             {
-                GameObject player;
-
-                if (senderId == PhotonNetwork.player.ID)
-                {
-                    // Create a new player at the appropriate spawn spot
-                    var name = PhotonNetwork.playerName;
-
-                    player = Instantiate(localAvatar) as GameObject;
-
-                    // Set the new colliders
-                    // TODO: Improve
-                    GameObject leftHand = player.transform.Find("hand_left").gameObject;
-                    leftHand.transform.SetParent(VRTK_DeviceFinder.GetControllerLeftHand().transform);
-                    VRTK_InteractTouch leftTouch = VRTK_DeviceFinder.GetControllerLeftHand().GetComponent<VRTK_InteractTouch>();
-                    leftTouch.customColliderContainer = leftHand;
-                    LockPosition leftLock = leftHand.AddComponent<LockPosition>();
-                    leftLock.isWorldSpace = false;
-                    leftLock.SetPosition(new Vector3(0.025f, 0, -0.04f), Quaternion.identity);
-
-                    GameObject rightHand = player.transform.Find("hand_right").gameObject;
-                    rightHand.transform.SetParent(VRTK_DeviceFinder.GetControllerRightHand().transform);
-                    VRTK_InteractTouch rightTouch = VRTK_DeviceFinder.GetControllerRightHand().GetComponent<VRTK_InteractTouch>();
-                    rightTouch.customColliderContainer = rightHand;
-                    LockPosition rightLock = rightHand.AddComponent<LockPosition>();
-                    rightLock.isWorldSpace = false;
-                    rightLock.SetPosition(new Vector3(-0.025f, 0, -0.04f), Quaternion.identity);
-                }
-                else
-                {
-                    player = Instantiate(remoteAvatar) as GameObject;
-                }
-
-                DontDestroyOnLoad(player);
-
-                if (player != null)
-                {
-                    PhotonView photonView = player.GetComponent<PhotonView>();
-
-                    if (photonView != null)
-                    {
-                        photonView.viewID = newViewId;
-                        photonView.TransferOwnership(senderId);
-                    }
-
-                    if (photonView.isMine)
-                    {
-                        AvatarCustomiser avatarCustomiser = player.GetComponent<AvatarCustomiser>();
-                        avatarCustomiser.photonView.RPC("SetColor", PhotonTargets.AllBuffered, PlayerPreferencesManager.Instance.AvatarSkinColor, PlayerPreferencesManager.Instance.AvatarHeadsetColor, PlayerPreferencesManager.Instance.AvatarShirtColor);
-                        avatarCustomiser.photonView.RPC("SetName", PhotonTargets.AllBuffered, PlayerPreferencesManager.Instance.AvatarName);
-                    }
-                }
+                photonView.RPC("SpawnVRAvatar", RpcTarget.OthersBuffered, senderNo, playerPhotonView.ViewID);
+            }
+            else
+            {
+                Debug.LogError("Couldn't assign PhotonView ID to new player model.");
             }
         }
-
-        private string playerName(PhotonPlayer ply) {
-            return "Player " + ply.ID;
-        }
-
-        private bool isPlayerConnected(int id)
+        else
         {
-            foreach (PhotonPlayer ply in PhotonNetwork.playerList)
-            {
-                if (ply.ID == id)
-                    return true;
-            }
+            // Assign view ID from master
+            playerPhotonView.ViewID = viewID;
+        }
 
-            return false;
+        playerPhotonView.TransferOwnership(senderNo);
+        DontDestroyOnLoad(player);
+
+        if (photonView.IsMine)
+        {
+            // Customise avatar based off defaults
+            AvatarCustomiser avatarCustomiser = player.GetComponent<AvatarCustomiser>();
+            avatarCustomiser.SetColor(PlayerPreferencesManager.Instance.AvatarSkinColor, PlayerPreferencesManager.Instance.AvatarHeadsetColor, PlayerPreferencesManager.Instance.AvatarShirtColor);
+            avatarCustomiser.SetName(PlayerPreferencesManager.Instance.AvatarName);
+
+            // Add event listeners to change avatar customisation options
+            GameObject.Find("PlayerNameInputField").GetComponent<InputField>().onValueChanged.AddListener(avatarCustomiser.SetName);
+            GameObject.Find("PlayerColorPicker").GetComponent<ColorPicker>().onValueChanged.AddListener(avatarCustomiser.SetShirtColor);
+        }
+    }
+
+    /// <summary>
+    /// This method spawns the keyboard and mouse avatar for the specified player.
+    ///
+    /// As there is only one type of KBM avatar for both the owner and non-owners, Photon's instantiate method is used to allocate the view ID for us.
+    /// </summary>
+    /// <param name="senderNo"></param>
+    [PunRPC]
+    private void SpawnKBMAvatar(int senderNo)
+    {
+        if (senderNo == PhotonNetwork.LocalPlayer.ActorNumber)
+        {
+            PhotonNetwork.Instantiate("KBMAvatar", Vector3.zero, Quaternion.identity, 0);
+        }
+        else
+        {
+            photonView.RPC("SpawnKBMAvatar", PhotonNetwork.LocalPlayer.Get(senderNo), senderNo);
         }
     }
 }

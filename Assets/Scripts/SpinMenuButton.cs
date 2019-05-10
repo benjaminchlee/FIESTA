@@ -2,12 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
+using Photon.Pun;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using VRTK;
 
-public class SpinMenuButton : Photon.MonoBehaviour {
+public class SpinMenuButton : MonoBehaviourPunCallbacks {
     
     [SerializeField]
     private VRTK_InteractableObject interactableObject;
@@ -25,7 +26,7 @@ public class SpinMenuButton : Photon.MonoBehaviour {
     public string Text
     {
         get { return label.text; }
-        set { photonView.RPC("PropagateText", PhotonTargets.All, value); }
+        set { photonView.RPC("PropagateText", RpcTarget.All, value); }
     }
 
     [PunRPC]
@@ -37,7 +38,7 @@ public class SpinMenuButton : Photon.MonoBehaviour {
     public Color Color
     {
         get { return renderer.material.color; }
-        set { photonView.RPC("PropagateColor", PhotonTargets.All, value); }
+        set { photonView.RPC("PropagateColor", RpcTarget.All, value); }
     }
 
     [PunRPC]

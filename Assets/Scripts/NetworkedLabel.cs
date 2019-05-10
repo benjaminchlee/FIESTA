@@ -1,9 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Photon.Pun;
 using TMPro;
 using UnityEngine;
 
-public class NetworkedLabel : Photon.MonoBehaviour
+public class NetworkedLabel : MonoBehaviourPunCallbacks
 {
     public TextMeshPro textMesh;
     private string text;
@@ -17,7 +18,7 @@ public class NetworkedLabel : Photon.MonoBehaviour
 
     public void SetText(string value)
     {
-        photonView.RPC("PropagateSetText", PhotonTargets.All, value);
+        photonView.RPC("PropagateSetText", RpcTarget.All, value);
     }
 
     [PunRPC]
@@ -29,7 +30,7 @@ public class NetworkedLabel : Photon.MonoBehaviour
 
     public void SetRectTransform(Vector2 size)
     {
-        photonView.RPC("PropagateSetRectTransform", PhotonTargets.All, size);
+        photonView.RPC("PropagateSetRectTransform", RpcTarget.All, size);
     }
 
     [PunRPC]

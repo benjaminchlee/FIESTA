@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Photon.Pun;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class AvatarCustomiser : Photon.PunBehaviour {
+public class AvatarCustomiser : MonoBehaviourPunCallbacks {
 
 	public OvrAvatar ovrAvatar;
     public TextMeshPro nameplate;
@@ -16,30 +17,23 @@ public class AvatarCustomiser : Photon.PunBehaviour {
     public Color ShirtColor { get; private set; }
 
     private bool isDoneLoading = false;
-
-    [SerializeField]
-    private List<GameObject> childGameObjects;
-
+    
     private void Awake()
     {
         ovrAvatar.AssetsDoneLoading.AddListener(OnAssetsDoneLoading);
-
-        if (childGameObjects == null)
-        {
-            childGameObjects = new List<GameObject>();
-            foreach (Transform child in transform)
-            {
-                childGameObjects.Add(child.gameObject);
-            }
-        }
-
+        
         SceneManager.sceneLoaded += OnSceneDoneLoading;
     }
 
-    [PunRPC]
     public void SetName(string name)
     {
-        this.Name = name;
+        photonView.RPC("PropagateSetName", RpcTarget.AllBuffered, name);
+    }
+
+    [PunRPC]
+    private void PropagateSetName(string name)
+    {
+        Name = name;
 
         if (isDoneLoading)
         {
@@ -51,13 +45,18 @@ public class AvatarCustomiser : Photon.PunBehaviour {
 
             nameplate.text = this.Name;
 
-            if (photonView.isMine)
+            if (photonView.IsMine)
                 nameplate.text = "";
         }
     }
 
-    [PunRPC]
     public void SetColor(Color skin, Color headset, Color shirt)
+    {
+        photonView.RPC("PropagateSetColor", RpcTarget.AllBuffered, skin, headset, shirt);
+    }
+
+    [PunRPC]
+    private void PropagateSetColor(Color skin, Color headset, Color shirt)
     {
         SkinColor = skin;
         HeadsetColor = headset;
@@ -65,23 +64,25 @@ public class AvatarCustomiser : Photon.PunBehaviour {
 
         if (isDoneLoading)
         {
-            foreach (GameObject child in childGameObjects)
+            SkinnedMeshRenderer[] renderers = gameObject.GetComponentsInChildren<SkinnedMeshRenderer>();
+            
+            foreach (SkinnedMeshRenderer renderer in renderers)
             {
-                SkinnedMeshRenderer[] renderers = child.GetComponentsInChildren<SkinnedMeshRenderer>();
-                
-                foreach (SkinnedMeshRenderer renderer in renderers)
-                {
-                    if (renderer.gameObject.name == "body_renderPart_0")
-                        renderer.material.SetColor("_BaseColor", SkinColor);
-                    else if (renderer.gameObject.name == "body_renderPart_1")
-                        renderer.material.SetColor("_BaseColor", ShirtColor);
-                    else if (renderer.gameObject.name == "body_renderPart_2")
-                        renderer.material.SetColor("_BaseColor", HeadsetColor);
-                    else
-                        renderer.material.SetColor("_BaseColor", ShirtColor);
-                }
+                if (renderer.gameObject.name == "body_renderPart_0")
+                    renderer.material.SetColor("_BaseColor", SkinColor);
+                else if (renderer.gameObject.name == "body_renderPart_1")
+                    renderer.material.SetColor("_BaseColor", ShirtColor);
+                else if (renderer.gameObject.name == "body_renderPart_2")
+                    renderer.material.SetColor("_BaseColor", HeadsetColor);
+                else
+                    renderer.material.SetColor("_BaseColor", ShirtColor);
             }
         }
+    }
+
+    public void SetShirtColor(Color shirt)
+    {
+        photonView.RPC("PropagateSetColor", RpcTarget.All, SkinColor, HeadsetColor, shirt);
     }
 
     private void OnAssetsDoneLoading()
@@ -95,7 +96,10 @@ public class AvatarCustomiser : Photon.PunBehaviour {
     private void OnSceneDoneLoading(Scene arg0, LoadSceneMode arg1)
     {
         if (arg0.name == "MainScene")
+        {
             SetColor(SkinColor, HeadsetColor, ShirtColor);
+            PhotonNetwork.RemoveRPCs(photonView);
+        }
     }
 
 }

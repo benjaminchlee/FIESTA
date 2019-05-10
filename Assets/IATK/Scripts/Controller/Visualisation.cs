@@ -198,8 +198,10 @@ namespace IATK
 
             theVisualizationObject.UpdateVisualisation(AbstractVisualisation.PropertyType.None);
 
+            #if UNITY_EDITOR
             if (!EditorApplication.isPlaying)
                 RuntimeEditorLoadAndSaveConfiguration();
+            #endif
 
             key = (GameObject)Instantiate(Resources.Load("Key"));
             key.transform.parent = transform;

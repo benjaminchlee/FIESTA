@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Photon.Pun;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class Counter : Photon.MonoBehaviour {
+public class Counter : MonoBehaviourPunCallbacks {
 
     [SerializeField]
     private TextMeshPro counterLabel;
@@ -52,7 +53,7 @@ public class Counter : Photon.MonoBehaviour {
 
         if (newValue <= maxValue)
         {
-            photonView.RPC("SetText", PhotonTargets.All, newValue.ToString());
+            photonView.RPC("SetText", RpcTarget.All, newValue.ToString());
             
             CounterValueChanged.Invoke(newValue);
         }
@@ -64,7 +65,7 @@ public class Counter : Photon.MonoBehaviour {
 
         if (minValue <= newValue)
         {
-            photonView.RPC("SetText", PhotonTargets.All, newValue.ToString());
+            photonView.RPC("SetText", RpcTarget.All, newValue.ToString());
 
             CounterValueChanged.Invoke(newValue);
         }

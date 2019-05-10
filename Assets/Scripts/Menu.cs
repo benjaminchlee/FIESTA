@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.Remoting.Lifetime;
 using DG.Tweening;
 using UnityEngine;
 using IATK;
+using Photon.Pun;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-public class Menu : Photon.MonoBehaviour {
+public class Menu : MonoBehaviourPunCallbacks {
 
     [SerializeField]
     protected DashboardDimension dimension;
@@ -230,11 +230,11 @@ public class Menu : Photon.MonoBehaviour {
             // Store the index of the selected option
             selectedIndex = buttons.IndexOf(button);
 
-            photonView.RPC("CloseButtons", PhotonTargets.All, selectedIndex);
+            photonView.RPC("CloseButtons", RpcTarget.All, selectedIndex);
         }
         else
         {
-            photonView.RPC("OpenButtons", PhotonTargets.All);
+            photonView.RPC("OpenButtons", RpcTarget.All);
         }
 
         isOpen = !isOpen;

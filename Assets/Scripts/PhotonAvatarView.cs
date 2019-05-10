@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using Photon.Pun;
 using UnityEngine;
 
 public class PhotonAvatarView : MonoBehaviour {
@@ -10,14 +11,14 @@ public class PhotonAvatarView : MonoBehaviour {
     private OvrAvatarRemoteDriver remoteDriver;
 
     private List<byte[]> packetData;
-
+    
     public void Start()
     {
         photonView = GetComponent<PhotonView>();
         packetData = new List<byte[]>();
 
         //if (GetComponent<CustomAvatarLocalDriver>() != null)
-        if (photonView.isMine)
+        if (photonView.IsMine)
         {
             ovrAvatar = GetComponent<OvrAvatar>();
             ovrAvatar.RecordPackets = true;
@@ -31,7 +32,7 @@ public class PhotonAvatarView : MonoBehaviour {
 
     public void OnDisable()
     {
-        if (photonView.isMine)
+        if (photonView.IsMine)
         {
             ovrAvatar.RecordPackets = false;
             ovrAvatar.PacketRecorded -= OnLocalAvatarPacketRecorded;
@@ -42,7 +43,7 @@ public class PhotonAvatarView : MonoBehaviour {
 
     public void OnLocalAvatarPacketRecorded(object sender, OvrAvatar.PacketEventArgs args)
     {
-        if (!PhotonNetwork.inRoom || (PhotonNetwork.room.PlayerCount < 2))
+        if (!PhotonNetwork.InRoom || (PhotonNetwork.CurrentRoom.PlayerCount < 2))
         {
             return;
         }
@@ -80,7 +81,7 @@ public class PhotonAvatarView : MonoBehaviour {
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
-        if (stream.isWriting)
+        if (stream.IsWriting)
         {
             if (packetData.Count == 0)
             {
@@ -97,7 +98,7 @@ public class PhotonAvatarView : MonoBehaviour {
             packetData.Clear();
         }
 
-        if (stream.isReading)
+        if (stream.IsReading)
         {
             int num = (int)stream.ReceiveNext();
 

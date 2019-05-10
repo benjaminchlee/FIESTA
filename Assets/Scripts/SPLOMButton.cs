@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Photon.Pun;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using VRTK;
 
-public class SPLOMButton : Photon.MonoBehaviour
+public class SPLOMButton : MonoBehaviourPunCallbacks
 {
 
     [SerializeField] private TextMeshPro textMesh;
@@ -39,9 +40,9 @@ public class SPLOMButton : Photon.MonoBehaviour
         textMesh.text = dimensions[index];
 
         PhotonView pv = PhotonView.Find(parentSplomPhotonID);
-        pv.RPC("ScatterplotMatrixDimensionChanged", pv.owner, photonView.viewID, Text);
+        pv.RPC("ScatterplotMatrixDimensionChanged", pv.Owner, photonView.ViewID, Text);
 
-        DataLogger.Instance.LogActionData(this, GetComponentInParent<Chart>().photonView.owner, transform.parent.name + " splom button range clicked", Text);
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Chart>().photonView.Owner, transform.parent.name + " splom button range clicked", Text);
     }
 
     private void OnSPLOMButtonClicked(object sender, InteractableObjectEventArgs e)
@@ -52,9 +53,9 @@ public class SPLOMButton : Photon.MonoBehaviour
         textMesh.text = dimensions[index];
 
         PhotonView pv = PhotonView.Find(parentSplomPhotonID);
-        pv.RPC("ScatterplotMatrixDimensionChanged", pv.owner, photonView.viewID, Text);
+        pv.RPC("ScatterplotMatrixDimensionChanged", pv.Owner, photonView.ViewID, Text);
         
-        DataLogger.Instance.LogActionData(this, GetComponentInParent<Chart>().photonView.owner, transform.parent.name + " splom button clicked", Text);
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Chart>().photonView.Owner, transform.parent.name + " splom button clicked", Text);
     }
 
     private List<string> GetAttributesList()
@@ -70,7 +71,7 @@ public class SPLOMButton : Photon.MonoBehaviour
 
     void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
-        if (stream.isWriting)
+        if (stream.IsWriting)
         {
             stream.SendNext(Text);
             stream.SendNext(parentSplomPhotonID);

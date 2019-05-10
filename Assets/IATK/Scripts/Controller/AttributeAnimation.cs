@@ -17,6 +17,8 @@ public class AttributeAnimation : MonoBehaviour {
 
     public KeyCode startAnimationBinding;
 
+    private bool isTweening = false;
+
 	// Use this for initialization
 	void Start () {
 		
@@ -25,6 +27,11 @@ public class AttributeAnimation : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         if (Input.GetKeyDown(startAnimationBinding)) Tween();
+
+        #if !UNITY_EDITOR
+        if (isTweening)
+            DoTheTween();
+        #endif
     }
 
     void animateMaxFilter(int attribute, float t)
@@ -44,7 +51,11 @@ public class AttributeAnimation : MonoBehaviour {
     {
         _tween = 0.0f;
         vis.attributeFilters[0].maxFilter = _tween;
+        #if UNITY_EDITOR
         EditorApplication.update = DoTheTween;
+        #else
+        isTweening = true;
+        #endif
     }
 
     private void DoTheTween()
@@ -56,16 +67,18 @@ public class AttributeAnimation : MonoBehaviour {
             vis.attributeFilters[0].maxFilter = v;
             if(animateRange)
             vis.attributeFilters[0].minFilter = v-rangeSize;
-
-            
         }
         else
         {
             _tween = 1.0f;
             vis.attributeFilters[0].maxFilter = 1f;
             if (animateRange)
-            vis.attributeFilters[0].minFilter = 1f-rangeSize;            
+            vis.attributeFilters[0].minFilter = 1f-rangeSize;
+            #if UNITY_EDITOR
             EditorApplication.update = null;
+            #else
+            isTweening = false;
+            #endif
         }
 
         vis.updateViewProperties(AbstractVisualisation.PropertyType.AttributeFiltering);

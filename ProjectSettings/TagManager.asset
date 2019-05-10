@@ -14,6 +14,9 @@ TagManager:
   - Dashboard
   - DashboardCollider
   - TaskText
+  - DummyAvatar
+  - DummyVisualisation
+  - DummyPanel
   layers:
   - Default
   - TransparentFX

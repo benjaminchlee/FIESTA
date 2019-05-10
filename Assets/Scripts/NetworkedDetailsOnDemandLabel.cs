@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 using IATK;
+using Photon.Pun;
 using TMPro;
 using UnityEngine;
 
-public class NetworkedDetailsOnDemandLabel : Photon.MonoBehaviour {
+public class NetworkedDetailsOnDemandLabel : MonoBehaviourPunCallbacks {
 
     [SerializeField]
     private GameObject panel;
@@ -24,7 +25,7 @@ public class NetworkedDetailsOnDemandLabel : Photon.MonoBehaviour {
 
     public void ToggleState(bool value)
     {
-        photonView.RPC("PropagateToggleState", PhotonTargets.All, value);
+        photonView.RPC("PropagateToggleState", RpcTarget.All, value);
     }
 
     [PunRPC]
@@ -37,7 +38,7 @@ public class NetworkedDetailsOnDemandLabel : Photon.MonoBehaviour {
 
     public void SetLinePosition(Vector3 pos)
     {
-        photonView.RPC("PropagateSetLinePosition", PhotonTargets.All, pos);
+        photonView.RPC("PropagateSetLinePosition", RpcTarget.All, pos);
     }
 
     [PunRPC]
@@ -48,8 +49,8 @@ public class NetworkedDetailsOnDemandLabel : Photon.MonoBehaviour {
 
     public void SetText(List<int> indices, Visualisation visualisation)
     {
-        int viewID = visualisation.GetComponentInParent<PhotonView>().viewID;
-        photonView.RPC("PropagateSetText", PhotonTargets.All, indices.ToArray(), viewID);
+        int viewID = visualisation.GetComponentInParent<PhotonView>().ViewID;
+        photonView.RPC("PropagateSetText", RpcTarget.All, indices.ToArray(), viewID);
     }
 
     [PunRPC]

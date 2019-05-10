@@ -9,34 +9,15 @@ public class InteractionsManager : MonoBehaviour
 
     public static InteractionsManager Instance { get; private set; }
 
-    [SerializeField] [Tooltip("The game object which represents the screen.")]
-    private GameObject screen;
-
-    [SerializeField]
-    [Tooltip(
-        "The maximum distance from the screen that is considered to the close, also known as the minimum distance from the screen that is considered to be far.")]
-    public float CloseZoneThreshold = 0.75f;
-
-    [SerializeField]
-    [Tooltip(
-        "The maximum distance from the scene that is considered to be immediate, also known as the minimum distance from the screen that is considered to be close.")]
-    public float ImmediateZoneThreshold = 0.01f;
-
     [SerializeField] [Tooltip("The script that manages the spin menu on a controller.")]
     private SpinMenu spinMenuScript;
 
     [SerializeField] [Tooltip("The script that manages the ranged interactions chosen by the spin menu.")]
     private RangedInteractions rangedInteractionsScript;
-
-    [SerializeField] [Tooltip("The script that manages the interactions close to the wall.")]
-    private CloseInteractionsManager closeInteractionsScript;
-
+    
     private GameObject leftController;
     private GameObject rightController;
-
-    private Rigidbody leftRigidbody;
-    private Rigidbody rightRigidbody;
-
+    
     private InteractionState activeState = InteractionState.None;
     private bool isGrabbingObject = false;
 
@@ -79,12 +60,9 @@ public class InteractionsManager : MonoBehaviour
 
         if (leftController != null && rightController != null)
         {
-            leftRigidbody = leftController.GetComponent<Rigidbody>();
-            rightRigidbody = rightController.GetComponent<Rigidbody>();
-        
             if (spinMenuScript == null)
             {
-                spinMenuScript = leftController.GetComponentInChildren<SpinMenu>() != null ? leftController.GetComponentInChildren<SpinMenu>() : rightController.GetComponentInChildren<SpinMenu>();
+                spinMenuScript = leftController.transform.parent.GetComponentInChildren<SpinMenu>() != null ? leftController.transform.parent.GetComponentInChildren<SpinMenu>() : rightController.transform.parent.GetComponentInChildren<SpinMenu>();
 
                 spinMenuScript.Enable();
             }
@@ -147,18 +125,6 @@ public class InteractionsManager : MonoBehaviour
     public void GrabbingFinished()
     {
         SetInteractionState(InteractionState.None);
-    }
-
-    public void CloseInteractionStarted()
-    {
-        if (activeState == InteractionState.None)
-            SetInteractionState(InteractionState.CloseInteracting);
-    }
-
-    public void CloseInteractionFinished()
-    {
-        if (activeState == InteractionState.CloseInteracting)
-            SetInteractionState(InteractionState.None);
     }
 
     public void RangedInteractionStarted()

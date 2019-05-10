@@ -4,13 +4,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using IATK;
+using Photon.Pun;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Experimental.Rendering;
 using UnityEngine.SceneManagement;
-using Util;
 using VRTK;
-using VRTK.Controllables.PhysicsBased;
 
 public class RangedInteractions : VRTK_StraightPointerRenderer {
 
@@ -46,40 +44,6 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
     private GameObject rangedBrush;
     private float angle;
-
-    [Header("Lasso Selection Parameters")]
-    [SerializeField] [Tooltip("The width of the line drawn while lassoing.")]
-    private float lassoWidth = 0.005f;
-    [SerializeField] [Tooltip("The color of the line drawn while lassoing.")]
-    private Color lassoDrawColor = new Color(255, 255, 255);
-    [SerializeField] [Tooltip("The color of the line drawn when the user completes the lasso.")]
-    private Color lassoCompleteColor = new Color(255, 255, 0);
-    [SerializeField] [Tooltip("The material of the line darwn while lassoing.")]
-    private Material lassoMaterial;
-    [SerializeField] [Tooltip("The initial distance the user has to move the controller before a lasso selection is formable.")]
-    private float lassoPointInitialDistance = 0.05f;
-    [SerializeField] [Tooltip("The distance that the user has to move the controller before another point is added to the line.")]
-    private float lassoPointDistanceInterval = 0.005f;
-    [SerializeField] [Tooltip("The distance from the start point that the end point has to be for it to be registered as a lasso selection.")]
-    private float lassoPointCompleteDistance = 0.015f;
-    [SerializeField] [Tooltip("The script used to draw convex meshes of selections.")]
-    public ConvexMesh convexMesh;
-
-    private LineRenderer lassoRenderer;
-    private bool isLassoPastInitialDistance = false;
-    private bool isLassoComplete = false;
-
-    [Header("Rectangle Selection Parameters")]
-    [SerializeField] [Tooltip("The width of the line drawn while selecting.")]
-    private float rectangleSelectWidth = 0.01f;
-    [SerializeField] [Tooltip("The material of the rectangle while selecting.")]
-    private Material rectangleSelectMaterial;
-
-    private Vector3 rectangleStart;
-    private Vector3 rectangleEnd;
-    private GameObject selectionSquare;
-    private Transform rectangleTransform1;
-    private Transform rectangleTransform2;
 
     [Header("Ranged Selection Parameters")]
     [SerializeField] [Tooltip("The distance that the controller needs to be moved until an object begins being pulled from the screen.")]
@@ -143,12 +107,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         None,
         RangedPrivateBrush,
         RangedSharedBrush,
-        LassoSelection,
-        RectangleSelection,
         RangedInteraction,
         RangedBrushing,
-        LassoSelecting,
-        RectangleSelecting,
         RangedInteracting,
         RangedPulling,
         DetailsOnDemand
@@ -188,10 +148,6 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         controllerEvents.GripUnclicked += OnGripEnd;
 
         vrtkPointer = GetComponent<VRTK_Pointer>();
-        
-        // Instantiate rectangle selection transforms
-        rectangleTransform1 = new GameObject().transform;
-        rectangleTransform2 = new GameObject().transform;
 
         // Keep pointer on scene change
         DontDestroyOnLoad(actualCursor.transform.root.gameObject);
@@ -209,7 +165,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             spinMenu.GetComponent<SpinMenu>().SpinMenuToolChanged.AddListener(InteractionToolChanged);
 
             // Put spin menu on other controller
-            spinMenu.transform.SetParent(VRTK_DeviceFinder.IsControllerLeftHand(gameObject) ? VRTK_DeviceFinder.GetControllerRightHand().transform : VRTK_DeviceFinder.GetControllerLeftHand().transform);
+            spinMenu.transform.SetParent(VRTK_DeviceFinder.IsControllerLeftHand(gameObject) ? VRTK_DeviceFinder.GetControllerRightHand().transform.parent : VRTK_DeviceFinder.GetControllerLeftHand().transform.parent);
             spinMenu.transform.localPosition = Vector3.zero;
             spinMenu.transform.localRotation = Quaternion.identity;
 
@@ -300,17 +256,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                     toolJustActivated = true;
                     SetInteractionState(InteractionState.RangedPrivateBrush);
                     break;
-
-                case "lassoselection":
-                    toolJustActivated = true;
-                    SetInteractionState(InteractionState.LassoSelection);
-                    break;
-
-                case "rectangleselection":
-                    toolJustActivated = true;
-                    SetInteractionState(InteractionState.RectangleSelection);
-                    break;
-
+                    
                 case "rangedinteraction":
                     toolJustActivated = true;
                     SetInteractionState(InteractionState.RangedInteraction);
@@ -334,11 +280,6 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
             TriggerControllerVibration(0.3f);
         }
-        //// Otherwise this would've interrupted a user's active interaction, therefore vibrate hard to warn them of this
-        //else
-        //{
-        //    VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(gameObject), 0.75f, 0.05f, 0.005f);
-        //}
     }
 
     /// <summary>
@@ -360,26 +301,26 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             // If tool is being enabled
             if (activeState == InteractionState.None && IsInteractionTool(state))
             {
-                DataLogger.Instance.LogActionData(this, PhotonNetwork.player, state + " start");
+                DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, state + " start");
             }
 
             // If tool is being swapped
             if (IsInteractionTool(activeState) && IsInteractionTool(state))
             {
-                DataLogger.Instance.LogActionData(this, PhotonNetwork.player, activeState + " end");
-                DataLogger.Instance.LogActionData(this, PhotonNetwork.player, state + " start");
+                DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, activeState + " end");
+                DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, state + " start");
             }
 
             // If tool is being removed
             else if (IsInteractionTool(activeState) && state == InteractionState.None)
             {
-                DataLogger.Instance.LogActionData(this, PhotonNetwork.player, activeState + " end");
+                DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, activeState + " end");
             }
 
             // If was ranged pulling and pull was finished
             else if (activeState == InteractionState.RangedPulling && state == InteractionState.None)
             {
-                DataLogger.Instance.LogActionData(this, PhotonNetwork.player, InteractionState.RangedInteraction + " end");
+                DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, InteractionState.RangedInteraction + " end");
             }
 
         }
@@ -404,22 +345,6 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 break;
 
             case InteractionState.RangedBrushing:
-                break;
-
-            case InteractionState.LassoSelection:
-                selectedInteractionRenderer.Sprite = lassoSelectionSprite;
-                tracerVisibility = VisibilityStates.AlwaysOn;
-                break;
-
-            case InteractionState.LassoSelecting:
-                break;
-
-            case InteractionState.RectangleSelection:
-                selectedInteractionRenderer.Sprite = rectangleSelectionSprite;
-                tracerVisibility = VisibilityStates.AlwaysOn;
-                break;
-
-            case InteractionState.RectangleSelecting:
                 break;
 
             case InteractionState.RangedInteraction:
@@ -463,7 +388,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     /// <returns></returns>
     private bool IsInteractionTool(InteractionState state)
     {
-        return new[] { InteractionState.RangedPrivateBrush, InteractionState.RangedSharedBrush, InteractionState.LassoSelection, InteractionState.RectangleSelection, InteractionState.RangedInteraction, InteractionState.DetailsOnDemand }.Contains(state);
+        return new[] { InteractionState.RangedPrivateBrush, InteractionState.RangedSharedBrush, InteractionState.RangedInteraction, InteractionState.DetailsOnDemand }.Contains(state);
     }
 
     /// <summary>
@@ -494,15 +419,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                     case InteractionState.RangedSharedBrush:
                         RangedBrushTriggerStart(e);
                         break;
-
-                    case InteractionState.LassoSelection:
-                        LassoSelectionTriggerStart(e);
-                        break;
-
-                    case InteractionState.RectangleSelection:
-                        RectangleSelectionTriggerStart(e);
-                        break;
-
+                        
                     case InteractionState.RangedInteraction:
                         RangedInteractionTriggerStart(e);
                         break;
@@ -536,14 +453,6 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                     RangedBrushTriggerEnd(e);
                     break;
 
-                case InteractionState.LassoSelecting:
-                    LassoSelectionTriggerEnd(e);
-                    break;
-
-                case InteractionState.RectangleSelecting:
-                    RectangleSelectionTriggerEnd(e);
-                    break;
-
                 case InteractionState.RangedInteracting:
                     RangedInteractionTriggerEnd(e);
                     break;
@@ -569,14 +478,6 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 case InteractionState.RangedSharedBrush:
                     RangedBrushTriggerStart(e);
                     break;
-
-                case InteractionState.LassoSelection:
-                    LassoSelectionTriggerStart(e);
-                    break;
-
-                case InteractionState.RectangleSelection:
-                    RectangleSelectionTriggerStart(e);
-                    break;
             }
         }
     }
@@ -592,15 +493,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 case InteractionState.RangedBrushing:
                     RangedBrushTriggerEnd(e);
                     break;
-
-                case InteractionState.LassoSelecting:
-                    LassoSelectionTriggerEnd(e);
-                    break;
-
-                case InteractionState.RectangleSelecting:
-                    RectangleSelectionTriggerEnd(e);
-                    break;
-
+                    
                 case InteractionState.RangedInteracting:
                     RangedInteractionTriggerEnd(e);
                     break;
@@ -683,7 +576,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 {
                     isDetailsOnDemandActive = true;
 
-                    DataLogger.Instance.LogActionData(this, PhotonNetwork.player, "Details on demand start");
+                    DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, "Details on demand start");
                 }
 
                 if (!IsInteractionToolActive())
@@ -708,7 +601,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             {
                 isDetailsOnDemandActive = false;
 
-                DataLogger.Instance.LogActionData(this, PhotonNetwork.player, "Details on demand end");
+                DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, "Details on demand end");
 
                 if (!IsInteractionToolActive())
                 {
@@ -733,14 +626,6 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 RangedBrushLoop();
                 break;
 
-            case InteractionState.LassoSelecting:
-                LassoSelectionLoop();
-                break;
-
-            case InteractionState.RectangleSelecting:
-                RectangleSelectionLoop();
-                break;
-
             case InteractionState.RangedInteracting:
                 RangedInteractionLoop();
                 break;
@@ -761,13 +646,13 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         {
             brushingAndLinking.SELECTION_TYPE = BrushingAndLinking.SelectionType.ADDITIVE;
 
-            DataLogger.Instance.LogActionData(this, PhotonNetwork.player, brushingAndLinking.shareBrushing ? "Shared additive brush start" : "Private additive brush start");
+            DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, brushingAndLinking.shareBrushing ? "Shared additive brush start" : "Private additive brush start");
         }
         else if (IsDeselecting)
         {
             brushingAndLinking.SELECTION_TYPE = BrushingAndLinking.SelectionType.SUBTRACTIVE;
 
-            DataLogger.Instance.LogActionData(this, PhotonNetwork.player, brushingAndLinking.shareBrushing ? "Shared subtractive brush start" : "Private subtractive brush start");
+            DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, brushingAndLinking.shareBrushing ? "Shared subtractive brush start" : "Private subtractive brush start");
         }
     }
 
@@ -810,245 +695,14 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
         if (IsSelecting)
         {
-            DataLogger.Instance.LogActionData(this, PhotonNetwork.player, brushingAndLinking.shareBrushing ? "Shared additive brush end" : "Private additive brush end");
+            DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, brushingAndLinking.shareBrushing ? "Shared additive brush end" : "Private additive brush end");
         }
         else if (IsDeselecting)
         {
-            DataLogger.Instance.LogActionData(this, PhotonNetwork.player, brushingAndLinking.shareBrushing ? "Shared subtractive brush end" : "Private subtractive brush end");
+            DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, brushingAndLinking.shareBrushing ? "Shared subtractive brush end" : "Private subtractive brush end");
         }
     }
-
-    private void LassoSelectionTriggerStart(ControllerInteractionEventArgs e)
-    {
-        SetInteractionState(InteractionState.LassoSelecting);
-
-        lassoRenderer = gameObject.AddComponent<LineRenderer>();
-        lassoRenderer.useWorldSpace = true;
-        // Remove any anomalous default points
-        lassoRenderer.positionCount = 0;
-        lassoRenderer.startWidth = lassoWidth;
-        lassoRenderer.endWidth = lassoWidth;
-        lassoRenderer.material = lassoMaterial;
-        lassoRenderer.material.color = lassoDrawColor;
-        isLassoPastInitialDistance = false;
-        isLassoComplete = false;
-
-        convexMesh.SetIncomplete();
-    }
-
-    private void LassoSelectionLoop()
-    {
-        if (!isLassoComplete)
-        {
-            RaycastHit pointerCollidedWith;
-            GameObject collidedObject = GetCollidedObject(out pointerCollidedWith);
-
-            if (collidedObject != null)
-            {
-                if (collidedObject == screen || collidedObject.CompareTag("DisplayScreen"))
-                {
-                    int nbLassoPoints = lassoRenderer.positionCount;
-
-                    // If the point is far away enough from the previous position
-                    if (nbLassoPoints == 0 || Vector3.Distance(pointerCollidedWith.point, lassoRenderer.GetPosition(nbLassoPoints - 1)) >= lassoPointDistanceInterval)
-                    {
-                        lassoRenderer.positionCount = nbLassoPoints + 1;
-                        lassoRenderer.SetPosition(nbLassoPoints, pointerCollidedWith.point);
-                        VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(gameObject), 0.05f);
-
-                        // Update the mesh which shows the area that will be selected
-                        Vector3[] points = new Vector3[lassoRenderer.positionCount];
-                        lassoRenderer.GetPositions(points);
-                        Vector3[] points3d = points.Select(p => screen.transform.InverseTransformPoint(p)).ToArray();
-                        convexMesh.CreateConvexMesh(points3d);
-                    }
-
-                    // If the lasso has not already been moved beyond the initial distance necessary to complete a lasso, check to see if it has
-                    if (!isLassoPastInitialDistance)
-                    {
-                        if (Vector3.Distance(pointerCollidedWith.point, lassoRenderer.GetPosition(0)) > lassoPointInitialDistance)
-                            isLassoPastInitialDistance = true;
-                    }
-                    else
-                    {
-                        // If it has already been moved past its initial distance, check to see if it has come back and completed the lasso
-                        if (Vector3.Distance(pointerCollidedWith.point, lassoRenderer.GetPosition(0)) <= lassoPointCompleteDistance)
-                        {
-                            isLassoComplete = true;
-                            lassoRenderer.material.color = lassoCompleteColor;
-                            convexMesh.SetComplete();
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void LassoSelectionTriggerEnd(ControllerInteractionEventArgs e)
-    {
-        SetInteractionState(InteractionState.LassoSelection);
-
-        if (isLassoComplete)
-        {
-            /* TODO
-            List<int> indicesToSelect = new List<int>();
-
-            int nbLassoPoints = lassoRenderer.positionCount;
-            Vector3[] lassoWorldSpace = new Vector3[nbLassoPoints];
-            lassoRenderer.GetPositions(lassoWorldSpace);
-            Vector2[] lassoLocalSpace = lassoWorldSpace.Select(p => (Vector2)screen.transform.InverseTransformPoint(p)).ToArray();
-
-            foreach (GameObject shape in ScreenManager.Instance.Shapes)
-            {
-                Vector2 point = screen.transform.InverseTransformPoint(shape.transform.position);
-                if (ContainsPoint(lassoLocalSpace, point))
-                {
-                    indicesToSelect.Add(shape.GetComponent<InteractableShape>().Index);
-                }
-
-            }
-
-            // Select any shapes which the line is touching
-            foreach (Vector3 point in lassoWorldSpace)
-            {
-                Collider[] colliders = Physics.OverlapSphere(point, 0.01f);
-
-                foreach (Collider collider in colliders)
-                {
-                    if (collider.gameObject.tag == "Shape")
-                    {
-                        indicesToSelect.Add(collider.gameObject.GetComponent<InteractableShape>().Index);
-                    }
-                }
-            }
-
-            if (IsSelecting)
-                ScreenManager.Instance.ShapesSelected(indicesToSelect.ToArray());
-            else if (IsDeselecting)
-                ScreenManager.Instance.ShapesDeselected(indicesToSelect.ToArray());
-            */
-        }
-
-        convexMesh.DestroyConvexMesh();
-        Destroy(lassoRenderer);
-    }
-
-    private void RectangleSelectionTriggerStart(ControllerInteractionEventArgs e)
-    {
-        RaycastHit pointerCollidedWith;
-        GameObject collidedObject = GetCollidedObject(out pointerCollidedWith);
-
-        if (collidedObject != null)
-        {
-            SetInteractionState(InteractionState.RectangleSelecting);
-            rectangleStart = pointerCollidedWith.point;
-            //if (collidedObject == screen || collidedObject.CompareTag("Shape"))
-            //{
-            //    SetInteractionState(InteractionState.RectangleSelecting);
-            //    rectangleStart = pointerCollidedWith.point;
-            //}
-        }
-    }
-
-    private void RectangleSelectionLoop()
-    {
-        RaycastHit pointerCollidedWith;
-        GameObject collidedObject = GetCollidedObject(out pointerCollidedWith);
-
-        if (collidedObject != null && collidedObject.transform.parent != null && collidedObject.transform.parent.CompareTag("Chart"))
-        {
-            /*
-            // Only draw the shape if the pointer is targeting at the screen
-            if (collidedObject == screen)
-            {
-                // Create the square to be used for the selection if it does not already exist
-                if (selectionSquare == null)
-                {
-                    selectionSquare = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    // Set it to ignore raycasts
-                    selectionSquare.layer = 2;
-                    selectionSquare.GetComponent<Renderer>().material = rectangleSelectMaterial;
-                    selectionSquare.transform.SetParent(screen.transform);
-                    LineRenderer lr = selectionSquare.AddComponent<LineRenderer>();
-                    lr.positionCount = 5;
-                    lr.SetPositions(new Vector3[] { new Vector3(0.5f, 0.5f, 0), new Vector3(-0.5f, 0.5f, 0), new Vector3(-0.5f, -0.5f, 0), new Vector3(0.5f, -0.5f, 0), new Vector3(0.5f, 0.5f, 0) });
-                    lr.material = rectangleSelectMaterial;
-                    lr.startWidth = rectangleSelectWidth;
-                    lr.endWidth = rectangleSelectWidth;
-                    lr.useWorldSpace = false;
-                }
-
-                rectangleEnd = pointerCollidedWith.point;
-
-                Vector3 localStart = screen.transform.InverseTransformPoint(rectangleStart);
-                Vector3 localEnd = screen.transform.InverseTransformPoint(rectangleEnd);
-
-                Vector3 localScale = localStart - localEnd;
-                localScale.x = Mathf.Abs(localScale.x);
-                localScale.y = Mathf.Abs(localScale.y);
-                localScale.z = Mathf.Abs(localScale.z) + 0.02f;  // Add a bit extra thickness to prevent Z-fighting
-                Vector3 localCenter = (localStart + localEnd) / 2;
-
-                selectionSquare.transform.localPosition = localCenter;
-                selectionSquare.transform.localScale = localScale;
-                selectionSquare.transform.rotation = screen.transform.rotation;
-            }
-            */
-
-            // Create the square to be used for the selection if it does not already exist
-            if (selectionSquare == null)
-            {
-                selectionSquare = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                // Set it to ignore raycasts
-                selectionSquare.layer = 2;
-                selectionSquare.GetComponent<Renderer>().material = rectangleSelectMaterial;
-                //LineRenderer lr = selectionSquare.AddComponent<LineRenderer>();
-                //lr.positionCount = 5;
-                //lr.SetPositions(new Vector3[] { new Vector3(0.5f, 0.5f, 0), new Vector3(-0.5f, 0.5f, 0), new Vector3(-0.5f, -0.5f, 0), new Vector3(0.5f, -0.5f, 0), new Vector3(0.5f, 0.5f, 0) });
-                //lr.material = rectangleSelectMaterial;
-                //lr.startWidth = rectangleSelectWidth;
-                //lr.endWidth = rectangleSelectWidth;
-                //lr.useWorldSpace = false;
-            }
-
-            rectangleEnd = pointerCollidedWith.point;
-
-            Vector3 scale = rectangleEnd - rectangleStart;
-            scale.x = Mathf.Abs(scale.x);
-            scale.y = Mathf.Abs(scale.y);
-            scale.z = Mathf.Abs(scale.z);
-
-            Vector3 center = (rectangleStart + rectangleEnd) / 2;
-
-            selectionSquare.transform.position = center;
-            selectionSquare.transform.localScale = scale;
-            selectionSquare.transform.rotation = collidedObject.transform.rotation;
-            selectionSquare.transform.Rotate(Vector3.up, 90f);
-        }
-    }
-
-    private void RectangleSelectionTriggerEnd(ControllerInteractionEventArgs e)
-    {
-        SetInteractionState(InteractionState.RectangleSelection);
-        
-        brushingAndLinking.input1 = rectangleTransform1;
-        brushingAndLinking.input2 = rectangleTransform2;
-        rectangleTransform1.position = rectangleStart;
-        rectangleTransform2.position = rectangleEnd;
-
-        brushingAndLinking.brushButtonController = true;
-
-        StartCoroutine(StopRectangleSelection());
-    }
-
-    private IEnumerator StopRectangleSelection()
-    {
-        yield return null;
-
-        brushingAndLinking.brushButtonController = false;
-        Destroy(selectionSquare);
-    }
-
+    
     private void RangedInteractionTriggerStart(ControllerInteractionEventArgs e)
     {
         GameObject collidedObject = GetCollidedObject();
@@ -1098,8 +752,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 rangedPullGameObject = collidedObject;
 
                 // As we will be sending updates on it, we need to take ownership of it
-                if (!rangedPullGameObject.GetComponent<PhotonView>().isMine)
-                    rangedPullGameObject.GetComponent<PhotonView>().TransferOwnership(PhotonNetwork.player);
+                if (!rangedPullGameObject.GetComponent<PhotonView>().IsMine)
+                    rangedPullGameObject.GetComponent<PhotonView>().TransferOwnership(PhotonNetwork.LocalPlayer);
 
                 rangedPullGameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
 
@@ -1132,10 +786,10 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                     Chart chart = ChartManager.Instance.DuplicateVisualisation(rangedPullGameObject.GetComponent<Chart>());
                     rangedPullGameObject = chart.gameObject;
 
-                    DataLogger.Instance.LogActionData(this, PhotonNetwork.player, "Vis range duplicated");
+                    DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, "Vis range duplicated");
                 }
 
-                DataLogger.Instance.LogActionData(this, PhotonNetwork.player, "Vis range pull start");
+                DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, "Vis range pull start");
             }
         }
 
@@ -1185,7 +839,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             GetComponent<VRTK_InteractTouch>().ForceTouch(rangedPullGameObject);
             GetComponent<VRTK_InteractGrab>().AttemptGrab();
             
-            DataLogger.Instance.LogActionData(this, PhotonNetwork.player, "Vis range pull end");
+            DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, "Vis range pull end");
         }
         else
         {
@@ -1212,10 +866,10 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         
         rangedPullGameObject.GetComponent<Chart>().AnimateTowards(rangedPullObjectStartPosition, rangedPullObjectStartRotation, 0.1f, pullObjectIsPrototype);
 
-        DataLogger.Instance.LogActionData(this, PhotonNetwork.player, "Vis range pull end");
+        DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, "Vis range pull end");
 
         if (pullObjectIsPrototype)
-            DataLogger.Instance.LogActionData(this, PhotonNetwork.player, "Vis range destroyed");
+            DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, "Vis range destroyed");
     }
     
     private void DetailsOnDemandUpdated(List<float> nearestDistances)

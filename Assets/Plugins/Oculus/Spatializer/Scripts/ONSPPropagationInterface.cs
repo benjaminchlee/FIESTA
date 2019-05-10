@@ -67,15 +67,33 @@ namespace ONSPPropagationInterface
         Float64
     }
 
-    /***********************************************************************************/
-    // UNITY NATIVE
-    /***********************************************************************************/
-    namespace Unity_Native
+  public class ClientType
+  {
+    // Copied from AudioSDK\OVRAudio\OVR_Audio_Internal.h
+    public const uint OVRA_CLIENT_TYPE_NATIVE = 0;
+    public const uint OVRA_CLIENT_TYPE_WWISE_2016 = 1;
+    public const uint OVRA_CLIENT_TYPE_WWISE_2017_1 = 2;
+    public const uint OVRA_CLIENT_TYPE_WWISE_2017_2 = 3;
+    public const uint OVRA_CLIENT_TYPE_WWISE_2018_1 = 4;
+    public const uint OVRA_CLIENT_TYPE_FMOD = 5;
+    public const uint OVRA_CLIENT_TYPE_UNITY = 6;
+    public const uint OVRA_CLIENT_TYPE_UE4 = 7;
+    public const uint OVRA_CLIENT_TYPE_VST = 8;
+    public const uint OVRA_CLIENT_TYPE_AAX = 9;
+    public const uint OVRA_CLIENT_TYPE_TEST = 10;
+    public const uint OVRA_CLIENT_TYPE_OTHER = 11;
+    public const uint OVRA_CLIENT_TYPE_WWISE_UNKNOWN = 12;
+  }
+
+  /***********************************************************************************/
+  // UNITY NATIVE
+  /***********************************************************************************/
+  namespace Unity_Native
     {
         public class PropIFace
         {
             static IntPtr context_ = IntPtr.Zero;
-            static IntPtr context { get { if (context_ == IntPtr.Zero) { ovrAudio_GetPluginContext(out context_); } return context_; } }
+            static IntPtr context { get { if (context_ == IntPtr.Zero) { ovrAudio_GetPluginContext(out context_, ClientType.OVRA_CLIENT_TYPE_UNITY); } return context_; } }
 
             /***********************************************************************************/
 
@@ -86,7 +104,7 @@ namespace ONSPPropagationInterface
             // Context API: Required to create internal context if it does not exist yet
 
             [DllImport(strOSPS)]
-            public static extern int ovrAudio_GetPluginContext(out IntPtr context);
+            public static extern int ovrAudio_GetPluginContext(out IntPtr context, uint clientType);
 
             /***********************************************************************************/
             // Settings API
@@ -215,7 +233,7 @@ namespace ONSPPropagationInterface
         public class PropIFace
         {
             static IntPtr context_ = IntPtr.Zero;
-            static IntPtr context { get { if (context_ == IntPtr.Zero) { ovrAudio_GetPluginContext(out context_); } return context_; } }
+            static IntPtr context { get { if (context_ == IntPtr.Zero) { ovrAudio_GetPluginContext(out context_, ClientType.OVRA_CLIENT_TYPE_WWISE_UNKNOWN); } return context_; } }
 
             /***********************************************************************************/
 
@@ -226,7 +244,7 @@ namespace ONSPPropagationInterface
             // Context API: Required to create internal context if it does not exist yet
 
             [DllImport(strOSPS)]
-            public static extern int ovrAudio_GetPluginContext(out IntPtr context);
+            public static extern int ovrAudio_GetPluginContext(out IntPtr context, uint clientType);
 
             /***********************************************************************************/
             // Settings API
@@ -355,7 +373,7 @@ namespace ONSPPropagationInterface
         public class PropIFace
         {
             static IntPtr context_ = IntPtr.Zero;
-            static IntPtr context { get { if (context_ == IntPtr.Zero) { ovrAudio_GetPluginContext(out context_); } return context_; } }
+            static IntPtr context { get { if (context_ == IntPtr.Zero) { ovrAudio_GetPluginContext(out context_, ClientType.OVRA_CLIENT_TYPE_FMOD); } return context_; } }
 
             /***********************************************************************************/
 
@@ -366,7 +384,7 @@ namespace ONSPPropagationInterface
             // Context API: Required to create internal context if it does not exist yet
 
             [DllImport(strOSPS)]
-            public static extern int ovrAudio_GetPluginContext(out IntPtr context);
+            public static extern int ovrAudio_GetPluginContext(out IntPtr context, uint clientType);
 
             /***********************************************************************************/
             // Settings API

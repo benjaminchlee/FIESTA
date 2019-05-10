@@ -1,8 +1,9 @@
 ﻿namespace NetBase {
     using UnityEngine;
+    using Photon.Pun;
 
     [RequireComponent(typeof(PhotonView))]
-    public class NetworkObject : Photon.MonoBehaviour {
+    public class NetworkObject : MonoBehaviourPunCallbacks {
         public enum UpdateMode { None, Set, Lerp }
 
         [Tooltip("Synchronize changes to the location of the object in the object hierarchy")]
@@ -40,8 +41,8 @@
         }
 
         void Update() {
-            if (!photonView.isMine) {
-                double currentTime = PhotonNetwork.time;
+            if (!photonView.IsMine) {
+                double currentTime = PhotonNetwork.Time;
                 double interpolationTime = currentTime - GetInterpolationBackTime();
                 foreach (ComponentInterpolator ci in cipols) {
                     ci.Update(interpolationTime);
@@ -102,7 +103,7 @@
                 Vector3 scale = Vector3.one;
                 Vector3 v = Vector3.zero;
                 Vector3 angv = Vector3.zero;
-                if (stream.isWriting) {
+                if (stream.IsWriting) {
                     if (component is Transform) {
                         Transform transform = (Transform)component;
                         NetworkReference nref = NetworkReference.FromTransform(transform.parent);

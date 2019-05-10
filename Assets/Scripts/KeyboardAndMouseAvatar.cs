@@ -1,48 +1,52 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Photon.Pun;
 using UnityEngine;
 
-public class KeyboardAndMouseAvatar : Photon.MonoBehaviour {
+public class KeyboardAndMouseAvatar : MonoBehaviourPunCallbacks {
     
     float mainSpeed = 1.25f; //regular speed
     float shiftAdd = 2f; //multiplied by how long shift is held.  Basically running
-    float maxShift = 1000.0f; //Maximum speed when holdin gshift
-    float camSens = 0.1f; //How sensitive it with mouse
-    private Vector3 lastMouse = new Vector3(255, 255, 255); //kind of in the middle of the screen, rather than at the top (play)
+    float maxShift = 1000.0f; //Maximum speed when holding shift
+    float camSens = 1f; //How sensitive it with mouse
     private float totalRun = 1.0f;
 
-    private bool isEnabled = false;
+    private bool isEnabled = true;
 
     private void Start()
     {
         DontDestroyOnLoad(this);
 
-        if (!photonView.isMine)
+        if (!photonView.IsMine)
         {
             GetComponentInChildren<Camera>().enabled = false;
             GetComponentInChildren<AudioListener>().enabled = false;
+        }
+        else
+        {
+            Cursor.lockState = isEnabled ? CursorLockMode.Locked : CursorLockMode.None;
+            Cursor.visible = !isEnabled;
         }
     }
 
     private void Update()
     {
-        if (photonView.isMine)
+        if (photonView.IsMine)
         {
             if (Input.GetKeyDown(KeyCode.Tab))
+            {
                 isEnabled = !isEnabled;
+
+                Cursor.lockState = isEnabled ? CursorLockMode.Locked : CursorLockMode.None;
+                Cursor.visible = !isEnabled;
+            }
 
             if (isEnabled)
             {
-                lastMouse = Input.mousePosition - lastMouse;
-                lastMouse = new Vector3(-lastMouse.y * camSens, lastMouse.x * camSens, 0);
-                lastMouse = new Vector3(transform.eulerAngles.x + lastMouse.x, transform.eulerAngles.y + lastMouse.y,
-                    0);
-                transform.eulerAngles = lastMouse;
-                lastMouse = Input.mousePosition;
-                //Mouse  camera angle done.  
+                //Mouse  camera angle
+                transform.eulerAngles = new Vector3(transform.eulerAngles.x - Input.GetAxis("Mouse Y") * camSens, transform.eulerAngles.y + Input.GetAxis("Mouse X") * camSens, 0);
 
                 //Keyboard commands
-                float f = 0.0f;
                 Vector3 p = GetBaseInput();
                 if (Input.GetKey(KeyCode.LeftShift))
                 {
@@ -64,21 +68,6 @@ public class KeyboardAndMouseAvatar : Photon.MonoBehaviour {
                 transform.Translate(new Vector3(p.x, 0, p.z));
                 transform.position = new Vector3(transform.position.x, prevY, transform.position.z);
                 transform.position += Vector3.up * p.y;
-            
-                //Vector3 newPosition = transform.position;
-                ////if (Input.GetKey(KeyCode.Space))
-                //if (true)
-                //{
-                //    //If player wants to move on X and Z axis only
-                //    transform.Translate(p);
-                //    newPosition.x = transform.position.x;
-                //    newPosition.z = transform.position.z;
-                //    transform.position = newPosition;
-                //}
-                //else
-                //{
-                //    transform.Translate(p);
-                //}
             }
         }
     }
