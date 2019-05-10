@@ -784,6 +784,16 @@ MonoBehaviour:
   rangedPullCompleteThreshold: 0.2
   detailsOnDemandGameObject: {fileID: 0}
   detailsOnDemandTextMesh: {fileID: 0}
+  RangedToolActivated:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: RangedInteractions+RangedToolActivatedEvent, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  RangedToolDeactivated:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: RangedInteractions+RangedToolDeactivatedEvent, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
 --- !u!114 &99129227
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2831,8 +2841,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 642757e5fb114ae49b5ace44dba12c7e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MaxPlayersPerRoom: 4
-  Loglevel: 0
+  maxPlayersPerRoom: 4
+  loglevel: 1
+  sendRate: 30
 --- !u!114 &802063917
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2845,20 +2856,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ownerId: 0
-  group: 0
-  OwnerShipWasTransfered: 0
-  prefixBackup: -1
-  synchronization: 0
-  onSerializeTransformOption: 3
-  onSerializeRigidBodyOption: 2
-  ownershipTransfer: 0
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 0
+  OwnershipTransfer: 0
   ObservedComponents:
   - {fileID: 0}
-  ObservedComponentsFoldoutOpen: 1
   viewIdField: 5
-  instantiationId: 5
-  currentMasterID: -1
+  InstantiationId: 5
   isRuntimeInstantiated: 0
 --- !u!4 &802063918
 Transform:
@@ -4064,20 +4070,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ownerId: 0
-  group: 0
-  OwnerShipWasTransfered: 0
-  prefixBackup: -1
-  synchronization: 0
-  onSerializeTransformOption: 3
-  onSerializeRigidBodyOption: 2
-  ownershipTransfer: 0
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 0
+  OwnershipTransfer: 0
   ObservedComponents:
   - {fileID: 0}
-  ObservedComponentsFoldoutOpen: 1
   viewIdField: 3
-  instantiationId: 3
-  currentMasterID: -1
+  InstantiationId: 3
   isRuntimeInstantiated: 0
 --- !u!114 &1079460027
 MonoBehaviour:
@@ -5216,6 +5217,52 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1109866547}
   m_CullTransparentMesh: 0
+--- !u!1 &1111233082
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1111233083}
+  - component: {fileID: 1111233084}
+  m_Layer: 0
+  m_Name: InteractionsController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1111233083
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1111233082}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1136488917}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1111233084
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1111233082}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ad054879ba097149bfd63be473d69f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  leftInteractGrab: {fileID: 1615352298}
+  rightInteractGrab: {fileID: 99129230}
+  rangedInteractions: {fileID: 99129226}
 --- !u!1 &1123306253
 GameObject:
   m_ObjectHideFlags: 0
@@ -5309,6 +5356,7 @@ Transform:
   m_Children:
   - {fileID: 1615352294}
   - {fileID: 99129224}
+  - {fileID: 1111233083}
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

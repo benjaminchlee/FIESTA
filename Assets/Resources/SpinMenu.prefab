@@ -93,20 +93,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ownerId: 0
-  group: 0
-  OwnerShipWasTransfered: 0
-  prefixBackup: -1
-  synchronization: 0
-  onSerializeTransformOption: 3
-  onSerializeRigidBodyOption: 2
-  ownershipTransfer: 0
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 0
+  OwnershipTransfer: 0
   ObservedComponents:
   - {fileID: 0}
-  ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
-  instantiationId: -1
-  currentMasterID: -1
+  InstantiationId: -1
   isRuntimeInstantiated: 0
 --- !u!1 &1062489222294072
 GameObject:
@@ -371,20 +366,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ownerId: 0
-  group: 0
-  OwnerShipWasTransfered: 0
-  prefixBackup: -1
-  synchronization: 3
-  onSerializeTransformOption: 3
-  onSerializeRigidBodyOption: 2
-  ownershipTransfer: 0
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
   ObservedComponents:
   - {fileID: 114406354537338566}
-  ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
-  instantiationId: -1
-  currentMasterID: -1
+  InstantiationId: -1
   isRuntimeInstantiated: 0
 --- !u!114 &114406354537338566
 MonoBehaviour:
@@ -744,20 +734,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ownerId: 0
-  group: 0
-  OwnerShipWasTransfered: 0
-  prefixBackup: -1
-  synchronization: 3
-  onSerializeTransformOption: 3
-  onSerializeRigidBodyOption: 2
-  ownershipTransfer: 0
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
   ObservedComponents:
   - {fileID: 114192459780038560}
-  ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
-  instantiationId: -1
-  currentMasterID: -1
+  InstantiationId: -1
   isRuntimeInstantiated: 0
 --- !u!114 &114192459780038560
 MonoBehaviour:
@@ -1460,20 +1445,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ownerId: 0
-  group: 0
-  OwnerShipWasTransfered: 0
-  prefixBackup: -1
-  synchronization: 3
-  onSerializeTransformOption: 3
-  onSerializeRigidBodyOption: 2
-  ownershipTransfer: 0
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
   ObservedComponents:
   - {fileID: 114801428463506798}
-  ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
-  instantiationId: -1
-  currentMasterID: -1
+  InstantiationId: -1
   isRuntimeInstantiated: 0
 --- !u!114 &114801428463506798
 MonoBehaviour:
@@ -2407,20 +2387,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ownerId: 0
-  group: 0
-  OwnerShipWasTransfered: 0
-  prefixBackup: -1
-  synchronization: 3
-  onSerializeTransformOption: 3
-  onSerializeRigidBodyOption: 2
-  ownershipTransfer: 0
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
   ObservedComponents:
   - {fileID: 114945706207601082}
-  ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
-  instantiationId: -1
-  currentMasterID: -1
+  InstantiationId: -1
   isRuntimeInstantiated: 0
 --- !u!114 &114945706207601082
 MonoBehaviour:
@@ -2652,20 +2627,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ownerId: 0
-  group: 0
-  OwnerShipWasTransfered: 0
-  prefixBackup: -1
-  synchronization: 3
-  onSerializeTransformOption: 3
-  onSerializeRigidBodyOption: 2
-  ownershipTransfer: 0
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
   ObservedComponents:
   - {fileID: 114947174978562632}
-  ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
-  instantiationId: -1
-  currentMasterID: -1
+  InstantiationId: -1
   isRuntimeInstantiated: 0
 --- !u!114 &114947174978562632
 MonoBehaviour:

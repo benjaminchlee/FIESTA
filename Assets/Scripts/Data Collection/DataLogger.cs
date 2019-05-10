@@ -58,7 +58,7 @@ public class DataLogger : MonoBehaviourPunCallbacks {
     private Vector3 rightPos;
     private Quaternion rightRot;
 
-    private List<Dashboard> dashboards;
+    private List<Panel> dashboards;
     private TextMeshPro textMesh;
 
     private void Awake()
@@ -112,7 +112,7 @@ public class DataLogger : MonoBehaviourPunCallbacks {
             objectStreamWriter.WriteLine("Timestamp\tObjectType\tOwner\tPosition.x\tPosition.y\tPosition.z\tRotation.x\tRotation.y\tRotation.z\tRotation.w\tWidth\tHeight\tDepth");
 
             // Save references of logged entities
-            dashboards = FindObjectsOfType<Dashboard>().ToList();
+            dashboards = FindObjectsOfType<Panel>().ToList();
             observer = FindObjectOfType<KeyboardAndMouseAvatar>().transform;
         }
         else

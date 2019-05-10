@@ -5,18 +5,24 @@ TagManager:
   serializedVersion: 2
   tags:
   - View
-  - DisplayScreen
   - Chart
   - ChartRaycastCollider
   - MenuButton
   - PhysicsMenuButton
   - SPLOMButton
-  - Dashboard
-  - DashboardCollider
   - TaskText
   - DummyAvatar
   - DummyVisualisation
   - DummyPanel
+  - ExcludeTeleport
+  - projectile
+  - FxTemporaire
+  - TeleportIgnore
+  - DisplaySurface
+  - Panel
+  - PanelCollider
+  - Dashboard
+  - DashboardCollider
   layers:
   - Default
   - TransparentFX
