@@ -18,7 +18,6 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks {
     private int kernelHandleBrushTexture;
     private int kernelHandleBrushArrayIndices;
     private int kernelResetBrushTexture;
-    private int kernelSetHighlightedIndex;
     private int kernelComputeNearestDistances;
 
     ComputeBuffer buffer;
@@ -29,10 +28,8 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks {
     [SerializeField]
     public Material myRenderMaterial;
 
-    public RenderTexture BrushedIndicesTexture { get; private set; }
-
-    GameObject viewHolder;
-    int texSize;
+    public static RenderTexture brushedIndicesTexture;
+    public static int texSize;
 
     [SerializeField]
     public List<Visualisation> brushingVisualisations;
@@ -41,17 +38,11 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks {
     [SerializeField]
     public List<LinkingVisualisations> brushedLinkingVisualisations;
 
-    [SerializeField]
-    public bool showBrush = false;
-    [SerializeField]
     public bool shareBrushing = false;
     [SerializeField]
     public Color privateBrushColor = Color.yellow;
     [SerializeField]
     public Color sharedBrushColor = Color.red;
-
-    [SerializeField]
-    [Range(1f, 10f)] public float brushSizeFactor = 1f;
 
     [SerializeField]
     public Transform input1;
@@ -61,17 +52,13 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks {
     [SerializeField] [Range(0f, 1f)]
     public float radiusSphere;
     [SerializeField]
-    public bool brushButtonController;
-
+    public bool brushEnabled;
 
     public Visualisation visualisationToInspect;
     [SerializeField] [Range(0f, 1f)]
     public float radiusInspector;
     [SerializeField]
     public bool inspectButtonController;
-
-    private DetailsOnDemand detailsOnDemand;
-    private int highlightedIndex = -1;
 
     public BrushType BRUSH_TYPE;
     public enum BrushType
@@ -99,17 +86,54 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks {
     public class NearestDistancesComputedEvent : UnityEvent<List<float>> { }
     public NearestDistancesComputedEvent NearestDistancesComputed;
 
-    // private fields
-    private bool activated = false;
+    public Color PrivateBrushColor
+    {
+        get { return privateBrushColor; }
+        set
+        {
+            if (value == privateBrushColor)
+                return;
+
+            photonView.RPC("PropagatePrivateBrushColor", RpcTarget.AllBuffered, value);
+        }
+    }
+
+    [PunRPC]
+    private void PropagatePrivateBrushColor(Color value)
+    {
+        privateBrushColor = value;
+
+        computeShader.SetFloats("brushColor", privateBrushColor.r, privateBrushColor.g, privateBrushColor.b, privateBrushColor.a);
+    }
+
+    public Color SharedBrushColor
+    {
+        get { return sharedBrushColor; }
+        set
+        {
+            if (value == sharedBrushColor)
+                return;
+
+            photonView.RPC("PropagateSharedBrushColor", RpcTarget.AllBuffered, value);
+        }
+    }
+
+    [PunRPC]
+    private void PropagateSharedBrushColor(Color value)
+    {
+        sharedBrushColor = value;
+        
+        computeShader.SetFloats("sharedBrushColor", sharedBrushColor.r, sharedBrushColor.g, sharedBrushColor.b, sharedBrushColor.a);
+    }
 
     private void Awake()
     {
-        // Create a copy of the compute shader that is specfic to this brushing and linking script
+        // Create a copy of the compute shader that is specific to this brushing and linking script
         computeShader = Instantiate(computeShader);
     }
 
     // Use this for initialization
-    void Start()
+    private void Start()
     {
         ChartManager.Instance.ChartAdded.AddListener(ChartAdded);
 
@@ -119,13 +143,11 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks {
         InitialiseBuffersAndTextures();
 
         ResetBrushTexture();
-        //GenerateDetailsOnDemandPanel();
     }
-
-    // Update is called once per frame
-    void Update()
+    
+    private void Update()
     {
-        if (brushButtonController)
+        if (brushEnabled)
         {
             switch (BRUSH_TYPE)
             {
@@ -140,16 +162,16 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks {
                     break;
 
                 case BrushType.BOX:
+                    Debug.LogError("Box brushing not fully implemented nor tested.");
                     break;
             }
         }
 
         if (input1 != null && input2 != null)
         {
-            if (brushButtonController && brushingVisualisations.Count != 0)
+            if (brushEnabled && brushingVisualisations.Count != 0)
             {
                 updateBrushTexture();
-                // getDetailsOnDemand();
             }
 
             if (inspectButtonController && visualisationToInspect != null)
@@ -164,7 +186,6 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks {
         kernelHandleBrushTexture = computeShader.FindKernel("CSMain");
         kernelHandleBrushArrayIndices = computeShader.FindKernel("ComputeBrushedIndicesArray");
         kernelResetBrushTexture = computeShader.FindKernel("ResetBrushTexture");
-        kernelSetHighlightedIndex = computeShader.FindKernel("SetHighlightedIndex");
         kernelComputeNearestDistances = computeShader.FindKernel("ComputeNearestDistances");
     }
 
@@ -193,43 +214,31 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks {
         computeShader.SetBuffer(kernelComputeNearestDistances, "dataBuffer", buffer);
         computeShader.SetBuffer(kernelComputeNearestDistances, "nearestDistances", nearestDistancesBuffer);
 
-        texSize = computeTextureSize(datasetSize);
-
-        // Find all existing brushing and linking scripts and get any existing RenderTexture
-        BrushingAndLinking[] bals = FindObjectsOfType<BrushingAndLinking>();
-        foreach (BrushingAndLinking bal in bals)
+        // If a shared render texture has not yet been created, make it now
+        if (brushedIndicesTexture == null)
         {
-            if (bal.BrushedIndicesTexture != null && bal.BrushedIndicesTexture.IsCreated())
-                BrushedIndicesTexture = bal.BrushedIndicesTexture;
+            brushedIndicesTexture = new RenderTexture(texSize, texSize, 24);
+            brushedIndicesTexture.enableRandomWrite = true;
+            brushedIndicesTexture.filterMode = FilterMode.Point;
+            brushedIndicesTexture.Create();
+
+            texSize = computeTextureSize(datasetSize);
         }
 
-        // If no existing RenderTexture was found, create a new one
-        if (BrushedIndicesTexture == null)
-        {
-            BrushedIndicesTexture = new RenderTexture(texSize, texSize, 24);
-            BrushedIndicesTexture.enableRandomWrite = true;
-            BrushedIndicesTexture.filterMode = FilterMode.Point;
-            BrushedIndicesTexture.Create();
-        }
+        myRenderMaterial.SetTexture("_MainTex", brushedIndicesTexture);
 
-        myRenderMaterial.SetTexture("_MainTex", BrushedIndicesTexture);
-
-        computeShader.SetTexture(kernelHandleBrushTexture, "Result", BrushedIndicesTexture);
-        computeShader.SetTexture(kernelHandleBrushArrayIndices, "Result", BrushedIndicesTexture);
-        computeShader.SetTexture(kernelResetBrushTexture, "Result", BrushedIndicesTexture);
-        computeShader.SetTexture(kernelSetHighlightedIndex, "Result", BrushedIndicesTexture);
+        computeShader.SetTexture(kernelHandleBrushTexture, "Result", brushedIndicesTexture);
+        computeShader.SetTexture(kernelHandleBrushArrayIndices, "Result", brushedIndicesTexture);
+        computeShader.SetTexture(kernelResetBrushTexture, "Result", brushedIndicesTexture);
 
         computeShader.SetFloat("_size", (float)texSize);
-        computeShader.SetFloats("brushColor", privateBrushColor.r, privateBrushColor.g, privateBrushColor.b, privateBrushColor.a);
-        if (photonView.IsMine)
-            photonView.RPC("SetSharedColor", RpcTarget.AllBuffered, PlayerPreferencesManager.Instance.SharedBrushColor);
-    }
 
-    [PunRPC]
-    private void SetSharedColor(Color color)
-    {
-        sharedBrushColor = color;
-        computeShader.SetFloats("sharedBrushColor", sharedBrushColor.r, sharedBrushColor.g, sharedBrushColor.b, sharedBrushColor.a);
+        // Set colors of brushing and share them to others via RPC only if this belongs to the player
+        if (photonView.IsMine)
+        {
+            PrivateBrushColor = PlayerPreferencesManager.Instance.PrivateBrushColor;
+            SharedBrushColor = PlayerPreferencesManager.Instance.SharedBrushColor;
+        }
     }
 
     int computeTextureSize(int sizeDatast)
@@ -292,12 +301,9 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks {
 
         foreach (var v in chart.Visualisation.theVisualizationObject.viewList)
         {
-            v.BigMesh.SharedMaterial.SetTexture("_BrushedTexture", BrushedIndicesTexture);
+            v.BigMesh.SharedMaterial.SetTexture("_BrushedTexture", brushedIndicesTexture);
             v.BigMesh.SharedMaterial.SetFloat("_DataWidth", texSize);
             v.BigMesh.SharedMaterial.SetFloat("_DataHeight", texSize);
-            v.BigMesh.SharedMaterial.SetFloat("showBrush", Convert.ToSingle(showBrush));
-            v.BigMesh.SharedMaterial.SetColor("brushColor", privateBrushColor);
-            v.BigMesh.SharedMaterial.SetColor("sharedBrushColor", sharedBrushColor);
         }
     }
     
@@ -418,51 +424,9 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks {
         }
     }
 
-    public void getDetailsOnDemand()
-    {
-        if (detailsOnDemandRequest.done)
-        {
-            if (!detailsOnDemandRequest.hasError)
-            {
-                brushedIndices = detailsOnDemandRequest.GetData<int>().ToList();
-                detailsOnDemand.BrushedIndicesChanged(brushedIndices);
-            }
-
-            // Dispatch again
-            computeShader.Dispatch(kernelHandleBrushArrayIndices, Mathf.CeilToInt(brushedIndicesBuffer.count / 32f), 1,
-                1);
-            detailsOnDemandRequest = AsyncGPUReadback.Request(brushedIndicesBuffer);
-        }
-    }
-
     public void ResetBrushTexture()
     {
         computeShader.Dispatch(kernelResetBrushTexture, Mathf.CeilToInt(texSize / 32), Mathf.CeilToInt(texSize / 32), 1);
-    }
-
-    private void GenerateDetailsOnDemandPanel()
-    {
-        if (photonView.IsMine)
-        {
-            // Get the hand that the ranged interactions script is on
-            GameObject controller = FindObjectOfType<RangedInteractions>().gameObject;
-
-            GameObject go = PhotonNetwork.Instantiate("DetailsOnDemand", Vector3.zero, Quaternion.identity, 0);
-            detailsOnDemand = go.GetComponent<DetailsOnDemand>();
-            detailsOnDemand.transform.SetParent(controller.transform);
-            detailsOnDemand.transform.localPosition = Vector3.zero;
-            detailsOnDemand.transform.localRotation = Quaternion.identity;
-            detailsOnDemand.SetBrushingAndLinking(this);
-        }
-    }
-    
-    public void HighlightIndex(int index)
-    {
-        computeShader.SetInt("previousIndex", highlightedIndex);
-        highlightedIndex = index;
-        computeShader.SetInt("highlightedIndex", highlightedIndex);
-
-        computeShader.Dispatch(kernelSetHighlightedIndex, 1, 1, 1);
     }
 
     /// <summary>
@@ -476,7 +440,11 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks {
         if (brushedIndicesBuffer != null)
             brushedIndicesBuffer.Release();
 
-        //Visualisation.OnUpdateViewAction -= Visualisation_OnUpdateViewAction;
+        if (filteredIndicesBuffer != null)
+            filteredIndicesBuffer.Release();
+
+        if (nearestDistancesBuffer != null)
+            nearestDistancesBuffer.Release();
     }
 
     private void OnApplicationQuit()
@@ -487,7 +455,11 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks {
         if (brushedIndicesBuffer != null)
             brushedIndicesBuffer.Release();
 
-        //Visualisation.OnUpdateViewAction -= Visualisation_OnUpdateViewAction;
+        if (filteredIndicesBuffer != null)
+            filteredIndicesBuffer.Release();
+
+        if (nearestDistancesBuffer != null)
+            nearestDistancesBuffer.Release();
     }
 
 
@@ -495,7 +467,7 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks {
     {
         if (stream.IsWriting)
         { 
-            stream.SendNext(brushButtonController);
+            stream.SendNext(brushEnabled);
             stream.SendNext(shareBrushing);
             stream.SendNext(radiusSphere);
             stream.SendNext(BRUSH_TYPE);
@@ -504,16 +476,14 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks {
         else
         {
             bool isBrushing = (bool) stream.ReceiveNext();
+
+            // Only turn on the brush if the client who owns it is also sharing the brush
+            brushEnabled = (isBrushing && shareBrushing) ? true : false;
+
             shareBrushing = (bool) stream.ReceiveNext();
             radiusSphere = (float) stream.ReceiveNext();
             BRUSH_TYPE = (BrushType) stream.ReceiveNext();
             SELECTION_TYPE = (SelectionType) stream.ReceiveNext();
-
-            // Only turn on the brush if the client who owns it is also sharing the brush
-            if (isBrushing && shareBrushing)
-                brushButtonController = true;
-            else
-                brushButtonController = false;
         }
     }
 }

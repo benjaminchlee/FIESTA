@@ -674,14 +674,14 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
             rangedBrush.transform.position = hit.point;
             brushingInput1.position = hit.point;
-            brushingAndLinking.brushButtonController = true;
+            brushingAndLinking.brushEnabled = true;
 
             TriggerControllerVibration(0.025f);
         }
         else
         {
             rangedBrush.SetActive(false);
-            brushingAndLinking.brushButtonController = false;
+            brushingAndLinking.brushEnabled = false;
         }
 
         if (IsValidCollision())
@@ -694,7 +694,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     {
         SetInteractionState(brushingAndLinking.shareBrushing ? InteractionState.RangedSharedBrush : InteractionState.RangedPrivateBrush);
 
-        brushingAndLinking.brushButtonController = false;
+        brushingAndLinking.brushEnabled = false;
 
         rangedBrush.SetActive(false);
 

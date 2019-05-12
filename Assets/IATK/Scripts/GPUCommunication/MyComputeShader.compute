@@ -2,7 +2,6 @@
 #pragma kernel CSMain
 #pragma kernel ComputeBrushedIndicesArray
 #pragma kernel ResetBrushTexture
-#pragma kernel SetHighlightedIndex
 #pragma kernel ComputeNearestDistances
 #include "UnityCG.cginc"
 
@@ -265,28 +264,6 @@ void ResetBrushTexture(uint3 id : SV_DispatchThreadID) {
 	int idx = id.x + id.y * _size;
 
 	Result[id.xy] = float4(0.0, 0.0, 0.0, 0.0);
-}
-
-[numthreads(1, 1, 1)]
-void SetHighlightedIndex(uint3 id : SV_DispatchThreadID) {
-
-	if (previousIndex >= 0) {
-		int previousX = previousIndex % _size;
-		int previousY = floor(previousIndex / _size);
-		float2 previousPos = float2(previousX, previousY);
-
-		// If the previous position is still highlighted, revert it back to being normally brushed 
-		if (IsEqual(Result[previousPos].w, 0.9, 0.01))
-			Result[previousPos] = float4(Result[previousPos].x, Result[previousPos].y, Result[previousPos].z, 1.0);
-	}
-	
-	if (highlightedIndex >= 0) {
-		int x = highlightedIndex % _size;
-		int y = floor(highlightedIndex / _size);
-		float2 pos = float2(x, y);
-
-		Result[pos] = float4(Result[pos].x, Result[pos].y, Result[pos].z, 0.9);
-	}
 }
 
 [numthreads(32, 1, 1)]

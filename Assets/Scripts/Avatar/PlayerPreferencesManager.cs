@@ -38,6 +38,14 @@ public class PlayerPreferencesManager : MonoBehaviour {
     }
 
     [SerializeField]
+    private Color privateBrushColor;
+    public Color PrivateBrushColor
+    {
+        get { return privateBrushColor; }
+        private set { privateBrushColor = value; }
+    }
+
+    [SerializeField]
     private Color sharedBrushColor;
     public Color SharedBrushColor
     {
