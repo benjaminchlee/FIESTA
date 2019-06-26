@@ -26,12 +26,15 @@ public class InteractionsController : MonoBehaviour {
         RangedInteracting,
         RangedMenuOpen
     }
+
+    private bool isMainSceneLoaded = false;
+
     private void Awake()
     {
         if (leftInteractGrab == null) leftInteractGrab = VRTK_DeviceFinder.GetControllerLeftHand().GetComponent<VRTK_InteractGrab>();
         if (rightInteractGrab == null) rightInteractGrab = VRTK_DeviceFinder.GetControllerRightHand().GetComponent<VRTK_InteractGrab>();
         if (rangedInteractions == null) rangedInteractions = VRTK_DeviceFinder.GetControllerRightHand().GetComponent<RangedInteractions>();
-        }
+    }
 
     private void Start()
     {
@@ -52,6 +55,7 @@ public class InteractionsController : MonoBehaviour {
     {
         if (arg0.name == "MainScene")
         {
+            isMainSceneLoaded = true;
             Invoke("GetScriptReferences", 0.1f);
         }
     }
@@ -109,33 +113,44 @@ public class InteractionsController : MonoBehaviour {
 
     private void StartGrabObject(object sender, ObjectInteractEventArgs e)
     {
-        SetInteractionState(InteractionState.Grabbing);
+        if (isMainSceneLoaded)
+            SetInteractionState(InteractionState.Grabbing);
     }
+
     private void StopGrabObject(object sender, ObjectInteractEventArgs e)
     {
-        // Double check that the other controller is not grabbing anything
-        if (e.controllerReference.hand == SDK_BaseController.ControllerHand.Left)
+        if (isMainSceneLoaded)
         {
-            if (rightInteractGrab.GetGrabbedObject() == null)
-                SetInteractionState(InteractionState.None);
-        }
-        else if (e.controllerReference.hand == SDK_BaseController.ControllerHand.Right)
-        {
-            if (leftInteractGrab.GetGrabbedObject() == null)
-                SetInteractionState(InteractionState.None);
+            // Double check that the other controller is not grabbing anything
+            if (e.controllerReference.hand == SDK_BaseController.ControllerHand.Left)
+            {
+                if (rightInteractGrab.GetGrabbedObject() == null)
+                    SetInteractionState(InteractionState.None);
+            }
+            else if (e.controllerReference.hand == SDK_BaseController.ControllerHand.Right)
+            {
+                if (leftInteractGrab.GetGrabbedObject() == null)
+                    SetInteractionState(InteractionState.None);
+            }
         }
     }
 
     private void StartRangedInteraction()
     {
-        if (activeState == InteractionState.None)
-            SetInteractionState(InteractionState.RangedInteracting);
+        if (isMainSceneLoaded)
+        {
+            if (activeState == InteractionState.None)
+                SetInteractionState(InteractionState.RangedInteracting);
+        }
     }
 
     private void StopRangedInteraction()
     {
-        if (activeState == InteractionState.RangedInteracting)
-            SetInteractionState(InteractionState.None);
+        if (isMainSceneLoaded)
+        {
+            if (activeState == InteractionState.RangedInteracting)
+                SetInteractionState(InteractionState.None);
+        }
     }
 
     //private void StartRangedMenu()
