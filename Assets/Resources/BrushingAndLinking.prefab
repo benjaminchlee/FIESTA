@@ -221,15 +221,13 @@ MonoBehaviour:
   brushingVisualisations: []
   brushedVisualisations: []
   brushedLinkingVisualisations: []
-  showBrush: 1
   shareBrushing: 0
   privateBrushColor: {r: 0, g: 0, b: 1, a: 1}
   sharedBrushColor: {r: 1, g: 0, b: 0, a: 1}
-  brushSizeFactor: 1.4
   input1: {fileID: 4169620763017536}
   input2: {fileID: 4912466072071398}
   radiusSphere: 0.5
-  brushButtonController: 0
+  brushEnabled: 0
   visualisationToInspect: {fileID: 0}
   radiusInspector: 0
   inspectButtonController: 0
