@@ -71,8 +71,8 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks {
     public enum SelectionType
     {
         FREE = 0,
-        ADDITIVE,
-        SUBTRACTIVE
+        ADDITIVE = 1,
+        SUBTRACTIVE = 2
     };
 
     public Material debugObjectTexture;
@@ -91,9 +91,6 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks {
         get { return privateBrushColor; }
         set
         {
-            if (value == privateBrushColor)
-                return;
-
             photonView.RPC("PropagatePrivateBrushColor", RpcTarget.AllBuffered, value);
         }
     }
@@ -111,9 +108,6 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks {
         get { return sharedBrushColor; }
         set
         {
-            if (value == sharedBrushColor)
-                return;
-
             photonView.RPC("PropagateSharedBrushColor", RpcTarget.AllBuffered, value);
         }
     }
@@ -214,6 +208,8 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks {
         computeShader.SetBuffer(kernelComputeNearestDistances, "dataBuffer", buffer);
         computeShader.SetBuffer(kernelComputeNearestDistances, "nearestDistances", nearestDistancesBuffer);
 
+        texSize = computeTextureSize(datasetSize);
+
         // If a shared render texture has not yet been created, make it now
         if (brushedIndicesTexture == null)
         {
@@ -221,8 +217,6 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks {
             brushedIndicesTexture.enableRandomWrite = true;
             brushedIndicesTexture.filterMode = FilterMode.Point;
             brushedIndicesTexture.Create();
-
-            texSize = computeTextureSize(datasetSize);
         }
 
         myRenderMaterial.SetTexture("_MainTex", brushedIndicesTexture);
