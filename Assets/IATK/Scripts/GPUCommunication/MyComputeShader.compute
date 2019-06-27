@@ -214,15 +214,13 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 							}
 						}
 						else {
-							if (!IsEqual(Result[id.xy].w, 0.9, 0.01))  // don't allow brushing over inspected points
-								Result[id.xy] = sharedBrushColor;  // shared brush can override others
+							Result[id.xy] = sharedBrushColor;  // shared brush can override others
 						}
 						break;
 					// subtractive selection
 					case 2:
 						if (!shareBrushing) {
-							if (IsEqual(Result[id.xy], brushColor, 0.01)  // private brush can only deselect private brushed points
-								|| IsEqual(float4(Result[id.xy].x, Result[id.xy].y, Result[id.xy].z, 1.0), brushColor, 0.01)) {  // also check for ones being inspected
+							if (IsEqual(Result[id.xy], brushColor, 0.01)) {  // private brush can only deselect private brushed points
 								Result[id.xy] = float4(0.0, 0.0, 0.0, 0.0);
 							}
 						}
