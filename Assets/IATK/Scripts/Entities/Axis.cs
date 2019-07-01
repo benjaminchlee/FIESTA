@@ -170,6 +170,7 @@ public class Axis : MonoBehaviour {
                 maxNormaliserObject.localEulerAngles = new Vector3(90, 90, 0);
                 break;
             default:
+                transform.localEulerAngles = new Vector3(90, 0, 0);
                 SetXPos(minNormaliserObject, -0.054f);
                 SetXPos(maxNormaliserObject, -0.054f);
                 minNormaliserObject.localEulerAngles = new Vector3(90, 90, 0);

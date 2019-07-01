@@ -213,6 +213,8 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks {
         // If a shared render texture has not yet been created, make it now
         if (brushedIndicesTexture == null)
         {
+            texSize = computeTextureSize(datasetSize);
+
             brushedIndicesTexture = new RenderTexture(texSize, texSize, 24);
             brushedIndicesTexture.enableRandomWrite = true;
             brushedIndicesTexture.filterMode = FilterMode.Point;

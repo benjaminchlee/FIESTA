@@ -1800,7 +1800,7 @@ public class Chart : MonoBehaviourPunCallbacks
     {
         float x = (XDimension != "Undefined") ? Width / 2 : 0;
         float y = (YDimension != "Undefined") ? Height / 2 : 0;
-        float z = (ZDimension != "Undefined") ? Depth / 2 : 0;
+        float z = (ZDimension != "Undefined") ? Depth : 0;
 
         //visualisationGameObject.transform.DOLocalMove(new Vector3(-x, -y, -z), 0.1f).SetEase(Ease.OutCubic);
         visualisationGameObject.transform.localPosition = new Vector3(-x, -y, -z);

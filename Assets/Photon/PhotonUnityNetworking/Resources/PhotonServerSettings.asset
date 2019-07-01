@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PhotonServerSettings
   m_EditorClassIdentifier: 
   AppSettings:
-    AppIdRealtime: 505fce9f-dda8-4675-97d6-af620d17592b
+    AppIdRealtime: 7ceea919-483a-47cb-a44f-60cd68d0b56f
     AppIdChat: 
     AppIdVoice: 
     AppVersion: 
@@ -99,5 +99,7 @@ MonoBehaviour:
   - StartLogging
   - ToggleButtons
   - ToggleCharts
+  - PropagatePrivateBrushColor
+  - PropagateSharedBrushColor
   DisableAutoOpenWizard: 1
   ShowSettings: 1
