@@ -100,7 +100,7 @@ namespace IATK
 
         [Tooltip("The color palette for discrete variables mapping")]
         public Color[] coloursPalette;
-        
+
         public float width = 1.0f;
         public float height = 1.0f;
         public float depth = 1.0f;

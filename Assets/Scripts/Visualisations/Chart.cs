@@ -32,6 +32,11 @@ public class Chart : MonoBehaviourPunCallbacks
     [SerializeField]
     private VRTK_InteractableObject bottomRightInteractableHandle;
 
+    //NEW: Resizing handler for zAxis
+    [SerializeField]
+    private VRTK_InteractableObject depthInteractableHandle;
+
+
     private Chart[,] splomCharts;  // Stored as 2D array
     private List<Chart> subCharts;  // Stored as 1D array
     private SPLOMButton[] splomButtons;
@@ -1131,6 +1136,11 @@ public class Chart : MonoBehaviourPunCallbacks
 
         topLeftInteractableHandle.gameObject.SetActive(value);
         bottomRightInteractableHandle.gameObject.SetActive(value);
+
+        // Set the handler of the 3rd axis active only when it's 3d vis
+        if (ZDimension != "Undefined") {
+            depthInteractableHandle.gameObject.SetActive(value);
+        }
     }
 
     public bool ColliderActiveState
@@ -1504,7 +1514,16 @@ public class Chart : MonoBehaviourPunCallbacks
                     // Position such that subcharts start from 1 etcp from the edge, and are spaced two etcp distances from each other
                     float x = (-(Width / 2) + xDelta) + 2 * xDelta * j;
                     float y = ((Height / 2) - yDelta) - 2 * yDelta * i;
-                    subChart.Scale = new Vector3(w * 0.75f, h * 0.65f, 1);
+
+                    //subChart.Scale = new Vector3(w * 0.75f, h * 0.65f, 1);//TODO:CHANGE 1 to 0.5?
+
+                    //Add the resizing of the zAxis to the 3D vis
+                    float xScale = w * 0.75f;
+                    float yScale = h * 0.65f;
+                    float zScale = (xScale + yScale) / 2;
+                    subChart.Scale = new Vector3(xScale, yScale, zScale);
+                    //Debug.Log(subChart.Scale);
+
                     subChart.KeyVisiblility = false;
                     subChart.transform.localPosition = new Vector3(x, y, 0);
                     subChart.transform.rotation = transform.rotation;
@@ -1659,8 +1678,10 @@ public class Chart : MonoBehaviourPunCallbacks
         }
 
         // Resizing
-        if (topLeftInteractableHandle.IsGrabbed() || bottomRightInteractableHandle.IsGrabbed())
+        if (topLeftInteractableHandle.IsGrabbed() || bottomRightInteractableHandle.IsGrabbed() || depthInteractableHandle.IsGrabbed()) //New: add condition for the depth handler
         {
+            float zHandler = (ZDimension != "Undefined") ? Depth : 0;
+
             if (!isResizing)
             {
                 isResizing = true;
@@ -1672,10 +1693,12 @@ public class Chart : MonoBehaviourPunCallbacks
                 photonView.RequestOwnership();
 
             Vector3 scale = Scale;
+            //Debug.Log("sale value " + scale);
 
             if (topLeftInteractableHandle.IsGrabbed())
             {
                 Vector3 handleLocalPos = topLeftInteractableHandle.transform.localPosition;
+                //Debug.Log("top left/y axis handler pos: " + handleLocalPos);
 
                 // Don't allow the handle to get too small
                 if (handleLocalPos.y < 0.15f)
@@ -1685,7 +1708,10 @@ public class Chart : MonoBehaviourPunCallbacks
 
                 // Lock handle to only move along y axis
                 handleLocalPos.x = -Width / 2 - 0.05f;
-                handleLocalPos.z = 0;
+                handleLocalPos.z = - zHandler;
+                //handleLocalPos.z = 0;
+                //handleLocalPos.z = Depth + 0.5f;
+
                 topLeftInteractableHandle.transform.localPosition = handleLocalPos;
                 topLeftInteractableHandle.transform.localRotation = Quaternion.identity;
 
@@ -1693,13 +1719,18 @@ public class Chart : MonoBehaviourPunCallbacks
             }
             else
             {
-                Vector3 pos = new Vector3(-Width / 2 - 0.05f, scale.x / 2 + 0.08f, 0);
+                Vector3 pos = new Vector3(-Width / 2 - 0.05f, scale.x / 2 + 0.08f, - zHandler);
+                //Vector3 pos = new Vector3(-Width / 2 - 0.05f, scale.x / 2 + 0.08f, 0);
+                //Vector3 pos = new Vector3(-Width / 2 - 0.05f, scale.y / 2 + 0.08f, Depth + 0.5f);
+                //Debug.Log("y axis handler pos not grabing: " + pos);
+
                 topLeftInteractableHandle.transform.localPosition = pos;
                 topLeftInteractableHandle.transform.localRotation = Quaternion.identity;
             }
             if (bottomRightInteractableHandle.IsGrabbed())
             {
                 Vector3 handleLocalPos = bottomRightInteractableHandle.transform.localPosition;
+                //Debug.Log("bottom left/x axis handler pos: " + handleLocalPos);
 
                 // Don't allow the handle to get too small
                 if (handleLocalPos.x < 0.15f)
@@ -1709,7 +1740,9 @@ public class Chart : MonoBehaviourPunCallbacks
 
                 // Lock handle to only move along x axis
                 handleLocalPos.y = -Height / 2 - 0.05f;
-                handleLocalPos.z = 0;
+                handleLocalPos.z = - zHandler;
+                //handleLocalPos.z = 0;
+                //handleLocalPos.z = -Depth / 2 - 0.05f;
                 bottomRightInteractableHandle.transform.localPosition = handleLocalPos;
                 bottomRightInteractableHandle.transform.localRotation = Quaternion.identity;
 
@@ -1717,9 +1750,49 @@ public class Chart : MonoBehaviourPunCallbacks
             }
             else
             {
-                Vector3 pos = new Vector3(scale.x / 2 + 0.08f, -Height / 2 - 0.05f, 0);
+                Vector3 pos = new Vector3(scale.x / 2 + 0.08f, -Height / 2 - 0.05f, -zHandler);
+                //Vector3 pos = new Vector3(scale.x / 2 + 0.08f, -Height / 2 - 0.05f, 0);
+                //Vector3 pos = new Vector3(scale.x / 2 + 0.08f, -Height / 2 - 0.05f, -Depth / 2 - 0.05f);
+
                 bottomRightInteractableHandle.transform.localPosition = pos;
                 bottomRightInteractableHandle.transform.localRotation = Quaternion.identity;
+            }
+
+            //New: zAxis depth handler
+            if (depthInteractableHandle.IsGrabbed())
+            {
+                Vector3 handleLocalPos = depthInteractableHandle.transform.localPosition;
+                //Debug.Log("depth/z axis handler pos: " + handleLocalPos);
+
+                // Don't allow the handle to get too small
+                Debug.Log("handleLocalPos.z : " + handleLocalPos.z);
+                //if (handleLocalPos.z < 0.15f)
+                //    handleLocalPos.z = 0.15f;
+                if (handleLocalPos.z < 0.05f)
+                    handleLocalPos.z = 0.05f;
+
+                scale.z = handleLocalPos.z * 2;
+                //scale.z = (handleLocalPos.z - 0.08f) * 2;
+                Debug.Log("scale.z : " + scale.z);
+
+                // Lock handle to only move along z axis
+                handleLocalPos.y = -Height / 2 - 0.05f;
+                handleLocalPos.x = -Width / 2 - 0.05f;
+                
+                depthInteractableHandle.transform.localPosition = handleLocalPos;
+                depthInteractableHandle.transform.localRotation = Quaternion.identity;
+
+                VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(depthInteractableHandle.GetGrabbingObject()), 0.075f);
+            }
+            else
+            {
+                Vector3 pos = new Vector3(-Width / 2 - 0.05f, -Height / 2 - 0.05f, scale.z / 2);
+                //Vector3 pos = new Vector3(-Width / 2 - 0.05f, -Height / 2 - 0.05f, scale.z / 2 + 0.08f);
+                //Debug.Log("z axis handler pos not grabing: " + pos);
+                //Debug.Log("scale.z / 2 + 0.08f : " + scale.z / 2 + 0.08f);
+
+                depthInteractableHandle.transform.localPosition = pos;
+                depthInteractableHandle.transform.localRotation = Quaternion.identity;
             }
 
             Scale = scale;
@@ -1728,13 +1801,25 @@ public class Chart : MonoBehaviourPunCallbacks
         {
             isResizing = false;
 
-            Vector3 tlPos = new Vector3(-Width / 2 - 0.05f, Height / 2 + 0.08f, 0);
+            float zHandler = (ZDimension != "Undefined") ? Depth : 0;
+
+            Vector3 tlPos = new Vector3(-Width / 2 - 0.05f, Height / 2 + 0.08f, -zHandler);
+            //Vector3 tlPos = new Vector3(-Width / 2 - 0.05f, Height / 2 + 0.08f, 0);
+            //Vector3 tlPos = new Vector3(-Width / 2 - 0.05f, Height / 2 + 0.08f, Depth / 2 + 0.05f);
             topLeftInteractableHandle.transform.localPosition = tlPos;
             topLeftInteractableHandle.transform.localRotation = Quaternion.identity;
 
-            Vector3 brPos = new Vector3(Width / 2 + 0.08f, -Height / 2 - 0.05f, 0);
+            Vector3 brPos = new Vector3(Width / 2 + 0.08f, -Height / 2 - 0.05f, -zHandler);
+            //Vector3 brPos = new Vector3(Width / 2 + 0.08f, -Height / 2 - 0.05f, 0);
+            //Vector3 brPos = new Vector3(Width / 2 + 0.08f, -Height / 2 - 0.05f, Depth / 2 + 0.05f);
             bottomRightInteractableHandle.transform.localPosition = brPos;
             bottomRightInteractableHandle.transform.localRotation = Quaternion.identity;
+
+            //NEW: Depth position
+            Vector3 dpPos = new Vector3(-Width / 2 - 0.05f, -Height / 2 - 0.05f, 0.08f);
+            depthInteractableHandle.transform.localPosition = dpPos;
+            depthInteractableHandle.transform.localRotation = Quaternion.identity;
+
             DataLogger.Instance.LogActionData(this, photonView.Owner, "Vis resize end");
         }
 
@@ -1775,14 +1860,32 @@ public class Chart : MonoBehaviourPunCallbacks
         string x = visualisation.xDimension.Attribute;
         string y = visualisation.yDimension.Attribute;
         string z = visualisation.zDimension.Attribute;
+
+        //Debug.Log(z);
         
         // Calculate size
         float xSize = (x != "Undefined") ? width + 0.015f : 0.1f;
         float ySize = (y != "Undefined") ? height + 0.015f : 0.1f;
         float zSize = (z != "Undefined") ? depth + 0.015f : 0.1f;
-        
+        //float zSize = (z != "Undefined") ? depth + .9f : 0.1f;
+
         boxCollider.size = new Vector3(xSize, ySize, zSize);
-        raycastCollider.size = new Vector3(xSize + 0.125f, ySize + 0.125f, 0.01f);
+
+        //NEW: adjust the center of the collider to fit the 3D vis
+        //float zColliderCenter = - (zSize - 1) / 2;
+        float zColliderCenter = - zSize / 2;
+        boxCollider.center = new Vector3(0, 0, zColliderCenter);
+        //Debug.Log("boxCollider.center " + boxCollider.center);
+        //Debug.Log("boxCollider.size " + boxCollider.size);
+
+        if (ZDimension != "Undefined")
+        {
+            raycastCollider.center = new Vector3(0, 0, zColliderCenter);
+            raycastCollider.size = new Vector3(xSize + 0.125f, ySize + 0.125f, zSize + 0.125f);
+        }
+        else {
+            raycastCollider.size = new Vector3(xSize + 0.125f, ySize + 0.125f, 0.01f);
+        }
 
         // Disable colliders if this is not a scatterplot
         if (VisualisationType != AbstractVisualisation.VisualisationTypes.SCATTERPLOT)
@@ -1791,9 +1894,17 @@ public class Chart : MonoBehaviourPunCallbacks
             raycastCollider.enabled = false;
         }
 
+        float zHandler = (ZDimension != "Undefined") ? Depth : 0;
+
         // Reposition the resize handles
-        topLeftInteractableHandle.transform.localPosition = new Vector3(-width / 2 - 0.05f, height / 2 + 0.08f, 0); 
-        bottomRightInteractableHandle.transform.localPosition = new Vector3(width / 2 + 0.08f, -height / 2 - 0.05f, 0);
+        topLeftInteractableHandle.transform.localPosition = new Vector3(-width / 2 - 0.05f, height / 2 + 0.08f, -zHandler);
+        //topLeftInteractableHandle.transform.localPosition = new Vector3(-width / 2 - 0.05f, height / 2 + 0.08f, -Depth / 2 - 0.05f); 
+
+        bottomRightInteractableHandle.transform.localPosition = new Vector3(width / 2 + 0.08f, -height / 2 - 0.05f, -zHandler);
+        //bottomRightInteractableHandle.transform.localPosition = new Vector3(width / 2 + 0.08f, -height / 2 - 0.05f, -Depth / 2 - 0.05f);
+
+        //NEW: reposition depth handler
+        depthInteractableHandle.transform.localPosition = new Vector3(-width / 2 - 0.05f, -height / 2 - 0.05f, 0.08f);
     }
 
     private void CenterVisualisation()
@@ -1804,6 +1915,8 @@ public class Chart : MonoBehaviourPunCallbacks
 
         //visualisationGameObject.transform.DOLocalMove(new Vector3(-x, -y, -z), 0.1f).SetEase(Ease.OutCubic);
         visualisationGameObject.transform.localPosition = new Vector3(-x, -y, -z);
+
+        //Debug.Log(visualisationGameObject.transform.localPosition);
 
         // Reposition the key
         switch (chartType)

@@ -23,6 +23,10 @@ TagManager:
   - PanelCollider
   - Dashboard
   - DashboardCollider
+  - DisplayWall
+  - Line
+  - Marker
+  - Visualisation
   layers:
   - Default
   - TransparentFX
