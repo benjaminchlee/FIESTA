@@ -683,10 +683,10 @@ PlayerSettings:
   facebookXfbml: 0
   facebookFrictionlessRequests: 1
   apiCompatibilityLevel: 3
-  cloudProjectId: 210f563a-98b5-418d-9f61-9bf2d88075ec
+  cloudProjectId: df531f7d-ec5f-47d0-8e9f-50d585317cb2
   framebufferDepthMemorylessMode: 0
-  projectName: collab-ia
-  organizationId: benjaminchlee
+  projectName: FIESTA
+  organizationId: annikaxy
   cloudEnabled: 0
   enableNativePlatformBackendsForNewInputSystem: 0
   disableOldInputManagerSupport: 0

@@ -1,9 +1,10 @@
-﻿using System.Collections;
+﻿using Photon.Pun;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using VRTK;
 
-public class MarkerScript : MonoBehaviour
+public class MarkerScript : MonoBehaviourPunCallbacks
 {
     VRTK_InteractableObject vrio;
 
@@ -40,6 +41,8 @@ public class MarkerScript : MonoBehaviour
         rcCE = rc.GetComponent<VRTK_ControllerEvents>();
         lc = GameObject.Find("LeftController");
         lcCE = lc.GetComponent<VRTK_ControllerEvents>();
+
+        initialiseMarkerColor();
     }
 
 
@@ -145,4 +148,19 @@ public class MarkerScript : MonoBehaviour
     //        Debug.Log("currentLine.transform.parent " + currentLine.transform.parent);
     //    }
     //}
+
+    private void initialiseMarkerColor()
+    {
+        // Set the color of shared brushing as the color of the eraser and share them to others via RPC only if this belongs to the player
+        if (photonView.IsMine)
+        {
+            markerColor = PlayerPreferencesManager.Instance.SharedBrushColor;
+
+            GameObject markerLid = this.gameObject.transform.GetChild(0).GetChild(0).GetChild(0).gameObject;
+            markerLid.GetComponent<Renderer>().material.color = markerColor;
+
+            GameObject markerTip = this.gameObject.transform.GetChild(0).GetChild(2).GetChild(2).gameObject;
+            markerTip.GetComponent<Renderer>().material.color = markerColor;
+        }
+    }
 }

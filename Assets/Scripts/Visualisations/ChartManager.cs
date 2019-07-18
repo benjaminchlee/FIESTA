@@ -102,6 +102,15 @@ public class ChartManager : MonoBehaviour {
             rot = Quaternion.Euler(euler);
 
             PhotonNetwork.Instantiate("Panel", pos, rot, 0);
+
+            // Spawn marker and eraser while creating personal panels
+            //Vector3 markerPos = new Vector3(pos.x, pos.y + 0.85f, pos.z);
+            Vector3 markerPos = headset.TransformPoint(Vector3.left * 0.2f);
+            PhotonNetwork.Instantiate("Marker2", markerPos, rot, 0);
+
+            Vector3 eraserPos = new Vector3(markerPos.x - 0.1f, markerPos.y, markerPos.z);
+            PhotonNetwork.Instantiate("Eraser", eraserPos, rot, 0);
+
         }
     }
 
