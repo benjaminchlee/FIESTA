@@ -17,9 +17,9 @@ MonoBehaviour:
     AppIdChat: 
     AppIdVoice: 
     AppVersion: 
-    UseNameServer: 1
+    UseNameServer: 0
     FixedRegion: 
-    Server: 
+    Server: 192.168.0.100
     Port: 5055
     Protocol: 0
     EnableLobbyStatistics: 0

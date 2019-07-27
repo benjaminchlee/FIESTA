@@ -81,9 +81,9 @@ GameObject:
   - component: {fileID: 986606395469168716}
   - component: {fileID: 986606395469168717}
   - component: {fileID: 5290462397048321274}
-  - component: {fileID: 2808444820985784288}
   - component: {fileID: 4909325975999010348}
   - component: {fileID: 8546098520716967653}
+  - component: {fileID: 5500694293324834870}
   m_Layer: 0
   m_Name: Marker2
   m_TagString: Marker
@@ -271,25 +271,10 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 0
   ObservedComponents:
-  - {fileID: 2808444820985784288}
+  - {fileID: 5500694293324834870}
   viewIdField: 0
   InstantiationId: 1
   isRuntimeInstantiated: 0
---- !u!114 &2808444820985784288
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 986606395469168711}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SynchronizePosition: 1
-  m_SynchronizeRotation: 1
-  m_SynchronizeScale: 0
 --- !u!114 &4909325975999010348
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -308,7 +293,7 @@ MonoBehaviour:
   scale: 0
   velocity: 1
   angularVelocity: 1
-  useLocalValues: 1
+  useLocalValues: 0
   onChangeOnly: 1
 --- !u!114 &8546098520716967653
 MonoBehaviour:
@@ -323,6 +308,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ownAdditionalPhotonviews: []
+--- !u!114 &5500694293324834870
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 986606395469168711}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SynchronizePosition: 1
+  m_SynchronizeRotation: 1
+  m_SynchronizeScale: 0
 --- !u!1 &1868228455438455448
 GameObject:
   m_ObjectHideFlags: 0

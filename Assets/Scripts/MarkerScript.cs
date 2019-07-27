@@ -96,7 +96,7 @@ public class MarkerScript : MonoBehaviourPunCallbacks
     private void CreateLine()
     {
         // Create a new line and save it into a different variable
-        currentLine = Instantiate(linePrefab, Vector3.zero, Quaternion.identity);
+        currentLine = Instantiate(linePrefab, Vector3.zero, Quaternion.identity); //photonnetwork.instantiate
         lineRenderer = currentLine.GetComponent<LineRenderer>();
         meshCollider = currentLine.AddComponent<MeshCollider>();
         meshCollider.convex = true;
@@ -161,6 +161,10 @@ public class MarkerScript : MonoBehaviourPunCallbacks
 
             GameObject markerTip = this.gameObject.transform.GetChild(0).GetChild(2).GetChild(2).gameObject;
             markerTip.GetComponent<Renderer>().material.color = markerColor;
+
+            GameObject line = this.gameObject.GetComponent<MarkerScript>().linePrefab.gameObject;
+            line.GetComponent<Renderer>().sharedMaterial.color = markerColor;
+            Debug.Log("line.GetComponent<Renderer>().sharedMaterial.color " + line.GetComponent<Renderer>().sharedMaterial.color);
         }
     }
 }
