@@ -27,6 +27,7 @@ TagManager:
   - Line
   - Marker
   - Visualisation
+  - Cube
   layers:
   - Default
   - TransparentFX

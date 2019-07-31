@@ -3,7 +3,8 @@
     using Photon.Pun;
 
     [RequireComponent(typeof(PhotonView))]
-    public class NetworkObject : MonoBehaviourPunCallbacks {
+    public class NetworkObject : MonoBehaviourPunCallbacks
+    {
         public enum UpdateMode { None, Set, Lerp }
 
         [Tooltip("Synchronize changes to the location of the object in the object hierarchy")]
@@ -68,6 +69,11 @@
             }
             return interpolationBackTime / 1000d;
         }
+
+        //void IPunObservable.OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+        //{
+        //    throw new System.NotImplementedException();
+        //}
 
         class ComponentInterpolator {
             private NetworkObject nit;

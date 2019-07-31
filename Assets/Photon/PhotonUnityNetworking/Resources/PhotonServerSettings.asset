@@ -101,5 +101,8 @@ MonoBehaviour:
   - ToggleCharts
   - PropagatePrivateBrushColor
   - PropagateSharedBrushColor
+  - UpdateLine
+  - CreateLine
+  - DestroyLine
   DisableAutoOpenWizard: 1
   ShowSettings: 1

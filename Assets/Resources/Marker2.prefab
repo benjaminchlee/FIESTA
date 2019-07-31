@@ -253,6 +253,11 @@ MonoBehaviour:
   fingerPositions: []
   meshCollider: {fileID: 0}
   markerColor: {r: 0, g: 0, b: 0, a: 1}
+  drawingLineEvent:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: MarkerScript+DrawingLineEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
 --- !u!114 &5290462397048321274
 MonoBehaviour:
   m_ObjectHideFlags: 0

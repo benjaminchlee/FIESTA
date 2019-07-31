@@ -16,9 +16,10 @@ public class EraserScript : MonoBehaviourPunCallbacks
 
     #region Private Fields
 
-    GameObject rc;
+    GameObject lc;
 
-    VRTK_ControllerEvents rcCE;
+    VRTK_ControllerEvents lcCE;
+
 
     #endregion
 
@@ -26,12 +27,12 @@ public class EraserScript : MonoBehaviourPunCallbacks
     // Start is called before the first frame update
     void Start()
     {
-        rc = GameObject.Find("RightController");
-        rcCE = rc.GetComponent<VRTK_ControllerEvents>();
+        lc = GameObject.Find("LeftController");
+        lcCE = lc.GetComponent<VRTK_ControllerEvents>();
 
         originalOwner = photonView.Owner;
 
-        initialiseEraserColor();
+        InitialiseEraserColor();
     }
 
     // Update is called once per frame
@@ -44,9 +45,26 @@ public class EraserScript : MonoBehaviourPunCallbacks
     {
         if (other.gameObject.tag == "Line")
         {
-            if (rcCE.gripClicked)
+            //Debug.Log("Collider detected");
+            //Debug.Log("rcCE.gripClicked " + rcCE.gripClicked);
+            //Debug.Log("other.gameObject.tag " + other.gameObject.tag);
+            if (lcCE.gripClicked)
             {
-                Destroy(other.gameObject);
+                //PhotonNetwork.Destroy(other.gameObject);
+                //Destroy(other.gameObject);
+
+                //CallDestroyLine(other.gameObject);
+
+                //if (photonView.IsMine)
+                //{
+                //    PhotonNetwork.Destroy(other.gameObject);
+                //    Debug.Log("Destroyed");
+                //}
+
+                int viewID = other.gameObject.GetComponent<PhotonView>().ViewID;
+                Debug.Log("line viewID " + viewID);
+                CallDestroyLine(viewID);
+
             }
         }
     }
@@ -61,7 +79,7 @@ public class EraserScript : MonoBehaviourPunCallbacks
         return (originalOwner.ActorNumber == PhotonNetwork.LocalPlayer.ActorNumber);
     }
 
-    private void initialiseEraserColor()
+    private void InitialiseEraserColor()
     {
         // Set the color of shared brushing as the color of the eraser and share them to others via RPC only if this belongs to the player
         if (photonView.IsMine)
@@ -69,6 +87,34 @@ public class EraserScript : MonoBehaviourPunCallbacks
             eraserColor = PlayerPreferencesManager.Instance.SharedBrushColor;
             this.gameObject.transform.GetChild(0).gameObject.GetComponent<Renderer>().material.color = eraserColor;
         }
+    }
+
+    //public void CallDestroyLine(GameObject line)
+    //{
+    //    photonView.RPC("DestroyLine", RpcTarget.MasterClient, line);
+    //    //Debug.Log("CallDestroyLine master client " + RpcTarget.MasterClient);
+    //}
+
+    //[PunRPC]
+    //private void DestroyLine(GameObject obj)
+    //{
+    //    PhotonNetwork.Destroy(obj);
+    //    //Destroy(obj);
+    //    Debug.Log("destroyline");
+    //}
+
+    public void CallDestroyLine(int id)
+    {
+        photonView.RPC("DestroyLine", RpcTarget.All, id);
+        //Debug.Log("CallDestroyLine master client " + RpcTarget.MasterClient);
+    }
+
+    [PunRPC]
+    private void DestroyLine(int id)
+    {
+        Debug.Log(id + " " + PhotonView.Find(id).gameObject.name);
+        //Destroy(PhotonView.Find(id).gameObject);
+        PhotonNetwork.Destroy(PhotonView.Find(id).gameObject);
     }
 
     #endregion

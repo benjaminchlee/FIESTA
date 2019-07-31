@@ -364,7 +364,7 @@ namespace Photon.Pun
             }
             else
             {
-
+                Debug.LogError("Observed scripts have to implement IPunObservable. "+ component + " does not. It is Type: " + component.GetType(), component.gameObject);
             }
         }
 
@@ -501,6 +501,11 @@ namespace Photon.Pun
         public override string ToString()
         {
             return string.Format("View {0}{3} on {1} {2}", this.ViewID, (this.gameObject != null) ? this.gameObject.name : "GO==null", (this.IsSceneView) ? "(scene)" : string.Empty, this.Prefix > 0 ? "lvl"+this.Prefix : "");
+        }
+
+        public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+        {
+            throw new NotImplementedException();
         }
     }
 }

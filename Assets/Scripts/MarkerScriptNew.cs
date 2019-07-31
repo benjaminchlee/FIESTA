@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using VRTK;
 
-public class MarkerScript : MonoBehaviourPunCallbacks
+public class MarkerScriptNew : MonoBehaviourPunCallbacks
 {
     VRTK_InteractableObject vrio;
 
@@ -34,10 +34,7 @@ public class MarkerScript : MonoBehaviourPunCallbacks
 
     private bool rightGripPressedFlag = false;
     private bool lineStartFlag = false;
-
-    [Serializable]
-    public class DrawingLineEvent : UnityEvent<List<float>> { }
-    public DrawingLineEvent drawingLineEvent;
+    private int id;
 
     // Start is called before the first frame update
     void Start()
@@ -64,8 +61,14 @@ public class MarkerScript : MonoBehaviourPunCallbacks
         //if (rcCE.triggerPressed)
         {
             if (!lineStartFlag)
-                CallCreateLine();
-
+            {
+                if (photonView.IsMine)
+                {
+                    //CreateLine();
+                    photonView.RPC("CreateLine", RpcTarget.All);
+                }
+            }
+            
             lineStartFlag = true;
             rightGripPressedFlag = true;
         }
@@ -85,7 +88,7 @@ public class MarkerScript : MonoBehaviourPunCallbacks
 
         if (rightGripPressedFlag) //check whether or not the user is holding the grip button down
         {
-            Vector3 tempFingerPos = gameObject.transform.position;
+            Vector3 tempFingerPos = transform.position;
             //Debug.Log("tempFingerPos" + tempFingerPos);
             //Debug.Log("Vector3.Distance" + Vector3.Distance(tempFingerPos, fingerPositions[fingerPositions.Count - 1]));
             if (Vector3.Distance(tempFingerPos, fingerPositions[fingerPositions.Count - 1]) != 0f)
@@ -94,35 +97,20 @@ public class MarkerScript : MonoBehaviourPunCallbacks
                 CallUpdateLine(tempFingerPos);
             }
         }
-
-        //if (lcCE.gripClicked)
-        //{
-        //    DestroyGameObject();
-        //}
-        //}
-    }
-
-    public void CallCreateLine()
-    {
-        photonView.RPC("CreateLine", RpcTarget.All);
     }
 
     [PunRPC]
-    private void CreateLine()
+    public void CreateLine()
     {
         // Create a new line and save it into a different variable
         //currentLine = Instantiate(linePrefab, Vector3.zero, Quaternion.identity); 
         currentLine = PhotonNetwork.Instantiate("Line", Vector3.zero, Quaternion.identity);
-        //Debug.Log("currentLine.GetComponent<PhotonView>().ViewID" + currentLine.GetComponent<PhotonView>().ViewID);
         lineRenderer = currentLine.GetComponent<LineRenderer>();
-        //Debug.Log(lineRenderer.transform.GetSiblingIndex());
-
         meshCollider = currentLine.AddComponent<MeshCollider>();
         meshCollider.convex = true;
         meshCollider.isTrigger = true;
         //rb = currentLine.AddComponent<Rigidbody>();
         //rb.useGravity = false;
-
         fingerPositions.Clear();
 
         // Set the first two points of the line renderer component
@@ -135,23 +123,21 @@ public class MarkerScript : MonoBehaviourPunCallbacks
 
     public void CallUpdateLine(Vector3 pos)
     {
+        //Debug.Log("!!!");
         photonView.RPC("UpdateLine", RpcTarget.All, pos);
     }
 
     [PunRPC]
     private void UpdateLine(Vector3 newFingerPos)
     {
+        //Debug.Log(newFingerPos);
         fingerPositions.Add(newFingerPos);
-        //Debug.Log("fingerPositions length: " + fingerPositions.Count);
+        Debug.Log("fingerPositions length: " + fingerPositions.Count);
         lineRenderer.positionCount++;
         lineRenderer.SetPosition(lineRenderer.positionCount - 1, newFingerPos);
 
     }
 
-    //void DestroyGameObject()
-    //{
-    //    Destroy(currentLine);
-    //}
 
     void OnTriggerEnter(Collider collider)
     {
@@ -194,3 +180,4 @@ public class MarkerScript : MonoBehaviourPunCallbacks
         }
     }
 }
+
