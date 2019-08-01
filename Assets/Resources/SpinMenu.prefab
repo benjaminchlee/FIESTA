@@ -249,6 +249,7 @@ GameObject:
   - component: {fileID: 114174149574913762}
   - component: {fileID: 114782491740593690}
   - component: {fileID: 114406354537338566}
+  - component: {fileID: 3550013004020253518}
   m_Layer: 0
   m_Name: DetailsOnDemandButton
   m_TagString: Untagged
@@ -372,7 +373,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 0
   ObservedComponents:
-  - {fileID: 114406354537338566}
+  - {fileID: 3550013004020253518}
   viewIdField: 0
   InstantiationId: -1
   isRuntimeInstantiated: 0
@@ -396,6 +397,21 @@ MonoBehaviour:
   angularVelocity: 0
   useLocalValues: 0
   onChangeOnly: 1
+--- !u!114 &3550013004020253518
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1086065035010214}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SynchronizePosition: 1
+  m_SynchronizeRotation: 1
+  m_SynchronizeScale: 0
 --- !u!1 &1171359974750638
 GameObject:
   m_ObjectHideFlags: 0
@@ -617,6 +633,7 @@ GameObject:
   - component: {fileID: 114422638184956810}
   - component: {fileID: 114664809960984470}
   - component: {fileID: 114192459780038560}
+  - component: {fileID: 5930791162924373243}
   m_Layer: 0
   m_Name: SharedBrushButton
   m_TagString: Untagged
@@ -740,7 +757,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 0
   ObservedComponents:
-  - {fileID: 114192459780038560}
+  - {fileID: 5930791162924373243}
   viewIdField: 0
   InstantiationId: -1
   isRuntimeInstantiated: 0
@@ -764,6 +781,21 @@ MonoBehaviour:
   angularVelocity: 0
   useLocalValues: 0
   onChangeOnly: 1
+--- !u!114 &5930791162924373243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1186905104005168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SynchronizePosition: 1
+  m_SynchronizeRotation: 1
+  m_SynchronizeScale: 0
 --- !u!1 &1202641860043418
 GameObject:
   m_ObjectHideFlags: 0
@@ -1328,6 +1360,7 @@ GameObject:
   - component: {fileID: 114322972361571862}
   - component: {fileID: 114067664782065294}
   - component: {fileID: 114801428463506798}
+  - component: {fileID: 3521737622043058660}
   m_Layer: 0
   m_Name: CancelButton
   m_TagString: Untagged
@@ -1451,7 +1484,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 0
   ObservedComponents:
-  - {fileID: 114801428463506798}
+  - {fileID: 3521737622043058660}
   viewIdField: 0
   InstantiationId: -1
   isRuntimeInstantiated: 0
@@ -1475,6 +1508,21 @@ MonoBehaviour:
   angularVelocity: 0
   useLocalValues: 0
   onChangeOnly: 1
+--- !u!114 &3521737622043058660
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1452153443714178}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SynchronizePosition: 1
+  m_SynchronizeRotation: 1
+  m_SynchronizeScale: 0
 --- !u!1 &1471424746478980
 GameObject:
   m_ObjectHideFlags: 0
@@ -2270,6 +2318,7 @@ GameObject:
   - component: {fileID: 114208788285474106}
   - component: {fileID: 114424274359877450}
   - component: {fileID: 114945706207601082}
+  - component: {fileID: 8480264420852343789}
   m_Layer: 0
   m_Name: PrivateBrushButton
   m_TagString: Untagged
@@ -2393,7 +2442,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 0
   ObservedComponents:
-  - {fileID: 114945706207601082}
+  - {fileID: 8480264420852343789}
   viewIdField: 0
   InstantiationId: -1
   isRuntimeInstantiated: 0
@@ -2417,6 +2466,21 @@ MonoBehaviour:
   angularVelocity: 0
   useLocalValues: 0
   onChangeOnly: 1
+--- !u!114 &8480264420852343789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1864318297506702}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SynchronizePosition: 1
+  m_SynchronizeRotation: 1
+  m_SynchronizeScale: 0
 --- !u!1 &1882282859709660
 GameObject:
   m_ObjectHideFlags: 0
@@ -2510,6 +2574,7 @@ GameObject:
   - component: {fileID: 114671146552681766}
   - component: {fileID: 114327609606808758}
   - component: {fileID: 114947174978562632}
+  - component: {fileID: 2864237955033414566}
   m_Layer: 0
   m_Name: RangedGrabButton
   m_TagString: Untagged
@@ -2633,7 +2698,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 0
   ObservedComponents:
-  - {fileID: 114947174978562632}
+  - {fileID: 2864237955033414566}
   viewIdField: 0
   InstantiationId: -1
   isRuntimeInstantiated: 0
@@ -2657,6 +2722,21 @@ MonoBehaviour:
   angularVelocity: 0
   useLocalValues: 0
   onChangeOnly: 1
+--- !u!114 &2864237955033414566
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1899082280300868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SynchronizePosition: 1
+  m_SynchronizeRotation: 1
+  m_SynchronizeScale: 0
 --- !u!1 &1912921726140550
 GameObject:
   m_ObjectHideFlags: 0

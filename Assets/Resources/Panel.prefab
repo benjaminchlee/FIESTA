@@ -6785,6 +6785,7 @@ GameObject:
   - component: {fileID: 65908299415725520}
   - component: {fileID: 54584718803208450}
   - component: {fileID: 114422596887194748}
+  - component: {fileID: 5091340735102140654}
   m_Layer: 2
   m_Name: StandardChart
   m_TagString: Chart
@@ -6850,7 +6851,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 1
   ObservedComponents:
-  - {fileID: 114706265121948826}
+  - {fileID: 5091340735102140654}
   viewIdField: 0
   InstantiationId: -1
   isRuntimeInstantiated: 0
@@ -6968,6 +6969,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ownAdditionalPhotonviews: []
+--- !u!114 &5091340735102140654
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1373515504563778}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SynchronizePosition: 1
+  m_SynchronizeRotation: 1
+  m_SynchronizeScale: 0
 --- !u!1 &1374746688263786
 GameObject:
   m_ObjectHideFlags: 0
@@ -8913,6 +8929,7 @@ GameObject:
   - component: {fileID: 114723443178287348}
   - component: {fileID: 114132928944622762}
   - component: {fileID: 114656627698667864}
+  - component: {fileID: 6094243382470291040}
   m_Layer: 0
   m_Name: Panel
   m_TagString: Panel
@@ -9125,7 +9142,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 1
   ObservedComponents:
-  - {fileID: 114656627698667864}
+  - {fileID: 6094243382470291040}
   viewIdField: 0
   InstantiationId: -1
   isRuntimeInstantiated: 0
@@ -9149,6 +9166,21 @@ MonoBehaviour:
   angularVelocity: 0
   useLocalValues: 0
   onChangeOnly: 1
+--- !u!114 &6094243382470291040
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1460038383449036}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SynchronizePosition: 1
+  m_SynchronizeRotation: 1
+  m_SynchronizeScale: 0
 --- !u!1 &1463197061923182
 GameObject:
   m_ObjectHideFlags: 0
@@ -10118,6 +10150,7 @@ GameObject:
   - component: {fileID: 153503494978821396}
   - component: {fileID: 114491147795032864}
   - component: {fileID: 114309209320011356}
+  - component: {fileID: 8864543715107543770}
   m_Layer: 0
   m_Name: Picker
   m_TagString: PhysicsMenuButton
@@ -10429,7 +10462,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 1
   ObservedComponents:
-  - {fileID: 114309209320011356}
+  - {fileID: 8864543715107543770}
   viewIdField: 0
   InstantiationId: -1
   isRuntimeInstantiated: 0
@@ -10453,6 +10486,21 @@ MonoBehaviour:
   angularVelocity: 1
   useLocalValues: 1
   onChangeOnly: 1
+--- !u!114 &8864543715107543770
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1522817535622798}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SynchronizePosition: 1
+  m_SynchronizeRotation: 1
+  m_SynchronizeScale: 0
 --- !u!1 &1525846195684412
 GameObject:
   m_ObjectHideFlags: 0
@@ -16295,6 +16343,7 @@ GameObject:
   - component: {fileID: 114006200635492876}
   - component: {fileID: 114336440915505416}
   - component: {fileID: 114176018427206620}
+  - component: {fileID: 1572926175583865315}
   m_Layer: 0
   m_Name: Handle
   m_TagString: PhysicsMenuButton
@@ -16486,7 +16535,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 1
   ObservedComponents:
-  - {fileID: 114556353454877312}
+  - {fileID: 1572926175583865315}
   viewIdField: 0
   InstantiationId: -1
   isRuntimeInstantiated: 0
@@ -16592,6 +16641,21 @@ MonoBehaviour:
   onGrabCollisionDelay: 0
   destroyImmediatelyOnThrow: 1
   breakForce: 1500
+--- !u!114 &1572926175583865315
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1967573770023538}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SynchronizePosition: 1
+  m_SynchronizeRotation: 1
+  m_SynchronizeScale: 0
 --- !u!1 &848932328481250377
 GameObject:
   m_ObjectHideFlags: 0

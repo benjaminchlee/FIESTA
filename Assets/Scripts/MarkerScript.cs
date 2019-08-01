@@ -28,6 +28,8 @@ public class MarkerScript : MonoBehaviourPunCallbacks
 
     public MeshCollider meshCollider;
 
+    public Photon.Realtime.Player originalOwner { get; private set; }
+
     //public Rigidbody rb;
 
     public Color markerColor;
@@ -63,7 +65,8 @@ public class MarkerScript : MonoBehaviourPunCallbacks
         if (rcCE.gripClicked) // check if the grip button is pressed down
         //if (rcCE.triggerPressed)
         {
-            if (!lineStartFlag)
+            Debug.Log("IsOriginalOwner()" + IsOriginalOwner());
+            if (!lineStartFlag && photonView.IsMine && IsOriginalOwner())
                 CallCreateLine();
 
             lineStartFlag = true;
@@ -77,7 +80,11 @@ public class MarkerScript : MonoBehaviourPunCallbacks
             {
                 lineStartFlag = false;
                 Mesh mesh = new Mesh();
+
+                lineRenderer = currentLine.GetComponent<LineRenderer>();
                 lineRenderer.BakeMesh(mesh, true);
+
+                meshCollider = currentLine.GetComponent<MeshCollider>();
                 meshCollider.sharedMesh = mesh;
             }
             rightGripPressedFlag = false;
@@ -192,5 +199,13 @@ public class MarkerScript : MonoBehaviourPunCallbacks
             line.GetComponent<Renderer>().sharedMaterial.color = markerColor;
             //Debug.Log("line.GetComponent<Renderer>().sharedMaterial.color " + line.GetComponent<Renderer>().sharedMaterial.color);
         }
+    }
+
+    private bool IsOriginalOwner()
+    {
+        if (originalOwner == null)
+            return (photonView.Owner.ActorNumber == PhotonNetwork.LocalPlayer.ActorNumber);
+
+        return (originalOwner.ActorNumber == PhotonNetwork.LocalPlayer.ActorNumber);
     }
 }

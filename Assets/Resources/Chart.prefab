@@ -660,6 +660,7 @@ GameObject:
   - component: {fileID: 65813355719547148}
   - component: {fileID: 54442511978225792}
   - component: {fileID: 114789789716681966}
+  - component: {fileID: 9130012430233180878}
   m_Layer: 2
   m_Name: Chart
   m_TagString: Chart
@@ -725,7 +726,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 1
   ObservedComponents:
-  - {fileID: 114609601322864650}
+  - {fileID: 9130012430233180878}
   viewIdField: 0
   InstantiationId: -1
   isRuntimeInstantiated: 0
@@ -859,6 +860,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ownAdditionalPhotonviews: []
+--- !u!114 &9130012430233180878
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1915828861394738}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SynchronizePosition: 1
+  m_SynchronizeRotation: 1
+  m_SynchronizeScale: 0
 --- !u!1 &3211465319237895927
 GameObject:
   m_ObjectHideFlags: 0

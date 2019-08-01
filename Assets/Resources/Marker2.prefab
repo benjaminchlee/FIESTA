@@ -79,11 +79,11 @@ GameObject:
   - component: {fileID: 986606395469168714}
   - component: {fileID: 986606395469168715}
   - component: {fileID: 986606395469168716}
-  - component: {fileID: 986606395469168717}
   - component: {fileID: 5290462397048321274}
   - component: {fileID: 4909325975999010348}
   - component: {fileID: 8546098520716967653}
   - component: {fileID: 5500694293324834870}
+  - component: {fileID: 6057041272932767767}
   m_Layer: 0
   m_Name: Marker2
   m_TagString: Marker
@@ -234,30 +234,6 @@ MonoBehaviour:
   objectHighlighter: {fileID: 0}
   touchHighlightColor: {r: 0, g: 0, b: 0, a: 0}
   usingState: 0
---- !u!114 &986606395469168717
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 986606395469168711}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 98eba05b6761ead4cb4eef88094ef998, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  linePrefab: {fileID: 3723580658311810719, guid: 2babcf98bccda0e4b97badd483df7fef,
-    type: 3}
-  currentLine: {fileID: 0}
-  lineRenderer: {fileID: 0}
-  fingerPositions: []
-  meshCollider: {fileID: 0}
-  markerColor: {r: 0, g: 0, b: 0, a: 1}
-  drawingLineEvent:
-    m_PersistentCalls:
-      m_Calls: []
-    m_TypeName: MarkerScript+DrawingLineEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
 --- !u!114 &5290462397048321274
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -328,6 +304,30 @@ MonoBehaviour:
   m_SynchronizePosition: 1
   m_SynchronizeRotation: 1
   m_SynchronizeScale: 0
+--- !u!114 &6057041272932767767
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 986606395469168711}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98eba05b6761ead4cb4eef88094ef998, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  linePrefab: {fileID: 3723580658311810719, guid: 2babcf98bccda0e4b97badd483df7fef,
+    type: 3}
+  currentLine: {fileID: 0}
+  lineRenderer: {fileID: 0}
+  fingerPositions: []
+  meshCollider: {fileID: 0}
+  markerColor: {r: 0, g: 0, b: 0, a: 0}
+  drawingLineEvent:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: MarkerScript+DrawingLineEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
 --- !u!1 &1868228455438455448
 GameObject:
   m_ObjectHideFlags: 0

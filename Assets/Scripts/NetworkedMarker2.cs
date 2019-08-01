@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using VRTK;
 
-public class MarkerScriptNew : MonoBehaviourPunCallbacks
+public class NetworkedMarker2 : MonoBehaviourPunCallbacks
 {
     VRTK_InteractableObject vrio;
 
@@ -34,7 +34,8 @@ public class MarkerScriptNew : MonoBehaviourPunCallbacks
 
     private bool rightGripPressedFlag = false;
     private bool lineStartFlag = false;
-    private int id;
+    private int lineID;
+    private int chartID;
 
     // Start is called before the first frame update
     void Start()
@@ -62,15 +63,20 @@ public class MarkerScriptNew : MonoBehaviourPunCallbacks
         {
             if (!lineStartFlag)
             {
+                Debug.Log("11111");
+                InstantiateLine();
+                Debug.Log("11111DONE");
+
+                Debug.Log("22222");
                 if (photonView.IsMine)
-                {
-                    //CreateLine();
-                    photonView.RPC("CreateLine", RpcTarget.All);
-                }
+                    CallCreateLine(currentLine);
+                Debug.Log("22222DONE");
+
+                Debug.Log("33333");
+                lineStartFlag = true;
+                rightGripPressedFlag = true;
+                Debug.Log("33333DONE");
             }
-            
-            lineStartFlag = true;
-            rightGripPressedFlag = true;
         }
 
         if (!rcCE.gripClicked)
@@ -78,10 +84,15 @@ public class MarkerScriptNew : MonoBehaviourPunCallbacks
         {
             if (rightGripPressedFlag)
             {
+                Debug.Log("44444");
                 lineStartFlag = false;
-                Mesh mesh = new Mesh();
-                lineRenderer.BakeMesh(mesh, true);
-                meshCollider.sharedMesh = mesh;
+                //Mesh mesh = new Mesh();
+                //lineRenderer.BakeMesh(mesh, true);
+                //meshCollider.sharedMesh = mesh;
+                Debug.Log("44444DONE");
+                Debug.Log("55555");
+                CallUpdateMesh(currentLine);
+                Debug.Log("55555DONE");
             }
             rightGripPressedFlag = false;
         }
@@ -93,24 +104,41 @@ public class MarkerScriptNew : MonoBehaviourPunCallbacks
             //Debug.Log("Vector3.Distance" + Vector3.Distance(tempFingerPos, fingerPositions[fingerPositions.Count - 1]));
             if (Vector3.Distance(tempFingerPos, fingerPositions[fingerPositions.Count - 1]) != 0f)
             {
+                Debug.Log("66666");
                 //UpdateLine(tempFingerPos);
                 CallUpdateLine(tempFingerPos);
+                Debug.Log("66666DONE");
             }
         }
     }
 
-    [PunRPC]
-    public void CreateLine()
+    public void InstantiateLine()
     {
-        // Create a new line and save it into a different variable
-        //currentLine = Instantiate(linePrefab, Vector3.zero, Quaternion.identity); 
         currentLine = PhotonNetwork.Instantiate("Line", Vector3.zero, Quaternion.identity);
-        lineRenderer = currentLine.GetComponent<LineRenderer>();
-        meshCollider = currentLine.AddComponent<MeshCollider>();
-        meshCollider.convex = true;
-        meshCollider.isTrigger = true;
-        //rb = currentLine.AddComponent<Rigidbody>();
-        //rb.useGravity = false;
+        lineID = currentLine.GetComponent<PhotonView>().ViewID;
+    }
+
+    public void CallFindLine()
+    {
+        photonView.RPC("FindLine", RpcTarget.Others);
+    }
+
+    public GameObject FindLine()
+    {
+        GameObject line = PhotonView.Find(lineID).gameObject;
+        return line;
+    }
+
+    public void CallCreateLine(GameObject line)
+    {
+        photonView.RPC("CreateLine", RpcTarget.All, line);
+    }
+
+    [PunRPC]
+    private void CreateLine(GameObject line)
+    {
+        lineRenderer = line.GetComponent<LineRenderer>();
+
         fingerPositions.Clear();
 
         // Set the first two points of the line renderer component
@@ -119,6 +147,23 @@ public class MarkerScriptNew : MonoBehaviourPunCallbacks
         lineRenderer.SetPosition(0, fingerPositions[0]);
         lineRenderer.SetPosition(1, fingerPositions[1]);
 
+    }
+
+    public void CallUpdateMesh(GameObject line)
+    {
+        photonView.RPC("UpdateMesh", RpcTarget.All, line);
+    }
+
+    [PunRPC]
+    private void UpdateMesh(GameObject line)
+    {
+        Mesh mesh = new Mesh();
+
+        lineRenderer = line.GetComponent<LineRenderer>();
+        meshCollider = line.GetComponent<MeshCollider>();
+
+        lineRenderer.BakeMesh(mesh, true);
+        meshCollider.sharedMesh = mesh;
     }
 
     public void CallUpdateLine(Vector3 pos)
@@ -174,7 +219,7 @@ public class MarkerScriptNew : MonoBehaviourPunCallbacks
             GameObject markerTip = this.gameObject.transform.GetChild(0).GetChild(2).GetChild(2).gameObject;
             markerTip.GetComponent<Renderer>().material.color = markerColor;
 
-            GameObject line = this.gameObject.GetComponent<MarkerScript>().linePrefab.gameObject;
+            GameObject line = this.gameObject.GetComponent<NetworkedMarker2>().linePrefab.gameObject;
             line.GetComponent<Renderer>().sharedMaterial.color = markerColor;
             //Debug.Log("line.GetComponent<Renderer>().sharedMaterial.color " + line.GetComponent<Renderer>().sharedMaterial.color);
         }
