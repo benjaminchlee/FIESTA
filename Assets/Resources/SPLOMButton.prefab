@@ -225,7 +225,6 @@ GameObject:
   - component: {fileID: 114636415315073808}
   - component: {fileID: 114786644686687170}
   - component: {fileID: 114285878939752714}
-  - component: {fileID: 4012129067674889257}
   m_Layer: 0
   m_Name: SPLOMButton
   m_TagString: SPLOMButton
@@ -409,7 +408,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 0
   ObservedComponents:
-  - {fileID: 4012129067674889257}
+  - {fileID: 114285878939752714}
   - {fileID: 114919706049667408}
   viewIdField: 0
   InstantiationId: -1
@@ -434,18 +433,3 @@ MonoBehaviour:
   angularVelocity: 1
   useLocalValues: 1
   onChangeOnly: 1
---- !u!114 &4012129067674889257
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1846128847375398}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SynchronizePosition: 1
-  m_SynchronizeRotation: 1
-  m_SynchronizeScale: 0

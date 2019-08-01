@@ -14,7 +14,6 @@ GameObject:
   - component: {fileID: 114442966992370326}
   - component: {fileID: 114867002514120400}
   - component: {fileID: 114773575337485990}
-  - component: {fileID: 1763658214689781779}
   m_Layer: 2
   m_Name: NetworkedBrush
   m_TagString: Untagged
@@ -99,7 +98,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 0
   ObservedComponents:
-  - {fileID: 1763658214689781779}
+  - {fileID: 114867002514120400}
   viewIdField: 0
   InstantiationId: -1
   isRuntimeInstantiated: 0
@@ -136,18 +135,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   renderer: {fileID: 23798820120063622}
---- !u!114 &1763658214689781779
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1973450169757686}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SynchronizePosition: 1
-  m_SynchronizeRotation: 1
-  m_SynchronizeScale: 0

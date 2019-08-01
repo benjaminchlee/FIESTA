@@ -10,7 +10,7 @@ using UnityEngine.Events;
 using UnityEngine.Rendering;
 using VRTK.Examples;
 
-public class BrushingAndLinking : MonoBehaviourPunCallbacks {
+public class BrushingAndLinking : MonoBehaviourPunCallbacks, IPunObservable {
 
     [SerializeField]
     public ComputeShader computeShader;
@@ -459,7 +459,7 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks {
     }
 
 
-    void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
         if (stream.IsWriting)
         { 

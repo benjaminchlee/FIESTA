@@ -225,7 +225,6 @@ GameObject:
   - component: {fileID: 114360860659664846}
   - component: {fileID: 114823173741889176}
   - component: {fileID: 120386976547319808}
-  - component: {fileID: 8456819205073086179}
   m_Layer: 2
   m_Name: NetworkedDetailsOnDemandLabel
   m_TagString: Untagged
@@ -282,7 +281,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 0
   ObservedComponents:
-  - {fileID: 8456819205073086179}
+  - {fileID: 114823173741889176}
   viewIdField: 0
   InstantiationId: -1
   isRuntimeInstantiated: 0
@@ -401,21 +400,6 @@ LineRenderer:
     generateLightingData: 0
   m_UseWorldSpace: 1
   m_Loop: 0
---- !u!114 &8456819205073086179
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1713868547030000}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SynchronizePosition: 1
-  m_SynchronizeRotation: 1
-  m_SynchronizeScale: 0
 --- !u!1 &1869014382936942
 GameObject:
   m_ObjectHideFlags: 0

@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 4912466072071398}
   - component: {fileID: 114698335315357420}
   - component: {fileID: 114068195149026462}
-  - component: {fileID: 75569254778543833}
   m_Layer: 0
   m_Name: Input2
   m_TagString: Untagged
@@ -51,7 +50,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 0
   ObservedComponents:
-  - {fileID: 75569254778543833}
+  - {fileID: 114068195149026462}
   viewIdField: 0
   InstantiationId: -1
   isRuntimeInstantiated: 0
@@ -73,23 +72,8 @@ MonoBehaviour:
   scale: 0
   velocity: 1
   angularVelocity: 1
-  useLocalValues: 1
+  useLocalValues: 0
   onChangeOnly: 1
---- !u!114 &75569254778543833
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1164975205813720}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SynchronizePosition: 1
-  m_SynchronizeRotation: 1
-  m_SynchronizeScale: 0
 --- !u!1 &1254229059530210
 GameObject:
   m_ObjectHideFlags: 0
@@ -101,7 +85,6 @@ GameObject:
   - component: {fileID: 4169620763017536}
   - component: {fileID: 114833028141161268}
   - component: {fileID: 114837919913677468}
-  - component: {fileID: 7712639696154362919}
   m_Layer: 0
   m_Name: Input1
   m_TagString: Untagged
@@ -141,7 +124,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 0
   ObservedComponents:
-  - {fileID: 7712639696154362919}
+  - {fileID: 114837919913677468}
   viewIdField: 0
   InstantiationId: -1
   isRuntimeInstantiated: 0
@@ -163,23 +146,8 @@ MonoBehaviour:
   scale: 0
   velocity: 1
   angularVelocity: 1
-  useLocalValues: 1
+  useLocalValues: 0
   onChangeOnly: 1
---- !u!114 &7712639696154362919
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1254229059530210}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SynchronizePosition: 1
-  m_SynchronizeRotation: 1
-  m_SynchronizeScale: 0
 --- !u!1 &1335410921273268
 GameObject:
   m_ObjectHideFlags: 0
@@ -191,7 +159,6 @@ GameObject:
   - component: {fileID: 4082438739376458}
   - component: {fileID: 114002730945656802}
   - component: {fileID: 114858486682299190}
-  - component: {fileID: 3068208110779183344}
   m_Layer: 0
   m_Name: BrushingAndLinking
   m_TagString: Untagged
@@ -233,7 +200,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 0
   ObservedComponents:
-  - {fileID: 3068208110779183344}
+  - {fileID: 114858486682299190}
   viewIdField: 0
   InstantiationId: -1
   isRuntimeInstantiated: 0
@@ -274,18 +241,3 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: BrushingAndLinking+NearestDistancesComputedEvent, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
---- !u!114 &3068208110779183344
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1335410921273268}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SynchronizePosition: 1
-  m_SynchronizeRotation: 1
-  m_SynchronizeScale: 0

@@ -3,7 +3,7 @@
     using Photon.Pun;
 
     [RequireComponent(typeof(PhotonView))]
-    public class NetworkObject : MonoBehaviourPunCallbacks
+    public class NetworkObject : MonoBehaviourPunCallbacks, IPunObservable
     {
         public enum UpdateMode { None, Set, Lerp }
 
@@ -35,7 +35,7 @@
             }
         }
 
-        void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) {
+        public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) {
             foreach (ComponentInterpolator ci in cipols) {
                 ci.OnPhotonSerializeView(stream, info);
             }
@@ -69,11 +69,6 @@
             }
             return interpolationBackTime / 1000d;
         }
-
-        //void IPunObservable.OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
-        //{
-        //    throw new System.NotImplementedException();
-        //}
 
         class ComponentInterpolator {
             private NetworkObject nit;
