@@ -36,6 +36,7 @@ public class MarkerScript : MonoBehaviourPunCallbacks
 
     private bool rightGripPressedFlag = false;
     private bool lineStartFlag = false;
+    private static int viewID;
 
     [Serializable]
     public class DrawingLineEvent : UnityEvent<List<float>> { }
@@ -65,9 +66,15 @@ public class MarkerScript : MonoBehaviourPunCallbacks
         if (rcCE.gripClicked) // check if the grip button is pressed down
         //if (rcCE.triggerPressed)
         {
-            Debug.Log("IsOriginalOwner()" + IsOriginalOwner());
+            //Debug.Log("IsOriginalOwner()" + IsOriginalOwner());
             if (!lineStartFlag && photonView.IsMine && IsOriginalOwner())
-                CallCreateLine();
+            {
+                currentLine = PhotonNetwork.Instantiate("Line", Vector3.zero, Quaternion.identity);
+                viewID = currentLine.GetComponent<PhotonView>().ViewID;
+                Debug.Log("current viewid: " + viewID);
+                CallCreateLine(viewID);
+            }
+                
 
             lineStartFlag = true;
             rightGripPressedFlag = true;
@@ -79,13 +86,7 @@ public class MarkerScript : MonoBehaviourPunCallbacks
             if (rightGripPressedFlag)
             {
                 lineStartFlag = false;
-                Mesh mesh = new Mesh();
-
-                lineRenderer = currentLine.GetComponent<LineRenderer>();
-                lineRenderer.BakeMesh(mesh, true);
-
-                meshCollider = currentLine.GetComponent<MeshCollider>();
-                meshCollider.sharedMesh = mesh;
+                CallUpdateMesh(viewID);
             }
             rightGripPressedFlag = false;
         }
@@ -109,24 +110,37 @@ public class MarkerScript : MonoBehaviourPunCallbacks
         //}
     }
 
-    public void CallCreateLine()
+    public void CallCreateLine(int id)
     {
-        photonView.RPC("CreateLine", RpcTarget.All);
+        photonView.RPC("CreateLine", RpcTarget.All, id);
     }
 
     [PunRPC]
-    private void CreateLine()
+    private void CreateLine(int id)
     {
+        Debug.Log("000");
         // Create a new line and save it into a different variable
         //currentLine = Instantiate(linePrefab, Vector3.zero, Quaternion.identity); 
-        currentLine = PhotonNetwork.Instantiate("Line", Vector3.zero, Quaternion.identity);
+        //currentLine = PhotonNetwork.Instantiate("Line", Vector3.zero, Quaternion.identity);
         //Debug.Log("currentLine.GetComponent<PhotonView>().ViewID" + currentLine.GetComponent<PhotonView>().ViewID);
-        lineRenderer = currentLine.GetComponent<LineRenderer>();
+        if (photonView.IsMine)
+        {
+            lineRenderer = currentLine.GetComponent<LineRenderer>();
+            Debug.Log("111");
+        }
+        else
+        {
+            Debug.Log("22OK");
+            Debug.Log("22" + PhotonView.Find(id).gameObject.name);
+            lineRenderer = PhotonView.Find(id).gameObject.GetComponent<LineRenderer>();
+            Debug.Log("222");
+        }
+            
         //Debug.Log(lineRenderer.transform.GetSiblingIndex());
 
-        meshCollider = currentLine.AddComponent<MeshCollider>();
-        meshCollider.convex = true;
-        meshCollider.isTrigger = true;
+        //meshCollider = currentLine.AddComponent<MeshCollider>();
+        //meshCollider.convex = true;
+        //meshCollider.isTrigger = true;
         //rb = currentLine.AddComponent<Rigidbody>();
         //rb.useGravity = false;
 
@@ -135,6 +149,8 @@ public class MarkerScript : MonoBehaviourPunCallbacks
         // Set the first two points of the line renderer component
         fingerPositions.Add(gameObject.transform.position);
         fingerPositions.Add(gameObject.transform.position);
+
+        //Debug.Log("createline linerenderer" + lineRenderer == null);
         lineRenderer.SetPosition(0, fingerPositions[0]);
         lineRenderer.SetPosition(1, fingerPositions[1]);
 
@@ -155,6 +171,57 @@ public class MarkerScript : MonoBehaviourPunCallbacks
 
     }
 
+    public void CallUpdateMesh(int id)
+    {
+        photonView.RPC("UpdateMesh", RpcTarget.All, id);
+    }
+
+    [PunRPC]
+    private void UpdateMesh(int id)
+    {
+        Mesh mesh = new Mesh();
+        //Debug.Log("updateMesh linerenderer" + lineRenderer == null);
+
+        //bool isOriginalOwner = IsOriginalOwner();
+        //Debug.Log("isOriginalOwner " + isOriginalOwner);
+        //if (isOriginalOwner)
+
+        lineRenderer = PhotonView.Find(id).gameObject.GetComponent<LineRenderer>();
+
+        //if (photonView.IsMine)
+        //{
+        //    //lineRenderer = currentLine.GetComponent<LineRenderer>();
+        //    //Debug.Log("Get local player's linerenderer");
+        //    //return;
+        //}
+        //else
+        //{
+        //    //Debug.Log("44OK");
+        //    //Debug.Log("id " + id);
+        //    //Debug.Log("44" + PhotonView.Find(id).gameObject.name);
+        //    lineRenderer = PhotonView.Find(id).gameObject.GetComponent<LineRenderer>();
+        //    //Debug.Log("444");
+        //}
+
+        lineRenderer.BakeMesh(mesh, true);
+
+        //if (photonView.IsMine)
+        //{
+        //    meshCollider = currentLine.GetComponent<MeshCollider>();
+        //    Debug.Log("555");
+        //}
+        //else
+        //{
+        //    Debug.Log("55OK");
+        //    Debug.Log("55" + PhotonView.Find(id).gameObject.name);
+        //    meshCollider = PhotonView.Find(id).gameObject.GetComponent<MeshCollider>();
+        //    Debug.Log("555");
+        //}
+
+        meshCollider = PhotonView.Find(id).gameObject.GetComponent<MeshCollider>();
+        meshCollider.sharedMesh = mesh;
+    }
+
     //void DestroyGameObject()
     //{
     //    Destroy(currentLine);
@@ -163,7 +230,7 @@ public class MarkerScript : MonoBehaviourPunCallbacks
     void OnTriggerEnter(Collider collider)
     {
         //Debug.Log("collider.gameObject.tag: " + collider.gameObject.tag);
-        if (collider.gameObject.tag == "Chart")
+        if (collider.gameObject.tag == "Chart" && rightGripPressedFlag)
         {
             Transform newParent = collider.gameObject.transform;
             //Debug.Log("collider.gameObject " + collider.gameObject);

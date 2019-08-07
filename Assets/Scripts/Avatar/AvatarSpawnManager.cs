@@ -85,7 +85,7 @@ public class AvatarSpawnManager : MonoBehaviourPunCallbacks {
         playerPhotonView.TransferOwnership(senderNo);
         DontDestroyOnLoad(player);
 
-        if (photonView.IsMine)
+        if (playerPhotonView.IsMine)
         {
             // Customise avatar based off defaults
             AvatarCustomiser avatarCustomiser = player.GetComponent<AvatarCustomiser>();

@@ -55,15 +55,15 @@ public class EraserScript : MonoBehaviourPunCallbacks
 
                 //CallDestroyLine(other.gameObject);
 
-                //if (photonView.IsMine)
-                //{
-                //    PhotonNetwork.Destroy(other.gameObject);
-                //    Debug.Log("Destroyed");
-                //}
+                if (photonView.IsMine)
+                {
+                    PhotonNetwork.Destroy(other.gameObject);
+                    Debug.Log("Destroyed");
+                }
 
-                int viewID = other.gameObject.GetComponent<PhotonView>().ViewID;
-                Debug.Log("line viewID " + viewID);
-                CallDestroyLine(viewID);
+                //int viewID = other.gameObject.GetComponent<PhotonView>().ViewID;
+                //Debug.Log("line viewID " + viewID);
+                //CallDestroyLine(viewID);
 
             }
         }

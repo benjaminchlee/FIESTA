@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 8335362054829572540}
   - component: {fileID: 1631593894893566097}
   - component: {fileID: 250019983315699735}
+  - component: {fileID: 3151840676717811095}
   m_Layer: 0
   m_Name: Line
   m_TagString: Line
@@ -170,3 +171,17 @@ MonoBehaviour:
   angularVelocity: 1
   useLocalValues: 0
   onChangeOnly: 1
+--- !u!64 &3151840676717811095
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3723580658311810719}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Convex: 1
+  m_CookingOptions: 14
+  m_Mesh: {fileID: 0}
