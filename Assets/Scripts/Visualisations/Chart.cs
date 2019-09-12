@@ -56,6 +56,9 @@ public class Chart : MonoBehaviourPunCallbacks
 
     private float deletionTimer = 0;
 
+    private TableSnapToSurface tableSurface;
+    private bool isTouchingTable = false;
+
     #region VisualisationProperties
 
     public Visualisation Visualisation
@@ -329,7 +332,7 @@ public class Chart : MonoBehaviourPunCallbacks
         get { return new Vector2(visualisation.zDimension.minScale, visualisation.zDimension.maxScale); }
         set
         {
-            if (value == XNormaliser)
+            if (value == ZNormaliser)
                 return;
 
             photonView.RPC("PropagateZNormaliser", RpcTarget.All, value);
@@ -1461,6 +1464,9 @@ public class Chart : MonoBehaviourPunCallbacks
                 subChart.GeometryType = GeometryType;
                 subChart.XDimension = XDimension;
                 subChart.YDimension = YDimension;
+                // added ZDimension
+                subChart.ZDimension = ZDimension;
+
                 subChart.SizeDimension = SizeDimension;
                 subChart.Size = Size;
                 subChart.ColorDimension = ColorDimension;
@@ -1619,6 +1625,10 @@ public class Chart : MonoBehaviourPunCallbacks
                 else if (!isPrototype && isTouchingPanel)
                 {
                     TransferChartToPanel();
+                }
+                else if (isTouchingTable)
+                {
+                    AttachToTable();
                 }
             }
         }
@@ -1942,6 +1952,7 @@ public class Chart : MonoBehaviourPunCallbacks
 
     private void OnTriggerEnter(Collider other)
     {
+
         if (other.CompareTag("DisplaySurface"))
         {
             isTouchingDisplaySurface = true;
@@ -1968,6 +1979,12 @@ public class Chart : MonoBehaviourPunCallbacks
                 TransferChartToPanel();
             }
         }
+        else if (other.CompareTag("Table") && this.gameObject.transform.parent == null)
+        {
+            isTouchingTable = true;
+            tableSurface = other.GetComponent<TableSnapToSurface>();
+            AttachToTable();
+        }
     }
 
     private void OnTriggerExit(Collider other)
@@ -1981,6 +1998,11 @@ public class Chart : MonoBehaviourPunCallbacks
         {
             isTouchingPanel = false;
         }
+        else if (other.CompareTag("Table") && this.gameObject.transform.parent.parent == null)
+        {
+            isTouchingTable = false;
+            tableSurface = null;
+        }
     }
 
     private void AttachToDisplayScreen()
@@ -1991,6 +2013,16 @@ public class Chart : MonoBehaviourPunCallbacks
         AnimateTowards(pos, rot, 0.2f);
 
         DataLogger.Instance.LogActionData(this, photonView.Owner, "Vis attached");
+    }
+
+    private void AttachToTable()
+    {
+        Vector3 pos = tableSurface.CalculateNewPosition(this);
+        Quaternion rot = tableSurface.CalculateRotation(this);
+
+        AnimateTowards(pos, rot, 0.2f);
+
+        DataLogger.Instance.LogActionData(this, photonView.Owner, "Vis attached to table");
     }
 
     private void TransferChartToPanel()

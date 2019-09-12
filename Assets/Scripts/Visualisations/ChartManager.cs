@@ -49,6 +49,7 @@ public class ChartManager : MonoBehaviour {
     private void Start()
     {
         SceneManager.sceneLoaded += SceneLoaded;
+
     }
 
     private void SceneLoaded(Scene arg0, LoadSceneMode arg1)
@@ -58,6 +59,7 @@ public class ChartManager : MonoBehaviour {
             //SceneManager.sceneLoaded -= SceneLoaded;
 
             Invoke("CreatePanel", 0.15f);
+            
         }
     }
 
@@ -102,6 +104,9 @@ public class ChartManager : MonoBehaviour {
             rot = Quaternion.Euler(euler);
 
             PhotonNetwork.Instantiate("Panel", pos, rot, 0);
+            //GameObject panel = PhotonNetwork.Instantiate("Panel", pos, rot, 0);
+            //panel.transform.localScale /= 2;
+
 
             // Spawn marker and eraser while creating personal panels
             //Vector3 markerPos = new Vector3(pos.x, pos.y + 0.85f, pos.z);

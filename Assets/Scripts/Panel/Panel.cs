@@ -95,11 +95,16 @@ public class Panel : MonoBehaviourPunCallbacks
             standardChart.XDimension = dataSource[0].Identifier;
             standardChart.YDimension = dataSource[0].Identifier;
             standardChart.FacetSize = 1;
-            standardChart.Width = standardTransform.localScale.x;
-            standardChart.Height = standardTransform.localScale.y;
-            standardChart.Depth = standardTransform.localScale.z;
+            //standardChart.Width = standardTransform.localScale.x;
+            //standardChart.Height = standardTransform.localScale.y;
+            //standardChart.Depth = standardTransform.localScale.z;
             standardChart.transform.position = standardTransform.position;
             standardChart.transform.rotation = standardTransform.rotation;
+
+            // Resize standard Chart
+            standardChart.Width = 0.5f;
+            standardChart.Height = 0.5f;
+            standardChart.Depth = 0.5f;
 
             //// Configure scatterplot matrix
             //splomChart.DataSource = ChartManager.Instance.DataSource;

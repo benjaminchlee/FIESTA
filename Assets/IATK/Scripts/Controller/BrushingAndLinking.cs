@@ -25,6 +25,8 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks, IPunObservable {
     ComputeBuffer filteredIndicesBuffer;
     ComputeBuffer nearestDistancesBuffer;
 
+    GameObject rc;
+
     [SerializeField]
     public Material myRenderMaterial;
 
@@ -137,6 +139,8 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks, IPunObservable {
         InitialiseBuffersAndTextures();
 
         ResetBrushTexture();
+
+        rc = GameObject.Find("RightController");
     }
     
     private void Update()
@@ -326,8 +330,9 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks, IPunObservable {
             switch (BRUSH_TYPE)
             {
                 case BrushType.SPHERE:
-                    projectedPointer1 =
-                        brushingVisualisation.transform.InverseTransformPoint(input1.transform.position);
+                    //projectedPointer1 = brushingVisualisation.transform.InverseTransformPoint(Vector3.one / 2f);
+                   
+                    projectedPointer1 = brushingVisualisation.transform.InverseTransformPoint(input1.transform.position);
                     //  Vector3 
                     computeShader.SetFloats("pointer1", projectedPointer1.x, projectedPointer1.y, projectedPointer1.z);
 
@@ -390,7 +395,10 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks, IPunObservable {
 
             UpdateComputeBuffers(visualisationToInspect);
 
+            //  projectedPointer = visualisationToInspect.transform.InverseTransformPoint(Vector3.one/2f);
+
             projectedPointer = visualisationToInspect.transform.InverseTransformPoint(input1.transform.position);
+            //projectedPointer = new Vector3(0.1f, 0.1f, 0.1f);
 
             computeShader.SetFloats("pointer1", projectedPointer.x, projectedPointer.y, projectedPointer.z);
 

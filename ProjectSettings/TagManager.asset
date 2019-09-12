@@ -28,6 +28,8 @@ TagManager:
   - Marker
   - Visualisation
   - Cube
+  - Table
+  - StandardChart
   layers:
   - Default
   - TransparentFX

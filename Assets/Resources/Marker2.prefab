@@ -1,5 +1,56 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &255949032714971204
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5796852774360754574}
+  - component: {fileID: 8531142761780409636}
+  m_Layer: 0
+  m_Name: RightSnapPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5796852774360754574
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 255949032714971204}
+  m_LocalRotation: {x: 0.8870109, y: -0, z: -0, w: -0.46174863}
+  m_LocalPosition: {x: 0.75, y: -1.5, z: -0.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1288215695987321187}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 235, y: 0, z: 0}
+--- !u!114 &8531142761780409636
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 255949032714971204}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 393a6cb30fae3e841bd85dca765098f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 0}
+  resetOnDisable: 1
+  sdkOverrides:
+  - loadedSDKSetup: {fileID: 0}
+    controllerType: 3
+    position: {x: 0.75, y: -1.5, z: -0.5}
+    rotation: {x: 235, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
 --- !u!1 &615033023463483322
 GameObject:
   m_ObjectHideFlags: 0
@@ -98,10 +149,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 986606395469168711}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.069, y: 1.2777, z: -1.445}
-  m_LocalScale: {x: 0.05, y: 0.05, z: 0.05}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.035, y: 0.035, z: 0.035}
   m_Children:
   - {fileID: 3473188609317022527}
+  - {fileID: 5796852774360754574}
+  - {fileID: 5263505528614670260}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -192,9 +245,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8afa0b205791c9f4496bf2814aeac078, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  precisionGrab: 1
-  rightSnapHandle: {fileID: 0}
-  leftSnapHandle: {fileID: 0}
+  precisionGrab: 0
+  rightSnapHandle: {fileID: 5796852774360754574}
+  leftSnapHandle: {fileID: 5263505528614670260}
   throwVelocityWithAttachDistance: 0
   throwMultiplier: 1
   onGrabCollisionDelay: 0
@@ -312,6 +365,57 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: MarkerScript+DrawingLineEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
+--- !u!1 &1211860662642663831
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5263505528614670260}
+  - component: {fileID: 111903443184111465}
+  m_Layer: 0
+  m_Name: LeftSnapPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5263505528614670260
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1211860662642663831}
+  m_LocalRotation: {x: 0.8870109, y: -0, z: -0, w: -0.46174863}
+  m_LocalPosition: {x: 0.75, y: -1.5, z: -0.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1288215695987321187}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 235, y: 0, z: 0}
+--- !u!114 &111903443184111465
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1211860662642663831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 393a6cb30fae3e841bd85dca765098f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 0}
+  resetOnDisable: 1
+  sdkOverrides:
+  - loadedSDKSetup: {fileID: 0}
+    controllerType: 3
+    position: {x: 0.75, y: -1.5, z: -0.5}
+    rotation: {x: 235, y: 180, z: 0}
+    scale: {x: 1, y: 1, z: 1}
 --- !u!1 &1868228455438455448
 GameObject:
   m_ObjectHideFlags: 0
@@ -794,7 +898,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7697438990341540450}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -2, z: 0}
+  m_LocalPosition: {x: 0, y: -2.26, z: 0}
   m_LocalScale: {x: 1, y: 0.6, z: 1}
   m_Children: []
   m_Father: {fileID: 8005433635925115509}

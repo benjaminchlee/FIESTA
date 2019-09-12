@@ -86,6 +86,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     private bool isControllerSelecting = true;
     private bool toolJustActivated = false;
 
+    private bool isChecking3D = false;
+
     /// <summary>
     /// Brushing and linking variables
     /// </summary>
@@ -157,14 +159,33 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         controllerEvents.TriggerUnclicked += OnTriggerEnd;
         controllerEvents.GripClicked += OnGripStart;
         controllerEvents.GripUnclicked += OnGripEnd;
+        controllerEvents.ButtonTwoPressed += ControllerEvents_ButtonTwoPressed;
+        controllerEvents.ButtonOnePressed += ControllerEvents_ButtonOnePressed;
 
         vrtkPointer = GetComponent<VRTK_Pointer>();
+        vrtkPointer.DestinationMarkerEnter += VrtkPointer_DestinationMarkerEnter;
+        vrtkPointer.pointerRenderer.GetPointerObjects();
 
         // Keep pointer on scene change
         DontDestroyOnLoad(actualCursor.transform.root.gameObject);
         DontDestroyOnLoad(actualTracer.transform.root.gameObject);
 
         SceneManager.sceneLoaded += InstantiatePhotonObjects;
+    }
+
+    private void VrtkPointer_DestinationMarkerEnter(object sender, DestinationMarkerEventArgs e)
+    {
+        //e.target
+    }
+
+    private void ControllerEvents_ButtonOnePressed(object sender, ControllerInteractionEventArgs e)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void ControllerEvents_ButtonTwoPressed(object sender, ControllerInteractionEventArgs e)
+    {
+        throw new NotImplementedException();
     }
 
     private void InstantiatePhotonObjects(Scene arg0, LoadSceneMode arg1)
@@ -585,6 +606,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 if (!IsInteractionToolActive())
                 {
                     tracerVisibility = VisibilityStates.AlwaysOn;
+
                     selectedInteractionRenderer.Sprite = detailsOnDemandSprite;
                 }
 
@@ -593,11 +615,59 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
                 if (collidedObject != null && collidedObject.CompareTag("ChartRaycastCollider"))
                 {
-                    brushingInput1.position = hit.point;
+                    //brushingInput1.position = hit.point;
                     brushingAndLinking.inspectButtonController = true;
                     visualisationToInspect = collidedObject.GetComponentInParent<Chart>().Visualisation;
                     brushingAndLinking.visualisationToInspect = visualisationToInspect;
                     brushingAndLinking.radiusInspector = 0.2f;
+
+                    Debug.Log("Vis name: " + visualisationToInspect.name);
+                    if (visualisationToInspect.transform.childCount == 5)
+                    {
+                        //Debug.Log("This is a 3d visualisation!");
+                        //cursorVisibility = VisibilityStates.OnWhenActive;
+                        //maximumLength = 0.08f;
+                        //cursorScaleMultiplier = 5f;
+
+                        //Vector3 cursorPosition = vrtkPointer.pointerRenderer.GetPointerObjects()[1].transform.position;
+                        //Debug.Log("cursor position: " + cursorPosition);
+
+                        //brushingInput1.position = visualisationToInspect.transform.InverseTransformPoint(cursorPosition);
+                        //Debug.Log("brushingInput1.position " + brushingInput1.position);
+
+                        //isChecking3D = true;
+
+                        transform.parent.Find("Model").GetComponent<PointerCustomisation>().showStickFlag = true;
+
+                        Color trans = validCollisionColor;
+                        trans.a = 0;
+                        validCollisionColor = trans;
+
+                        Color trans2 = invalidCollisionColor;
+                        trans2.a = 0;
+                        invalidCollisionColor = trans2;
+                        //isChecking3D = true;
+                    }
+                    else
+                    {
+                        Debug.Log("This is a 2d visualisation!");
+                        cursorVisibility = VisibilityStates.AlwaysOff;
+                        maximumLength = 100f;
+                        cursorScaleMultiplier = 25f;
+                        brushingInput1.position = hit.point;
+
+                        transform.parent.Find("Model").GetComponent<PointerCustomisation>().showStickFlag = false;
+
+                        Color trans = validCollisionColor;
+                        trans.a = 1;
+                        validCollisionColor = trans;
+
+                        Color trans2 = invalidCollisionColor;
+                        trans2.a = 1;
+                        invalidCollisionColor = trans2;
+                        //isChecking3D = false;
+                    }
+                    
                 }
             }
             else if (!isTouchpadDown && isDetailsOnDemandActive)
@@ -935,11 +1005,26 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 Vector3 worldPos = visualisationToInspect.transform.TransformPoint(normalisedPos);
 
                 // Draw label at the point
+
+                //if (isChecking3D)
+                //{
+                //    Vector3 cursorPosition = vrtkPointer.pointerRenderer.GetPointerObjects()[1].transform.position;
+                //    networkedDetailsOnDemandLabel.transform.position = cursorPosition;
+                //    //Debug.Log("drawn at cursor position");
+                //}
+                //else
+                //{
+                //    networkedDetailsOnDemandLabel.transform.position = hit.point;
+                //    Debug.Log("hit.point: " + hit.point);
+                //}
+
                 networkedDetailsOnDemandLabel.transform.position = hit.point;
                 networkedDetailsOnDemandLabel.transform.rotation = visualisationToInspect.transform.rotation;
                 networkedDetailsOnDemandLabel.ToggleState(true);
                 networkedDetailsOnDemandLabel.SetText(nearestIndices, visualisationToInspect);
-                networkedDetailsOnDemandLabel.SetLinePosition(worldPos);
+
+                if (!isChecking3D)
+                    networkedDetailsOnDemandLabel.SetLinePosition(worldPos);
             }
             else
             {
