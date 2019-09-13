@@ -86,7 +86,10 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     private bool isControllerSelecting = true;
     private bool toolJustActivated = false;
 
-    private bool isChecking3D = false;
+    //private bool isChecking3D = false;
+
+    private bool _2DDOD = false;
+    private bool isTriggerClicked = false;
 
     /// <summary>
     /// Brushing and linking variables
@@ -110,6 +113,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     [Serializable]
     public class RangedToolDeactivatedEvent : UnityEvent { }
     public RangedToolDeactivatedEvent RangedToolDeactivated;
+    private bool _3DDOD = false;
 
     /// <summary>
     /// The state of interaction the user is currently in. Note that this scope only extends to that of touchpad interactions, and not
@@ -469,6 +473,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         }
 
         toolJustActivated = false;
+
+        isTriggerClicked = true;
     }
 
     private void OnTriggerEnd(object sender, ControllerInteractionEventArgs e)
@@ -490,6 +496,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                     break;
             }
         }
+
+        isTriggerClicked = false;
     }
 
     private void OnGripStart(object sender, ControllerInteractionEventArgs e)
@@ -621,7 +629,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                     brushingAndLinking.visualisationToInspect = visualisationToInspect;
                     brushingAndLinking.radiusInspector = 0.2f;
 
-                    Debug.Log("Vis name: " + visualisationToInspect.name);
+                    //Debug.Log("Vis name: " + visualisationToInspect.name);
                     if (visualisationToInspect.transform.childCount == 5)
                     {
                         //Debug.Log("This is a 3d visualisation!");
@@ -637,38 +645,78 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
                         //isChecking3D = true;
 
-                        transform.parent.Find("Model").GetComponent<PointerCustomisation>().showStickFlag = true;
 
-                        Color trans = validCollisionColor;
-                        trans.a = 0;
-                        validCollisionColor = trans;
+                        // show 3d inspection stick
+                        Toggle3DstickOn();
 
-                        Color trans2 = invalidCollisionColor;
-                        trans2.a = 0;
-                        invalidCollisionColor = trans2;
+                        // hide pointer
+                        SetPointerOpacityZero();
+
                         //isChecking3D = true;
+
+                        // set the stick position as the brushing input
+                        if (GameObject.Find("Stick3D").gameObject != null)
+                        {
+                            Debug.Log("Result: " + GameObject.Find("Stick3D").gameObject != null);
+                            Vector3 threedStickPosition = GameObject.Find("StickSphere").transform.position;
+                            brushingInput1.position = threedStickPosition;
+
+                            Debug.Log(" 3d vis details on demand executing!!");
+                        }
                     }
                     else
                     {
-                        Debug.Log("This is a 2d visualisation!");
-                        cursorVisibility = VisibilityStates.AlwaysOff;
-                        maximumLength = 100f;
-                        cursorScaleMultiplier = 25f;
+                        //Debug.Log("This is a 2d visualisation!");
+                        //cursorVisibility = VisibilityStates.AlwaysOff;
+                        //maximumLength = 100f;
+                        //cursorScaleMultiplier = 25f;
+
+                        // set brushing input
                         brushingInput1.position = hit.point;
 
-                        transform.parent.Find("Model").GetComponent<PointerCustomisation>().showStickFlag = false;
+                        // disable 3d stick
+                        Toggle3DstickOff();
 
-                        Color trans = validCollisionColor;
-                        trans.a = 1;
-                        validCollisionColor = trans;
+                        // show pointer
+                        SetPointerOpacityOne();
 
-                        Color trans2 = invalidCollisionColor;
-                        trans2.a = 1;
-                        invalidCollisionColor = trans2;
                         //isChecking3D = false;
+
+                        Debug.Log(" 2d vis details on demand executing!!");
                     }
                     
                 }
+                else
+                {
+                    // let's search for any visualisation 50cm away from the controller
+                    Visualisation[] vizList = Resources.FindObjectsOfTypeAll(typeof(Visualisation)) as Visualisation[];
+
+                    //Vector3 rightControllerPosition = GameObject.Find("Controller (right)").transform.position;
+
+                    Vector3 threedStickPosition = GameObject.Find("StickSphere").transform.position;
+
+                    float distance = .5f;
+                    foreach (var item in vizList)
+                    {
+                        //if we are within .5m of a 3d viz
+                        if (Vector3.Distance(item.transform.position, threedStickPosition) < distance)
+                        {
+                            // >> TOOD Xiaoyun: look if 3D viz
+                            if (item.transform.childCount == 5)
+                            {
+                                brushingInput1.position = threedStickPosition;// hit.point;
+                                brushingAndLinking.inspectButtonController = true;
+                                visualisationToInspect = item;
+                                brushingAndLinking.visualisationToInspect = visualisationToInspect;
+                                brushingAndLinking.radiusInspector = 0.2f;
+                                _3DDOD = true;
+                                Debug.Log(" .......3d vis details on demand executing.......");
+                                break;
+                            }    
+                        }
+                    }
+
+                 }
             }
             else if (!isTouchpadDown && isDetailsOnDemandActive)
             {
@@ -685,6 +733,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 brushingAndLinking.visualisationToInspect = null;
                 brushingAndLinking.inspectButtonController = false;
                 networkedDetailsOnDemandLabel.ToggleState(false);
+
+                _3DDOD = false;
             }
         }
     }
@@ -742,16 +792,51 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             if (!rangedBrush.activeSelf)
                 rangedBrush.SetActive(true);
 
-            rangedBrush.transform.position = hit.point;
-            brushingInput1.position = hit.point;
+            if (collidedObject.GetComponentInParent<Chart>().Visualisation.transform.childCount == 5)
+            {
+                Toggle3DstickOn();
+                SetPointerOpacityZero();
+
+                Vector3 stickPosition = GameObject.Find("StickSphere").transform.position;
+                rangedBrush.transform.position = stickPosition;
+                brushingInput1.position = stickPosition;
+            }
+            else
+            {
+                rangedBrush.transform.position = hit.point;
+                brushingInput1.position = hit.point;
+            }
+                
             brushingAndLinking.brushEnabled = true;
 
             TriggerControllerVibration(0.025f);
         }
-        else
+    else
         {
-            rangedBrush.SetActive(false);
-            brushingAndLinking.brushEnabled = false;
+            if (isTriggerClicked)
+            {
+                if (!rangedBrush.activeSelf)
+                    rangedBrush.SetActive(true);
+
+                Toggle3DstickOn();
+                SetPointerOpacityZero();
+
+                Vector3 stickPosition = GameObject.Find("StickSphere").transform.position;
+                rangedBrush.transform.position = stickPosition;
+                brushingInput1.position = stickPosition;
+
+                brushingAndLinking.brushEnabled = true;
+
+                TriggerControllerVibration(0.025f);
+            }
+            else
+            {
+                rangedBrush.SetActive(false);
+                brushingAndLinking.brushEnabled = false;
+
+                Toggle3DstickOff();
+                SetPointerOpacityOne();
+            }
         }
 
         if (IsValidCollision())
@@ -959,7 +1044,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         GameObject collidedObject = GetCollidedObject(out hit);
 
         // Check if still pointing at a chart
-        if (collidedObject != null && collidedObject.CompareTag("ChartRaycastCollider"))
+        if ((collidedObject != null && collidedObject.CompareTag("ChartRaycastCollider")) || _3DDOD)
         { 
             // Get list of indices that share the closest distance
             List<int> nearestIndices = new List<int>();
@@ -1017,14 +1102,23 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 //    networkedDetailsOnDemandLabel.transform.position = hit.point;
                 //    Debug.Log("hit.point: " + hit.point);
                 //}
-
-                networkedDetailsOnDemandLabel.transform.position = hit.point;
-                networkedDetailsOnDemandLabel.transform.rotation = visualisationToInspect.transform.rotation;
-                networkedDetailsOnDemandLabel.ToggleState(true);
-                networkedDetailsOnDemandLabel.SetText(nearestIndices, visualisationToInspect);
-
-                if (!isChecking3D)
+                if (_3DDOD)
+                {
+                    networkedDetailsOnDemandLabel.transform.position = (GameObject.Find("StickSphere").transform.position);
+                    
+                    networkedDetailsOnDemandLabel.transform.rotation = visualisationToInspect.transform.rotation;
+                    networkedDetailsOnDemandLabel.ToggleState(true);
+                    networkedDetailsOnDemandLabel.SetText(nearestIndices, visualisationToInspect);
                     networkedDetailsOnDemandLabel.SetLinePosition(worldPos);
+                }
+                else
+                {
+                    networkedDetailsOnDemandLabel.transform.position = hit.point;
+                    networkedDetailsOnDemandLabel.transform.rotation = visualisationToInspect.transform.rotation;
+                    networkedDetailsOnDemandLabel.ToggleState(true);
+                    networkedDetailsOnDemandLabel.SetText(nearestIndices, visualisationToInspect);
+                    networkedDetailsOnDemandLabel.SetLinePosition(worldPos);
+                }
             }
             else
             {
@@ -1119,5 +1213,42 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             return go.GetComponent<SaturationBrightnessPicker>();
 
         return go;
+    }
+
+    private void Toggle3DstickOn()
+    {
+        // show 3d inspection stick
+        transform.parent.Find("Model").GetComponent<PointerCustomisation>().showStickFlag = true;
+    }
+
+    private void Toggle3DstickOff()
+    {
+        // disable 3d inspection stick
+        transform.parent.Find("Model").GetComponent<PointerCustomisation>().showStickFlag = false;
+
+    }
+
+    private void SetPointerOpacityZero()
+    {
+        // hide pointer
+        Color trans = validCollisionColor;
+        trans.a = 0;
+        validCollisionColor = trans;
+
+        Color trans2 = invalidCollisionColor;
+        trans2.a = 0;
+        invalidCollisionColor = trans2;
+    }
+
+    private void SetPointerOpacityOne()
+    {
+        // hide pointer
+        Color trans = validCollisionColor;
+        trans.a = 1;
+        validCollisionColor = trans;
+
+        Color trans2 = invalidCollisionColor;
+        trans2.a = 1;
+        invalidCollisionColor = trans2;
     }
 }

@@ -18,14 +18,18 @@ public class PointerCustomisation : MonoBehaviour
     {
         if (transform.parent.Find("RightController") != null) {
             controllerEvents = transform.parent.Find("RightController").GetComponent<VRTK_ControllerEvents>();
-            controllerEvents.TouchpadPressed += OnTouchpadStart;
-            controllerEvents.TouchpadReleased += OnTouchpadEnd;
+            controllerEvents.TouchpadPressed += Enable3DStick;
+            controllerEvents.TouchpadReleased += Unable3DStick;
+            controllerEvents.TriggerClicked += Enable3DStick;
+            controllerEvents.TriggerUnclicked += Unable3DStick;
+            controllerEvents.GripClicked += Enable3DStick;
+            controllerEvents.GripUnclicked += Unable3DStick;
         }
         
         
     }
 
-    private void OnTouchpadEnd(object sender, ControllerInteractionEventArgs e)
+    private void Unable3DStick(object sender, ControllerInteractionEventArgs e)
     {
         if (showStickFlag)
         {
@@ -42,7 +46,7 @@ public class PointerCustomisation : MonoBehaviour
             
     }
 
-    private void OnTouchpadStart(object sender, ControllerInteractionEventArgs e)
+    private void Enable3DStick(object sender, ControllerInteractionEventArgs e)
     {
         if (showStickFlag)
         {
