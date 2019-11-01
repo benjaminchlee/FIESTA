@@ -304,6 +304,7 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks, IPunObservable {
         foreach (var v in chart.Visualisation.theVisualizationObject.viewList)
         {
             v.BigMesh.SharedMaterial.SetTexture("_BrushedTexture", brushedIndicesTexture);
+            v.BigMesh.SharedMaterial.SetInt("_IsBrushedTextureSet", 1);
             v.BigMesh.SharedMaterial.SetFloat("_DataWidth", texSize);
             v.BigMesh.SharedMaterial.SetFloat("_DataHeight", texSize);
         }
@@ -343,7 +344,6 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks, IPunObservable {
 
 
                     projectedPointer1 = brushingVisualisation.transform.InverseTransformPoint(input1.transform.position);
-                    print("-->> brushing1: " + projectedPointer1.ToString("G8"));
 
                     //  Vector3 
                     computeShader.SetFloats("pointer1", projectedPointer1.x, projectedPointer1.y, projectedPointer1.z);
@@ -414,7 +414,7 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks, IPunObservable {
            // Vector3 rightcontrollerPosition = GameObject.Find("Controller (right)").transform.position;
 
             //Vector3 inversePosition = visualisationToInspect.transform.InverseTransformPoint(rightcontrollerPosition);
-            print("-->> brushing2: " +inversePosition.ToString("G8"));
+            //print("-->> brushing2: " +inversePosition.ToString("G8"));
 
             //projectedPointer = new Vector3(0.1f, 0.1f, 0.1f);
 

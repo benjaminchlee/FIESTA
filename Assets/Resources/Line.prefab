@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 1631593894893566097}
   - component: {fileID: 250019983315699735}
   - component: {fileID: 3151840676717811095}
+  - component: {fileID: 3701687562241939602}
   m_Layer: 0
   m_Name: Line
   m_TagString: Line
@@ -43,7 +44,7 @@ LineRenderer:
   m_GameObject: {fileID: 3723580658311810719}
   m_Enabled: 1
   m_CastShadows: 1
-  m_ReceiveShadows: 1
+  m_ReceiveShadows: 0
   m_DynamicOccludee: 1
   m_MotionVectors: 0
   m_LightProbeUsage: 0
@@ -163,7 +164,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af018577f438cf542b899ec9138bf9e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parent: 0
+  parent: 1
   position: 2
   rotation: 2
   scale: 0
@@ -185,3 +186,17 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 14
   m_Mesh: {fileID: 0}
+--- !u!114 &3701687562241939602
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3723580658311810719}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2417b2906120c6a40b3b922ce0096043, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ID: 
+  isBeingDrawn: 1

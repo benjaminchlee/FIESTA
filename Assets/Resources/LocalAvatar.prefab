@@ -565,20 +565,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ownerId: 0
-  group: 0
-  OwnerShipWasTransfered: 0
-  prefixBackup: -1
-  synchronization: 3
-  onSerializeTransformOption: 3
-  onSerializeRigidBodyOption: 2
-  ownershipTransfer: 0
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
   ObservedComponents:
   - {fileID: 114111830223267938}
-  ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
-  instantiationId: -1
-  currentMasterID: -1
+  InstantiationId: -1
   isRuntimeInstantiated: 0
 --- !u!114 &114111830223267938
 MonoBehaviour:
@@ -619,16 +614,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ovrAvatar: {fileID: 114950418060822550}
   nameplate: {fileID: 114762793159395476}
-  childGameObjects:
-  - {fileID: 1828518242039934}
-  - {fileID: 1217354047976732}
-  - {fileID: 1633156233250538}
-  - {fileID: 1614573475022184}
-  - {fileID: 1041765311029334}
-  - {fileID: 1524854091069158}
-  - {fileID: 1010375282961988}
-  - {fileID: 1002674374935828}
-  - {fileID: 1873478548107032}
 --- !u!1 &1524854091069158
 GameObject:
   m_ObjectHideFlags: 0

@@ -9,8 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5796852774360754574}
-  - component: {fileID: 8531142761780409636}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: RightSnapPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -31,26 +30,6 @@ Transform:
   m_Father: {fileID: 1288215695987321187}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 235, y: 0, z: 0}
---- !u!114 &8531142761780409636
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 255949032714971204}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 393a6cb30fae3e841bd85dca765098f6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 0}
-  resetOnDisable: 1
-  sdkOverrides:
-  - loadedSDKSetup: {fileID: 0}
-    controllerType: 3
-    position: {x: 0.75, y: -1.5, z: -0.5}
-    rotation: {x: 235, y: 0, z: 0}
-    scale: {x: 1, y: 1, z: 1}
 --- !u!1 &615033023463483322
 GameObject:
   m_ObjectHideFlags: 0
@@ -60,7 +39,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8301032567456370869}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -91,7 +70,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3473188609317022527}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: GameObject
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -134,7 +113,7 @@ GameObject:
   - component: {fileID: 4909325975999010348}
   - component: {fileID: 8546098520716967653}
   - component: {fileID: 6057041272932767767}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Marker2
   m_TagString: Marker
   m_Icon: {fileID: 0}
@@ -277,11 +256,11 @@ MonoBehaviour:
   allowedGrabControllers: 0
   grabAttachMechanicScript: {fileID: 986606395469168715}
   secondaryGrabActionScript: {fileID: 986606395469168714}
-  isUsable: 0
+  isUsable: 1
   holdButtonToUse: 1
-  useOnlyIfGrabbed: 0
+  useOnlyIfGrabbed: 1
   pointerActivatesUseAction: 0
-  useOverrideButton: 0
+  useOverrideButton: 8
   allowedUseControllers: 0
   objectHighlighter: {fileID: 0}
   touchHighlightColor: {r: 0, g: 0, b: 0, a: 0}
@@ -356,6 +335,8 @@ MonoBehaviour:
   linePrefab: {fileID: 3723580658311810719, guid: 2babcf98bccda0e4b97badd483df7fef,
     type: 3}
   currentLine: {fileID: 0}
+  currentLineID: 
+  markerTip: {fileID: 8326427600946002819}
   lineRenderer: {fileID: 0}
   fingerPositions: []
   meshCollider: {fileID: 0}
@@ -374,8 +355,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5263505528614670260}
-  - component: {fileID: 111903443184111465}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: LeftSnapPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -390,32 +370,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1211860662642663831}
   m_LocalRotation: {x: 0.8870109, y: -0, z: -0, w: -0.46174863}
-  m_LocalPosition: {x: 0.75, y: -1.5, z: -0.5}
+  m_LocalPosition: {x: -0.75, y: -1.5, z: -0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1288215695987321187}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 235, y: 0, z: 0}
---- !u!114 &111903443184111465
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1211860662642663831}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 393a6cb30fae3e841bd85dca765098f6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 0}
-  resetOnDisable: 1
-  sdkOverrides:
-  - loadedSDKSetup: {fileID: 0}
-    controllerType: 3
-    position: {x: 0.75, y: -1.5, z: -0.5}
-    rotation: {x: 235, y: 180, z: 0}
-    scale: {x: 1, y: 1, z: 1}
 --- !u!1 &1868228455438455448
 GameObject:
   m_ObjectHideFlags: 0
@@ -428,7 +388,7 @@ GameObject:
   - component: {fileID: 4353855242655133185}
   - component: {fileID: 1112219846195644014}
   - component: {fileID: 8112053355120634873}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Part2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -502,7 +462,7 @@ CapsuleCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1868228455438455448}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   m_Radius: 0.5000001
   m_Height: 2
@@ -517,7 +477,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8005433635925115509}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Lid
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -551,7 +511,7 @@ GameObject:
   - component: {fileID: 3463992547537031416}
   - component: {fileID: 7529484955426633884}
   - component: {fileID: 3024958364390954508}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Part1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -625,7 +585,7 @@ CapsuleCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3814505530266890749}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   m_Radius: 0.5000001
   m_Height: 2
@@ -640,7 +600,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2898067218284794933}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Tip
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -661,8 +621,39 @@ Transform:
   - {fileID: 4432718134871582289}
   - {fileID: 4239606480997549057}
   - {fileID: 4355896189053833237}
+  - {fileID: 8326427600946002819}
   m_Father: {fileID: 3473188609317022527}
   m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6711310849601021047
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8326427600946002819}
+  m_Layer: 2
+  m_Name: TipEnd
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8326427600946002819
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6711310849601021047}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -5.8, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 2898067218284794933}
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7319298614328894336
 GameObject:
@@ -677,7 +668,7 @@ GameObject:
   - component: {fileID: 8129282641156790289}
   - component: {fileID: 4401362517258514877}
   - component: {fileID: 2367639096815745516}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: TextMeshPro
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -883,7 +874,7 @@ GameObject:
   - component: {fileID: 5772737639220034999}
   - component: {fileID: 6423905971512660487}
   - component: {fileID: 3007381016951622812}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Markerlid
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -957,7 +948,7 @@ CapsuleCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7697438990341540450}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   m_Radius: 0.5000001
   m_Height: 2
@@ -975,7 +966,7 @@ GameObject:
   - component: {fileID: 473169241864156306}
   - component: {fileID: 7531376010626292630}
   - component: {fileID: 2999355319857785024}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Markerbody
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1050,7 +1041,7 @@ CapsuleCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7794745035360228423}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   m_Radius: 0.5000001
   m_Height: 2
@@ -1068,7 +1059,7 @@ GameObject:
   - component: {fileID: 1312887081858437259}
   - component: {fileID: 8506777743049169701}
   - component: {fileID: 410910338851031987}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1142,7 +1133,7 @@ CapsuleCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8273220537445124348}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   m_Radius: 0.5
   m_Height: 2

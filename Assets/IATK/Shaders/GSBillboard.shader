@@ -8,6 +8,7 @@ Shader "IATK/OutlineDots"
 	{
 		_MainTex("Base (RGB)", 2D) = "White" {}
 		_BrushedTexture("Base (RGB)", 2D) = "White" {}
+		_IsBrushedTextureSet("IsBrushedTextureSet", int) = 0
 		_Size("Size", Range(0, 1)) = 0.5
 		_MinSize("Min Size", Range(0, 1)) = 0.01
 		_MaxSize("Max Size", Range(0, 1)) = 1.0
@@ -131,6 +132,8 @@ Shader "IATK/OutlineDots"
 				sampler2D _BrushedTexture;
 				sampler2D _MainTex;
 
+				int _IsBrushedTextureSet;
+
 				float _DataWidth;
 				float _DataHeight;
 				float showBrush;
@@ -166,7 +169,13 @@ Shader "IATK/OutlineDots"
 
 					//lookup the texture to get the color, this color will be used to color the brushed point
 					float2 indexUV = float2((idx % _DataWidth) / _DataWidth, ((idx / _DataWidth) / _DataHeight));
-					float4 brushValue = tex2Dlod(_BrushedTexture, float4(indexUV, 0.0, 0.0));
+
+					float4 brushValue;
+
+					if (_IsBrushedTextureSet == 1)
+						brushValue = tex2Dlod(_BrushedTexture, float4(indexUV, 0.0, 0.0));
+					else
+						brushValue = float4(0.0, 0.0, 0.0, 0.0);
 
 					output.brushedColor = brushValue;
 

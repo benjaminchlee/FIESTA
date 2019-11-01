@@ -45,13 +45,13 @@ public class MenuButton : MonoBehaviour {
     {
         ButtonClicked.Invoke(this);
         
-        DataLogger.Instance.LogActionData(this, GetComponentInParent<Panel>().OriginalOwner, transform.parent.name + " button range clicked", Text);
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Panel>().OriginalOwner, GetComponentInParent<Panel>().OriginalOwner, transform.parent.name + " Button Range Clicked", "", Text);
     }
 
     private void OnButtonClicked(object sender, InteractableObjectEventArgs e)
     {
         ButtonClicked.Invoke(this);
 
-        DataLogger.Instance.LogActionData(this, GetComponentInParent<Panel>().OriginalOwner, transform.parent.name + " button clicked", Text);
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Panel>().OriginalOwner, GetComponentInParent<Panel>().OriginalOwner, transform.parent.name + " Button Clicked", "", Text);
     }
 }

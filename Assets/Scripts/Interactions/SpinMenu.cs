@@ -132,7 +132,7 @@ public class SpinMenu : MonoBehaviourPunCallbacks {
             isExpanded = false;
             RetractButtons();
 
-            DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, "Spin menu end");
+            DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, PhotonNetwork.LocalPlayer, "Spin Menu end");
         }
     }
 
@@ -162,7 +162,7 @@ public class SpinMenu : MonoBehaviourPunCallbacks {
 
                     RetractButtons();
 
-                    DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, "Spin menu end");
+                    DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, PhotonNetwork.LocalPlayer, "Spin Menu end");
                 }
             }
         }
@@ -208,8 +208,8 @@ public class SpinMenu : MonoBehaviourPunCallbacks {
                 buttons[i].AnimateToPosition(position, Vector3.one, animationDuration);
             }
         }
-        
-        DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, "Spin Menu Start");
+
+        DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, PhotonNetwork.LocalPlayer, "Spin Menu start");
     }
 
     /// <summary>

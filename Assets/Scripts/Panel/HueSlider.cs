@@ -29,12 +29,12 @@ public class HueSlider : MonoBehaviour {
 
     private void SliderGrabbed(object sender, InteractableObjectEventArgs e)
     {
-        DataLogger.Instance.LogActionData(this, GetComponentInParent<Panel>().OriginalOwner, gameObject.name + " drag start");
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Panel>().OriginalOwner, GetComponentInParent<Panel>().OriginalOwner, gameObject.name + " Drag start");
     }
 
     private void SliderUngrabbed(object sender, InteractableObjectEventArgs e)
     {
-        DataLogger.Instance.LogActionData(this, GetComponentInParent<Panel>().OriginalOwner, gameObject.name + " drag end");
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Panel>().OriginalOwner, GetComponentInParent<Panel>().OriginalOwner, gameObject.name + " Drag end");
     }
 
     public void SetHue(float value)

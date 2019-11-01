@@ -42,7 +42,7 @@ public class SPLOMButton : MonoBehaviourPunCallbacks
         PhotonView pv = PhotonView.Find(parentSplomPhotonID);
         pv.RPC("ScatterplotMatrixDimensionChanged", pv.Owner, photonView.ViewID, Text);
 
-        DataLogger.Instance.LogActionData(this, GetComponentInParent<Chart>().photonView.Owner, transform.parent.name + " splom button range clicked", Text);
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Chart>().OriginalOwner, GetComponentInParent<Chart>().photonView.Owner, transform.parent.name + " Splom Button Range Clicked", "", Text);
     }
 
     private void OnSPLOMButtonClicked(object sender, InteractableObjectEventArgs e)
@@ -55,7 +55,7 @@ public class SPLOMButton : MonoBehaviourPunCallbacks
         PhotonView pv = PhotonView.Find(parentSplomPhotonID);
         pv.RPC("ScatterplotMatrixDimensionChanged", pv.Owner, photonView.ViewID, Text);
         
-        DataLogger.Instance.LogActionData(this, GetComponentInParent<Chart>().photonView.Owner, transform.parent.name + " splom button clicked", Text);
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Chart>().OriginalOwner, GetComponentInParent<Chart>().photonView.Owner, transform.parent.name + " Splom Button Clicked", "", Text);
     }
 
     private List<string> GetAttributesList()

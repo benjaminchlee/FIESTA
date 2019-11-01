@@ -17,6 +17,7 @@ public class AvatarCustomiser : MonoBehaviourPunCallbacks {
     public Color ShirtColor { get; private set; }
 
     private bool isDoneLoading = false;
+    private bool isMainSceneLoaded = false;
     
     private void Awake()
     {
@@ -35,6 +36,11 @@ public class AvatarCustomiser : MonoBehaviourPunCallbacks {
     {
         Name = name;
 
+        SetName();
+    }
+
+    private void SetName()
+    {
         if (isDoneLoading)
         {
             // Set the text so that it is the child of the moveable body
@@ -62,10 +68,15 @@ public class AvatarCustomiser : MonoBehaviourPunCallbacks {
         HeadsetColor = headset;
         ShirtColor = shirt;
 
+        SetColor();
+    }
+
+    private void SetColor()
+    {
         if (isDoneLoading)
         {
             SkinnedMeshRenderer[] renderers = gameObject.GetComponentsInChildren<SkinnedMeshRenderer>();
-            
+
             foreach (SkinnedMeshRenderer renderer in renderers)
             {
                 if (renderer.gameObject.name == "body_renderPart_0")
@@ -89,8 +100,20 @@ public class AvatarCustomiser : MonoBehaviourPunCallbacks {
     {
         isDoneLoading = true;
 
-        SetColor(SkinColor, HeadsetColor, ShirtColor);
-        SetName(Name);
+        if (photonView.IsMine)
+        {
+            SetColor(SkinColor, HeadsetColor, ShirtColor);
+            SetName(Name);
+        }
+    }
+
+    private void Update()
+    {
+        if (!isMainSceneLoaded)
+        {
+            SetColor();
+            SetName();
+        }
     }
 
     private void OnSceneDoneLoading(Scene arg0, LoadSceneMode arg1)
@@ -99,7 +122,7 @@ public class AvatarCustomiser : MonoBehaviourPunCallbacks {
         {
             SetColor(SkinColor, HeadsetColor, ShirtColor);
             PhotonNetwork.RemoveRPCs(photonView);
+            isMainSceneLoaded = true;
         }
     }
-
 }

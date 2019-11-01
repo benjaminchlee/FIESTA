@@ -30,6 +30,8 @@ TagManager:
   - Cube
   - Table
   - StandardChart
+  - DisplayScreen
+  - Replay
   layers:
   - Default
   - TransparentFX
@@ -39,7 +41,7 @@ TagManager:
   - UI
   - 
   - 
-  - 
+  - Snap Plane
   - 
   - 
   - 

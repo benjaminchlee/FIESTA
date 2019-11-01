@@ -1,32 +1,54 @@
-﻿using System.Collections;
+﻿using Photon.Pun;
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using VRTK;
 
-public class LineScript : MonoBehaviour
+public class LineScript : MonoBehaviourPunCallbacks
 {
-    GameObject lc;
+    public Photon.Realtime.Player OriginalOwner { get; private set; }
 
-    VRTK_ControllerEvents lcCE;
+    public string ID;
+    public bool isBeingDrawn = true;
 
-    // Start is called before the first frame update
-    void Start()
+    private LineRenderer lineRenderer;
+    private StringBuilder stringBuilder;
+
+    private void Start()
     {
-        lc = GameObject.Find("LeftController");
-        lcCE = lc.GetComponent<VRTK_ControllerEvents>();
+        OriginalOwner = photonView.Owner;
+
+        lineRenderer = GetComponent<LineRenderer>();
+        stringBuilder = new StringBuilder();
     }
 
-    // Update is called once per frame
-    void Update()
+    public void SetLineID(string id)
     {
-        if (lcCE.gripClicked)
+        photonView.RPC("SetLineIDRPC", RpcTarget.All, id);
+    }
+
+    [PunRPC]
+    private void SetLineIDRPC(string id)
+    {
+        ID = id;
+    }
+
+    public string GetLinePositions()
+    {
+        Vector3[] positions = new Vector3[lineRenderer.positionCount];
+        lineRenderer.GetPositions(positions);
+        stringBuilder.Clear();
+
+        foreach (var pos in positions)
         {
-            DestroyGameObject();
+            stringBuilder.Append(transform.TransformPoint(pos).ToString("F3"));
+            stringBuilder.Append("|");
         }
-    }
 
-    void DestroyGameObject()
-    {
-        Destroy(gameObject);
+        stringBuilder.Remove(stringBuilder.Length - 1, 1);
+
+        return stringBuilder.ToString();
     }
 }

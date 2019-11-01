@@ -11,7 +11,9 @@ public class NetworkedDetailsOnDemandLabel : MonoBehaviourPunCallbacks {
     [SerializeField]
     private GameObject panel;
     [SerializeField]
-    private TextMeshPro textMesh;
+    private TextMeshPro frontText;
+    [SerializeField]
+    private TextMeshPro backText;
     [SerializeField]
     private LineRenderer leaderLineRenderer;
 
@@ -32,7 +34,8 @@ public class NetworkedDetailsOnDemandLabel : MonoBehaviourPunCallbacks {
     private void PropagateToggleState(bool value)
     {
         panel.SetActive(value);
-        textMesh.gameObject.SetActive(value);
+        frontText.gameObject.SetActive(value);
+        backText.gameObject.SetActive(value);
         leaderLineRenderer.enabled = value;
     }
 
@@ -87,16 +90,21 @@ public class NetworkedDetailsOnDemandLabel : MonoBehaviourPunCallbacks {
             }
         }
 
-        textMesh.text = stringBuilder.ToString();
-        textMesh.ForceMeshUpdate();
+        frontText.text = stringBuilder.ToString();
+        frontText.ForceMeshUpdate();
 
         // Resize the panel based on the text
-        Vector2 scale = textMesh.GetRenderedValues();
+        Vector2 scale = frontText.GetRenderedValues();
         scale.x = scale.x / 2 + 0.01f;
         scale.y = scale.y / 2 + 0.01f;
         panel.transform.localScale = new Vector3(scale.x, scale.y, 0.01f);
 
         panel.transform.localPosition = new Vector3(scale.x / 2 + 0.01f, scale.y / 2 + 0.01f, 0);
-        textMesh.transform.localPosition = new Vector3(0.01f, scale.y + 0.01f, -0.008f);
+        frontText.transform.localPosition = new Vector3(0.01f, scale.y + 0.01f, -0.008f);
+
+        // Set the text and position the back
+        backText.text = stringBuilder.ToString();
+        backText.ForceMeshUpdate();
+        backText.transform.localPosition = new Vector3(scale.x + 0.01f, scale.y + 0.01f, 0.008f);
     }
 }

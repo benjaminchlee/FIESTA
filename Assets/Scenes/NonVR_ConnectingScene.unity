@@ -164,22 +164,32 @@ PrefabInstance:
     - target: {fileID: 114698335315357420, guid: 8b86b4a49b37d7a44b8ff94c41927b3d,
         type: 3}
       propertyPath: viewIdField
-      value: 3
+      value: 99
       objectReference: {fileID: 0}
     - target: {fileID: 114698335315357420, guid: 8b86b4a49b37d7a44b8ff94c41927b3d,
         type: 3}
       propertyPath: instantiationId
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 114698335315357420, guid: 8b86b4a49b37d7a44b8ff94c41927b3d,
+        type: 3}
+      propertyPath: InstantiationId
+      value: 99
+      objectReference: {fileID: 0}
     - target: {fileID: 114833028141161268, guid: 8b86b4a49b37d7a44b8ff94c41927b3d,
         type: 3}
       propertyPath: viewIdField
-      value: 2
+      value: 98
       objectReference: {fileID: 0}
     - target: {fileID: 114833028141161268, guid: 8b86b4a49b37d7a44b8ff94c41927b3d,
         type: 3}
       propertyPath: instantiationId
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 114833028141161268, guid: 8b86b4a49b37d7a44b8ff94c41927b3d,
+        type: 3}
+      propertyPath: InstantiationId
+      value: 98
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8b86b4a49b37d7a44b8ff94c41927b3d, type: 3}
@@ -300,8 +310,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 642757e5fb114ae49b5ace44dba12c7e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MaxPlayersPerRoom: 4
-  Loglevel: 0
+  maxPlayersPerRoom: 4
+  loglevel: 1
+  sendRate: 20
 --- !u!114 &802063917
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -314,20 +325,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ownerId: 0
-  group: 0
-  OwnerShipWasTransfered: 0
-  prefixBackup: -1
-  synchronization: 0
-  onSerializeTransformOption: 3
-  onSerializeRigidBodyOption: 2
-  ownershipTransfer: 0
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 0
+  OwnershipTransfer: 0
   ObservedComponents:
   - {fileID: 0}
-  ObservedComponentsFoldoutOpen: 1
   viewIdField: 5
-  instantiationId: 5
-  currentMasterID: -1
+  InstantiationId: 5
   isRuntimeInstantiated: 0
 --- !u!4 &802063918
 Transform:
@@ -938,6 +944,7 @@ MonoBehaviour:
   avatarSkinColor: {r: 0, g: 0, b: 0, a: 1}
   avatarHeadsetColor: {r: 0, g: 0, b: 0, a: 1}
   avatarShirtColor: {r: 0, g: 0, b: 0, a: 1}
+  privateBrushColor: {r: 0, g: 0, b: 0, a: 0}
   sharedBrushColor: {r: 0, g: 0, b: 0, a: 1}
   spawnVRAvatar: 0
   spawnKBMAvatar: 1

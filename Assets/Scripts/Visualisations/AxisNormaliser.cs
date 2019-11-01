@@ -106,7 +106,7 @@ public class AxisNormaliser : MonoBehaviour {
 
     private void NormaliserGrabbed(object sender, InteractableObjectEventArgs e)
     {
-        DataLogger.Instance.LogActionData(parentChart, parentChart.photonView.Owner, "Vis Normalise Start");
+        DataLogger.Instance.LogActionData(parentChart, parentChart.OriginalOwner, parentChart.photonView.Owner, "Vis Normalise start", parentChart.ID);
     }
 
     private void NormaliserUngrabbed(object sender, InteractableObjectEventArgs e)
@@ -114,7 +114,7 @@ public class AxisNormaliser : MonoBehaviour {
         transform.localPosition = storedPosition;
         transform.localRotation = storedRotation;
 
-        DataLogger.Instance.LogActionData(parentChart, parentChart.photonView.Owner, "Vis Normalise End");
+        DataLogger.Instance.LogActionData(parentChart, parentChart.OriginalOwner, parentChart.photonView.Owner, "Vis Normalise end", parentChart.ID);
     }
 
     //public void OnEnter(WandController controller)

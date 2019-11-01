@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 6568866885483782845}
   - component: {fileID: 6568866885483782846}
   - component: {fileID: 6568866885483782847}
-  - component: {fileID: 6568866885483782844}
   m_Layer: 0
   m_Name: Cylinder
   m_TagString: Untagged
@@ -79,20 +78,6 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!136 &6568866885483782844
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6568866885483782818}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  m_Radius: 0.5000001
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
 --- !u!1 &6568866885662526793
 GameObject:
   m_ObjectHideFlags: 0
@@ -104,7 +89,6 @@ GameObject:
   - component: {fileID: 6568866885662526792}
   - component: {fileID: 6568866885662526789}
   - component: {fileID: 6568866885662526794}
-  - component: {fileID: 6568866885662526795}
   m_Layer: 0
   m_Name: Sphere
   m_TagString: Untagged
@@ -171,19 +155,6 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!135 &6568866885662526795
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6568866885662526793}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &6568866885850064482
 GameObject:
   m_ObjectHideFlags: 0
@@ -195,6 +166,7 @@ GameObject:
   - component: {fileID: 6568866885850064511}
   - component: {fileID: 6568866885850064508}
   - component: {fileID: 6568866885850064509}
+  - component: {fileID: 2912527009259542278}
   m_Layer: 0
   m_Name: Stick3D
   m_TagString: Untagged
@@ -232,10 +204,10 @@ MonoBehaviour:
   ObservedComponentsFoldoutOpen: 1
   Group: 0
   prefixField: -1
-  Synchronization: 0
+  Synchronization: 3
   OwnershipTransfer: 0
   ObservedComponents:
-  - {fileID: 0}
+  - {fileID: 6568866885850064509}
   viewIdField: 0
   InstantiationId: 1
   isRuntimeInstantiated: 0
@@ -259,3 +231,17 @@ MonoBehaviour:
   angularVelocity: 1
   useLocalValues: 0
   onChangeOnly: 1
+--- !u!114 &2912527009259542278
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6568866885850064482}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18c80258340442e4ea7cecb26afa4809, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stick: {fileID: 6568866885483782845}
+  stickSphere: {fileID: 6568866885662526793}

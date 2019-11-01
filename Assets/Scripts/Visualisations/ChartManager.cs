@@ -73,30 +73,7 @@ public class ChartManager : MonoBehaviour {
 
             Vector3 pos;
             Quaternion rot;
-
-            //switch (id)
-            //{
-            //    case 1:
-            //        pos = new Vector3(1f, 1.5f, 0f);
-            //        rot = Quaternion.Euler(0f, 90f, 0f);
-            //        break;
-
-            //    case 2:
-            //        pos = new Vector3(0f, 1.5f, -1f);
-            //        rot = Quaternion.Euler(0f, 180f, 0f);
-            //        break;
-
-            //    case 3:
-            //        pos = new Vector3(-1f, 1.5f, 0f);
-            //        rot = Quaternion.Euler(0f, -90f, 0f);
-            //        break;
-
-            //    default:
-            //        pos = headset.TransformPoint(Vector3.forward * 0.5f);
-            //        rot = headset.rotation;
-            //        break;
-            //}
-
+            
             pos = headset.TransformPoint(Vector3.forward * 0.5f);
             Vector3 euler = headset.eulerAngles;
             euler.x = 0;
@@ -123,22 +100,16 @@ public class ChartManager : MonoBehaviour {
     {
         GameObject vis;
         Chart chart;
-
-        if (PhotonNetwork.IsConnected)
-        {
-            vis = PhotonNetwork.Instantiate("Chart", Vector3.zero, Quaternion.identity, 0);
-            vis.name = name;
-            chart = vis.GetComponent<Chart>();
-        }
-        else
-        {
-            vis = new GameObject(name);
-            chart = vis.AddComponent<Chart>();
-        }
+        
+        vis = PhotonNetwork.Instantiate("Chart", Vector3.zero, Quaternion.identity, 0);
+        vis.name = name;
+        chart = vis.GetComponent<Chart>();
 
         chart.DataSource = DataSource;
+        chart.ID = Guid.NewGuid().ToString();
+
         RegisterVisualisation(chart);
-               
+        
         return chart;
     }
 
@@ -178,11 +149,12 @@ public class ChartManager : MonoBehaviour {
         if (dupe.AttributeFilters[0].minScale > 0.001f || dupe.AttributeFilters[0].maxScale < 0.999f)
             chart.AttributeFilters = dupe.AttributeFilters;
         chart.ResizeHandleVisibility = true;
+        chart.ID = Guid.NewGuid().ToString();
 
         vis.transform.position = dupe.transform.position;
         vis.transform.rotation = dupe.transform.rotation;
         vis.transform.localScale = dupe.transform.localScale;
-
+        
         RegisterVisualisation(chart);
 
         return chart;

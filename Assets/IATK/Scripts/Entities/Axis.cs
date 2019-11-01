@@ -154,31 +154,35 @@ public class Axis : MonoBehaviour {
         {
             case 1:
                 transform.localEulerAngles = new Vector3(0, 0, -90);
-                SetXPos(axisValueLabels.transform, 1);
+
+                // Set axis labels rotation
                 foreach (TextMeshPro tmp in axisValueLabels.transform.GetComponentsInChildren<TextMeshPro>(true))
                 {
+                    tmp.GetComponent<RectTransform>().pivot = new Vector2(0, 0.5f);
                     tmp.alignment = TextAlignmentOptions.MidlineLeft;
                 }
+                SetXPos(axisValueLabels.transform, 0);
+
                 SetXPos(label.transform, 1);
                 label.alignment = TextAlignmentOptions.Top;  
                 break;
             case 2:
                 transform.localEulerAngles = new Vector3(0, 0, 0);
-                SetXPos(minNormaliserObject, -0.054f);
-                SetXPos(maxNormaliserObject, -0.054f);
+                SetXPos(minNormaliserObject, -0.03f);
+                SetXPos(maxNormaliserObject, -0.03f);
                 minNormaliserObject.localEulerAngles = new Vector3(90, 90, 0);
                 maxNormaliserObject.localEulerAngles = new Vector3(90, 90, 0);
                 break;
             case 3:
                 transform.localEulerAngles = new Vector3(90, 0, 0);
-                SetXPos(minNormaliserObject, -0.054f);
-                SetXPos(maxNormaliserObject, -0.054f);
+                SetXPos(minNormaliserObject, -0.03f);
+                SetXPos(maxNormaliserObject, -0.03f);
                 minNormaliserObject.localEulerAngles = new Vector3(90, 90, 0);
                 maxNormaliserObject.localEulerAngles = new Vector3(90, 90, 0);
                 break;
             default:
-                SetXPos(minNormaliserObject, -0.054f);
-                SetXPos(maxNormaliserObject, -0.054f);
+                SetXPos(minNormaliserObject, -0.03f);
+                SetXPos(maxNormaliserObject, -0.03f);
                 minNormaliserObject.localEulerAngles = new Vector3(90, 90, 0);
                 maxNormaliserObject.localEulerAngles = new Vector3(90, 90, 0);
                 break;

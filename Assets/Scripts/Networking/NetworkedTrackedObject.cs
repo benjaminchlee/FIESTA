@@ -20,6 +20,28 @@ public class NetworkedTrackedObject : MonoBehaviourPunCallbacks {
         }
     }
 
+    public void Show(bool onlyOnOthers = false)
+    {
+        photonView.RPC("ShowRPC", onlyOnOthers ? RpcTarget.Others : RpcTarget.All);
+    }
+
+    [PunRPC]
+    private void ShowRPC()
+    {
+        renderer.enabled = true;
+    }
+
+    public void Hide(bool onlyOnOthers = false)
+    {
+        photonView.RPC("HideRPC", onlyOnOthers ? RpcTarget.Others : RpcTarget.All);
+    }
+
+    [PunRPC]
+    private void HideRPC()
+    {
+        renderer.enabled = false;
+    }
+
     public void SetColor(Color col)
     {
         photonView.RPC("PropagateSetColor", RpcTarget.AllBuffered, col);

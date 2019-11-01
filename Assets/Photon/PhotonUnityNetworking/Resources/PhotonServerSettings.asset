@@ -19,7 +19,7 @@ MonoBehaviour:
     AppVersion: 
     UseNameServer: 0
     FixedRegion: 
-    Server: 192.168.0.100
+    Server: 127.0.0.1
     Port: 5055
     Protocol: 0
     EnableLobbyStatistics: 0
@@ -105,5 +105,15 @@ MonoBehaviour:
   - CreateLine
   - DestroyLine
   - UpdateMesh
+  - InitialiseMarkerColor
+  - InitialiseEraserColor
+  - PropagateID
+  - Disable3DStickRPC
+  - Enable3DStickRPC
+  - HideRPC
+  - ShowRPC
+  - SendParticipantNumberRPC
+  - SetLineIDRPC
+  - StopBeingDrawnRPC
   DisableAutoOpenWizard: 1
   ShowSettings: 1

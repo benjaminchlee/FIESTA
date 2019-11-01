@@ -448,7 +448,7 @@ namespace IATK
                     else if (visualisationReference.xDimension.Attribute != "Undefined")
                     {
                         Vector3 pos = Vector3.zero;
-                        pos.y = -0.05f;
+                        pos.y = -0.02f;
                         X_AXIS = CreateAxis(propertyType, visualisationReference.xDimension, pos, new Vector3(0f, 0f, 0f), 0);   
                         
                     }
@@ -467,7 +467,7 @@ namespace IATK
                     else if (visualisationReference.yDimension.Attribute != "Undefined")
                     {
                         Vector3 pos = Vector3.zero;
-                        pos.x = -0.05f;
+                        pos.x = -0.02f;
                         Y_AXIS = CreateAxis(propertyType, visualisationReference.yDimension, pos, new Vector3(0f, 0f, 0f), 1);
                     }
                     break;
@@ -485,8 +485,8 @@ namespace IATK
                     else if (visualisationReference.zDimension.Attribute != "Undefined")
                     {
                         Vector3 pos = Vector3.zero;
-                        pos.y = -0.05f;
-                        pos.x = -0.05f;
+                        pos.y = -0.02f;
+                        pos.x = -0.02f;
                         Z_AXIS = CreateAxis(propertyType, visualisationReference.zDimension, pos, new Vector3(90f, 0f, 0f), 2);
                     }
                     break;

@@ -43,6 +43,9 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     [SerializeField] [Tooltip("The maximum size of the ranged brush.")]
     private float rangedBrushMax = 0.1f;
 
+    private GameObject stickSphere;
+    private PointerCustomisation pointerCustomisation;
+
     private GameObject rangedBrush;
     private float angle;
 
@@ -72,6 +75,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     private NetworkedDetailsOnDemandLabel networkedDetailsOnDemandLabel;
 
     private VRTK_ControllerEvents controllerEvents;
+    private VRTK_InteractGrab interactGrab;
     private VRTK_Pointer vrtkPointer;
     //private GameObject screen;
     //private GameObject chart;
@@ -166,6 +170,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         controllerEvents.ButtonTwoPressed += ControllerEvents_ButtonTwoPressed;
         controllerEvents.ButtonOnePressed += ControllerEvents_ButtonOnePressed;
 
+        interactGrab = GetComponent<VRTK_InteractGrab>();
+
         vrtkPointer = GetComponent<VRTK_Pointer>();
         vrtkPointer.DestinationMarkerEnter += VrtkPointer_DestinationMarkerEnter;
         vrtkPointer.pointerRenderer.GetPointerObjects();
@@ -243,6 +249,15 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             GameObject dodlbl = PhotonNetwork.Instantiate("NetworkedDetailsOnDemandLabel", Vector3.zero, Quaternion.identity, 0);
             networkedDetailsOnDemandLabel = dodlbl.GetComponent<NetworkedDetailsOnDemandLabel>();
             networkedDetailsOnDemandLabel.ToggleState(false);
+
+            // Instantiate 3D stick
+            GameObject stick = PhotonNetwork.Instantiate("Stick3D", Vector3.zero, Quaternion.identity, 0);
+            stick.transform.SetParent(transform);
+            stick.transform.localPosition = new Vector3(0.0105f, -0.0046f, 0.0784f);
+            stick.transform.localEulerAngles = new Vector3(91.948f, 28.175f, 30.463f);
+            pointerCustomisation = stick.GetComponent<PointerCustomisation>();
+            stickSphere = pointerCustomisation.stickSphere;
+            pointerCustomisation.Disable3DStick();
         }
     }
 
@@ -280,8 +295,11 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
     public void InteractionToolChanged(string interactionType)
     {
         // Only change the tool that is used if the active state is a default one
-        if (!IsInteracting())
+        //if (!IsInteracting())
+        if (true)
         {
+            Debug.Log("Tool changed to " + interactionType);
+
             switch (interactionType.ToLower())
             {
                 case "none":
@@ -337,26 +355,26 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             // If tool is being enabled
             if (activeState == InteractionState.None && IsInteractionTool(state))
             {
-                DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, state + " start");
+                DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, PhotonNetwork.LocalPlayer, state + " start");
             }
 
             // If tool is being swapped
             if (IsInteractionTool(activeState) && IsInteractionTool(state))
             {
-                DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, activeState + " end");
-                DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, state + " start");
+                DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, PhotonNetwork.LocalPlayer, activeState + " end");
+                DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, PhotonNetwork.LocalPlayer, state + " start");
             }
 
             // If tool is being removed
             else if (IsInteractionTool(activeState) && state == InteractionState.None)
             {
-                DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, activeState + " end");
+                DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, PhotonNetwork.LocalPlayer, activeState + " end");
             }
 
             // If was ranged pulling and pull was finished
             else if (activeState == InteractionState.RangedPulling && state == InteractionState.None)
             {
-                DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, InteractionState.RangedInteraction + " end");
+                DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, PhotonNetwork.LocalPlayer, InteractionState.RangedInteraction + " end");
             }
 
         }
@@ -368,16 +386,19 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 selectedInteractionRenderer.Sprite = null;
                 tracerVisibility = VisibilityStates.AlwaysOff;
                 selectionMode = SelectionMode.None;
+                interactGrab.enabled = true;
                 break;
 
             case InteractionState.RangedPrivateBrush:
                 selectedInteractionRenderer.Sprite = privateBrushSprite;
                 tracerVisibility = VisibilityStates.AlwaysOn;
+                interactGrab.enabled = false;
                 break;
 
             case InteractionState.RangedSharedBrush:
                 selectedInteractionRenderer.Sprite = sharedBrushSprite;
                 tracerVisibility = VisibilityStates.AlwaysOn;
+                interactGrab.enabled = false;
                 break;
 
             case InteractionState.RangedBrushing:
@@ -386,12 +407,17 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             case InteractionState.RangedInteraction:
                 selectedInteractionRenderer.Sprite = rangedInteractionSprite;
                 tracerVisibility = VisibilityStates.AlwaysOn;
+                SetPointerOpacityOne();
+                Toggle3DstickOff();
+                interactGrab.enabled = true;
                 break;
 
             case InteractionState.RangedInteracting:
+                interactGrab.enabled = true;
                 break;
 
             case InteractionState.RangedPulling:
+                interactGrab.enabled = true;
                 break;
         }
 
@@ -498,6 +524,11 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         }
 
         isTriggerClicked = false;
+
+        if (!isDetailsOnDemandActive)
+        {
+            Toggle3DstickOff();
+        }
     }
 
     private void OnGripStart(object sender, ControllerInteractionEventArgs e)
@@ -534,6 +565,11 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                     RangedPullTriggerEnd(e);
                     break;
             }
+        }
+
+        if (!isDetailsOnDemandActive)
+        {
+            Toggle3DstickOff();
         }
     }
 
@@ -579,6 +615,11 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         {
             RangedInteractionTriggerEnd(e);
         }
+
+        if (activeState == InteractionState.None)
+        {
+            Toggle3DstickOff();
+        }
     }
 
     private void Update()
@@ -608,7 +649,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 {
                     isDetailsOnDemandActive = true;
 
-                    DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, "Details on demand start");
+                    DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, PhotonNetwork.LocalPlayer, "Details-on-Demand start");
                 }
 
                 if (!IsInteractionToolActive())
@@ -619,110 +660,44 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 }
 
                 RaycastHit hit;
-                GameObject collidedObject = GetCollidedObject(out hit);
+                GameObject collidedObject = GetCollidedObjectClipped(out hit);
 
                 if (collidedObject != null && collidedObject.CompareTag("ChartRaycastCollider"))
                 {
-                    //brushingInput1.position = hit.point;
                     brushingAndLinking.inspectButtonController = true;
-                    visualisationToInspect = collidedObject.GetComponentInParent<Chart>().Visualisation;
+                    Chart chart = collidedObject.GetComponentInParent<Chart>();
+                    visualisationToInspect = chart.Visualisation;
                     brushingAndLinking.visualisationToInspect = visualisationToInspect;
                     brushingAndLinking.radiusInspector = 0.2f;
 
-                    //Debug.Log("Vis name: " + visualisationToInspect.name);
-                    if (visualisationToInspect.transform.childCount == 5)
+                    if (chart.Is3D)
                     {
-                        //Debug.Log("This is a 3d visualisation!");
-                        //cursorVisibility = VisibilityStates.OnWhenActive;
-                        //maximumLength = 0.08f;
-                        //cursorScaleMultiplier = 5f;
-
-                        //Vector3 cursorPosition = vrtkPointer.pointerRenderer.GetPointerObjects()[1].transform.position;
-                        //Debug.Log("cursor position: " + cursorPosition);
-
-                        //brushingInput1.position = visualisationToInspect.transform.InverseTransformPoint(cursorPosition);
-                        //Debug.Log("brushingInput1.position " + brushingInput1.position);
-
-                        //isChecking3D = true;
-
-
-                        // show 3d inspection stick
                         Toggle3DstickOn();
-
-                        // hide pointer
                         SetPointerOpacityZero();
-
-                        //isChecking3D = true;
-
-                        // set the stick position as the brushing input
-                        if (GameObject.Find("Stick3D").gameObject != null)
-                        {
-                            Debug.Log("Result: " + GameObject.Find("Stick3D").gameObject != null);
-                            Vector3 threedStickPosition = GameObject.Find("StickSphere").transform.position;
-                            brushingInput1.position = threedStickPosition;
-
-                            Debug.Log(" 3d vis details on demand executing!!");
-                        }
+                        brushingInput1.position = stickSphere.transform.position;
+                        _3DDOD = true;
                     }
                     else
                     {
-                        //Debug.Log("This is a 2d visualisation!");
-                        //cursorVisibility = VisibilityStates.AlwaysOff;
-                        //maximumLength = 100f;
-                        //cursorScaleMultiplier = 25f;
-
-                        // set brushing input
-                        brushingInput1.position = hit.point;
-
-                        // disable 3d stick
                         Toggle3DstickOff();
-
-                        // show pointer
                         SetPointerOpacityOne();
-
-                        //isChecking3D = false;
-
-                        Debug.Log(" 2d vis details on demand executing!!");
+                        brushingInput1.position = hit.point;
+                        _3DDOD = false;
                     }
-                    
                 }
                 else
                 {
-                    // let's search for any visualisation 50cm away from the controller
-                    Visualisation[] vizList = Resources.FindObjectsOfTypeAll(typeof(Visualisation)) as Visualisation[];
-
-                    //Vector3 rightControllerPosition = GameObject.Find("Controller (right)").transform.position;
-
-                    Vector3 threedStickPosition = GameObject.Find("StickSphere").transform.position;
-
-                    float distance = .5f;
-                    foreach (var item in vizList)
-                    {
-                        //if we are within .5m of a 3d viz
-                        if (Vector3.Distance(item.transform.position, threedStickPosition) < distance)
-                        {
-                            // >> TOOD Xiaoyun: look if 3D viz
-                            if (item.transform.childCount == 5)
-                            {
-                                brushingInput1.position = threedStickPosition;// hit.point;
-                                brushingAndLinking.inspectButtonController = true;
-                                visualisationToInspect = item;
-                                brushingAndLinking.visualisationToInspect = visualisationToInspect;
-                                brushingAndLinking.radiusInspector = 0.2f;
-                                _3DDOD = true;
-                                Debug.Log(" .......3d vis details on demand executing.......");
-                                break;
-                            }    
-                        }
-                    }
-
-                 }
+                    Toggle3DstickOff();
+                    SetPointerOpacityOne();
+                    brushingInput1.position = hit.point;
+                    _3DDOD = false;
+                }
             }
             else if (!isTouchpadDown && isDetailsOnDemandActive)
             {
                 isDetailsOnDemandActive = false;
 
-                DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, "Details on demand end");
+                DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, PhotonNetwork.LocalPlayer, "Details-on-Demand end");
 
                 if (!IsInteractionToolActive())
                 {
@@ -737,6 +712,22 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 _3DDOD = false;
             }
         }
+
+        //// Disable 3d stick while writing
+        //if (interactGrab.GetGrabbedObject() != null)
+        //{
+        //    Toggle3DstickOff();
+        //}
+
+        //GameObject[] markerList = GameObject.FindGameObjectsWithTag("Marker");
+
+        //foreach ( GameObject marker in markerList)
+        //{
+        //    //Debug.Log("Marker is grabbed: " + marker.GetComponent<VRTK_InteractableObject>().IsGrabbed());
+
+        //    if (marker.GetComponent< VRTK_InteractableObject>().IsGrabbed())
+        //        Toggle3DstickOff();
+        //}
     }
 
     protected override void FixedUpdate()
@@ -769,13 +760,13 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         {
             brushingAndLinking.SELECTION_TYPE = BrushingAndLinking.SelectionType.ADDITIVE;
 
-            DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, brushingAndLinking.shareBrushing ? "Shared additive brush start" : "Private additive brush start");
+            DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, PhotonNetwork.LocalPlayer, brushingAndLinking.shareBrushing ? "Shared Additive Brush start" : "Private Additive Brush start");
         }
         else if (IsDeselecting)
         {
             brushingAndLinking.SELECTION_TYPE = BrushingAndLinking.SelectionType.SUBTRACTIVE;
 
-            DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, brushingAndLinking.shareBrushing ? "Shared subtractive brush start" : "Private subtractive brush start");
+            DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, PhotonNetwork.LocalPlayer, brushingAndLinking.shareBrushing ? "Shared Subtractive Brush start" : "Private Subtractive Brush start");
         }
 
         RangedToolActivated.Invoke();
@@ -786,33 +777,43 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         brushingAndLinking.radiusSphere = rangedBrush.transform.lossyScale.x / 2;
 
         RaycastHit hit;
-        GameObject collidedObject = GetCollidedObject(out hit);
-        if (collidedObject != null)
+        GameObject collidedObject = GetCollidedObjectClipped(out hit);
+        if (collidedObject != null && collidedObject.GetComponentInParent<Chart>() != null)
         {
             if (!rangedBrush.activeSelf)
                 rangedBrush.SetActive(true);
-
-            if (collidedObject.GetComponentInParent<Chart>().Visualisation.transform.childCount == 5)
+            
+            if (collidedObject.GetComponentInParent<Chart>().Is3D)
             {
                 Toggle3DstickOn();
                 SetPointerOpacityZero();
 
-                Vector3 stickPosition = GameObject.Find("StickSphere").transform.position;
+                Vector3 stickPosition = stickSphere.transform.position;
                 rangedBrush.transform.position = stickPosition;
                 brushingInput1.position = stickPosition;
             }
             else
             {
+                Toggle3DstickOff();
+                SetPointerOpacityOne();
+
                 rangedBrush.transform.position = hit.point;
                 brushingInput1.position = hit.point;
             }
-                
+
             brushingAndLinking.brushEnabled = true;
 
             TriggerControllerVibration(0.025f);
         }
-    else
+        else
         {
+            Toggle3DstickOff();
+            SetPointerOpacityOne();
+
+            rangedBrush.transform.position = hit.point;
+            brushingInput1.position = hit.point;
+
+            /*
             if (isTriggerClicked)
             {
                 if (!rangedBrush.activeSelf)
@@ -821,7 +822,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 Toggle3DstickOn();
                 SetPointerOpacityZero();
 
-                Vector3 stickPosition = GameObject.Find("StickSphere").transform.position;
+                Vector3 stickPosition = stickSphere.transform.position;
                 rangedBrush.transform.position = stickPosition;
                 brushingInput1.position = stickPosition;
 
@@ -837,6 +838,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 Toggle3DstickOff();
                 SetPointerOpacityOne();
             }
+            */
         }
 
         if (IsValidCollision())
@@ -855,14 +857,14 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
         if (IsSelecting)
         {
-            DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, brushingAndLinking.shareBrushing ? "Shared additive brush end" : "Private additive brush end");
+            DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, PhotonNetwork.LocalPlayer, brushingAndLinking.shareBrushing ? "Shared Additive Brush end" : "Private Additive Brush end");
         }
         else if (IsDeselecting)
         {
-            DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, brushingAndLinking.shareBrushing ? "Shared subtractive brush end" : "Private subtractive brush end");
+            DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, PhotonNetwork.LocalPlayer, brushingAndLinking.shareBrushing ? "Shared Subtractive Brush end" : "Private Subtractive Brush end");
         }
 
-        RangedToolDeactivated.Invoke();;
+        RangedToolDeactivated.Invoke();
     }
     
     private void RangedInteractionTriggerStart(ControllerInteractionEventArgs e)
@@ -922,7 +924,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 previousState = activeState;
                 SetInteractionState(InteractionState.RangedInteracting);
 
-                DataLogger.Instance.LogActionData(GetPhysicsMenuButtonType(rangedPullGameObject), rangedPullGameObject.GetComponentInParent<Panel>().OriginalOwner, rangedPullGameObject.name + " ranged drag start");
+                DataLogger.Instance.LogActionData(GetPhysicsMenuButtonType(rangedPullGameObject), rangedPullGameObject.GetComponentInParent<Panel>().OriginalOwner, rangedPullGameObject.GetComponentInParent<PhotonView>().Owner, rangedPullGameObject.name + " Ranged Drag start");
                 RangedToolActivated.Invoke();
             }
         }
@@ -930,6 +932,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
     private void RangedInteractionLoop()
     {
+        SetPointerOpacityOne();
+
         if (isPullable)
         {
             float distance = Vector3.Distance(rangedPullControllerStartPosition, transform.position);
@@ -949,10 +953,10 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                     Chart chart = ChartManager.Instance.DuplicateVisualisation(rangedPullGameObject.GetComponent<Chart>());
                     rangedPullGameObject = chart.gameObject;
 
-                    DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, "Vis range duplicated");
+                    DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, PhotonNetwork.LocalPlayer, "Vis range duplicated");
                 }
 
-                DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, "Vis range pull start");
+                DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, PhotonNetwork.LocalPlayer, "Vis range pull start");
             }
         }
 
@@ -971,7 +975,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         {
             rangedPullGameObject.layer = LayerMask.NameToLayer("Default");
 
-            DataLogger.Instance.LogActionData(GetPhysicsMenuButtonType(rangedPullGameObject), rangedPullGameObject.GetComponentInParent<Panel>().OriginalOwner, rangedPullGameObject.name + " ranged drag end");
+            DataLogger.Instance.LogActionData(GetPhysicsMenuButtonType(rangedPullGameObject), rangedPullGameObject.GetComponentInParent<Panel>().OriginalOwner, rangedPullGameObject.GetComponentInParent<PhotonView>().Owner, rangedPullGameObject.name + " Ranged Drag end");
             RangedToolDeactivated.Invoke();
 
             rangedPullGameObject = null;
@@ -1003,7 +1007,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             GetComponent<VRTK_InteractTouch>().ForceTouch(rangedPullGameObject);
             GetComponent<VRTK_InteractGrab>().AttemptGrab();
             
-            DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, "Vis range pull end");
+            DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, PhotonNetwork.LocalPlayer, "Vis Range Pull end");
             RangedToolDeactivated.Invoke();
         }
         else
@@ -1031,17 +1035,17 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         
         rangedPullGameObject.GetComponent<Chart>().AnimateTowards(rangedPullObjectStartPosition, rangedPullObjectStartRotation, 0.1f, pullObjectIsPrototype);
 
-        DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, "Vis range pull end");
+        DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, PhotonNetwork.LocalPlayer, "Vis Range Pull end");
         RangedToolDeactivated.Invoke();
 
         if (pullObjectIsPrototype)
-            DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, "Vis range destroyed");
+            DataLogger.Instance.LogActionData(this, PhotonNetwork.LocalPlayer, PhotonNetwork.LocalPlayer, "Vis Range destroyed");
     }
     
     private void DetailsOnDemandUpdated(List<float> nearestDistances)
     {
         RaycastHit hit;
-        GameObject collidedObject = GetCollidedObject(out hit);
+        GameObject collidedObject = GetCollidedObjectClipped(out hit);
 
         // Check if still pointing at a chart
         if ((collidedObject != null && collidedObject.CompareTag("ChartRaycastCollider")) || _3DDOD)
@@ -1104,9 +1108,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 //}
                 if (_3DDOD)
                 {
-                    networkedDetailsOnDemandLabel.transform.position = (GameObject.Find("StickSphere").transform.position);
-                    
-                    networkedDetailsOnDemandLabel.transform.rotation = visualisationToInspect.transform.rotation;
+                    networkedDetailsOnDemandLabel.transform.position = stickSphere.transform.position;
+                    networkedDetailsOnDemandLabel.transform.rotation = Quaternion.LookRotation(stickSphere.transform.position - Camera.main.transform.position, Vector3.up);
                     networkedDetailsOnDemandLabel.ToggleState(true);
                     networkedDetailsOnDemandLabel.SetText(nearestIndices, visualisationToInspect);
                     networkedDetailsOnDemandLabel.SetLinePosition(worldPos);
@@ -1171,6 +1174,38 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             return null;
     }
 
+    private GameObject GetCollidedObjectClipped(out RaycastHit pointerCollidedWith)
+    {
+        Transform origin = GetOrigin();
+        
+        RaycastHit[] raycasthits = Physics.SphereCastAll(origin.position, 0.01f, origin.forward);
+
+        
+        if (raycasthits.Length > 0)
+        {
+            // Get hit with minimum distance
+            float min = Mathf.Infinity;
+            RaycastHit minHit = raycasthits[0];
+
+            foreach (var hit in raycasthits)
+            {
+                if (hit.distance < min)
+                {
+                    min = hit.distance;
+                    minHit = hit;
+                }
+            }
+
+            pointerCollidedWith = minHit;
+            return minHit.collider.gameObject;
+        }
+        else
+        {
+            pointerCollidedWith = new RaycastHit();
+            return null;
+        }
+    }
+
     // Checks if a point is within a specified polygon that is defined by an array of points
     public bool ContainsPoint(Vector2[] polygon, Vector2 point)
     {
@@ -1217,15 +1252,18 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
     private void Toggle3DstickOn()
     {
-        // show 3d inspection stick
-        transform.parent.Find("Model").GetComponent<PointerCustomisation>().showStickFlag = true;
+        if (pointerCustomisation != null)
+        {
+            pointerCustomisation.Enable3DStick();
+        }
     }
 
     private void Toggle3DstickOff()
     {
-        // disable 3d inspection stick
-        transform.parent.Find("Model").GetComponent<PointerCustomisation>().showStickFlag = false;
-
+        if (pointerCustomisation != null)
+        {
+            pointerCustomisation.Disable3DStick();
+        }
     }
 
     private void SetPointerOpacityZero()
@@ -1238,6 +1276,8 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         Color trans2 = invalidCollisionColor;
         trans2.a = 0;
         invalidCollisionColor = trans2;
+
+        networkedTracer.Hide(true);
     }
 
     private void SetPointerOpacityOne()
@@ -1250,5 +1290,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         Color trans2 = invalidCollisionColor;
         trans2.a = 1;
         invalidCollisionColor = trans2;
+
+        networkedTracer.Show(true);
     }
 }

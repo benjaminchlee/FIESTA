@@ -63,14 +63,14 @@ public class PanelSlider : MonoBehaviour {
 
     private void OnSliderGrabbed(object sender, InteractableObjectEventArgs e)
     {
-        DataLogger.Instance.LogActionData(this, GetComponentInParent<Panel>().OriginalOwner, gameObject.name + " drag start");
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Panel>().OriginalOwner, GetComponentInParent<Panel>().OriginalOwner, gameObject.name + " Drag start");
     }
 
     private void OnSliderUngrabbed(object sender, InteractableObjectEventArgs e)
     {
         physicsSlider.SetValue(physicsSlider.GetValue());
 
-        DataLogger.Instance.LogActionData(this, GetComponentInParent<Panel>().OriginalOwner, gameObject.name + " drag end");
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Panel>().OriginalOwner, GetComponentInParent<Panel>().OriginalOwner, gameObject.name + " Drag end");
     }
 
     private void OnSliderValueChanged(object sender, ControllableEventArgs e)

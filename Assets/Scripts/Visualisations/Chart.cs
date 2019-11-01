@@ -28,14 +28,13 @@ public class Chart : MonoBehaviourPunCallbacks
     [SerializeField]
     private VRTK_InteractableObject interactableObject;
     [SerializeField]
-    private VRTK_InteractableObject topLeftInteractableHandle;
+    private VRTK_InteractableObject xAxisHandle;
     [SerializeField]
-    private VRTK_InteractableObject bottomRightInteractableHandle;
-
-    //NEW: Resizing handler for zAxis
+    private VRTK_InteractableObject yAxisHandle;
     [SerializeField]
-    private VRTK_InteractableObject depthInteractableHandle;
-
+    private VRTK_InteractableObject zAxisHandle;
+    [SerializeField]
+    private float axisOffset = 0.05f;
 
     private Chart[,] splomCharts;  // Stored as 2D array
     private List<Chart> subCharts;  // Stored as 1D array
@@ -58,6 +57,9 @@ public class Chart : MonoBehaviourPunCallbacks
 
     private TableSnapToSurface tableSurface;
     private bool isTouchingTable = false;
+
+    private string id;
+    public Photon.Realtime.Player OriginalOwner { get; private set; }
 
     #region VisualisationProperties
 
@@ -175,6 +177,7 @@ public class Chart : MonoBehaviourPunCallbacks
                 {
                     chart.XDimension = value;
                 }
+                AdjustAndUpdateFacet();
                 break;
         }
 
@@ -214,6 +217,7 @@ public class Chart : MonoBehaviourPunCallbacks
                 {
                     chart.YDimension = value;
                 }
+                AdjustAndUpdateFacet();
                 break;
         }
 
@@ -253,6 +257,7 @@ public class Chart : MonoBehaviourPunCallbacks
                 {
                     chart.ZDimension = value;
                 }
+                AdjustAndUpdateFacet();
                 break;
         }
 
@@ -1137,12 +1142,12 @@ public class Chart : MonoBehaviourPunCallbacks
     {
         resizeHandleVisibility = value;
 
-        topLeftInteractableHandle.gameObject.SetActive(value);
-        bottomRightInteractableHandle.gameObject.SetActive(value);
+        yAxisHandle.gameObject.SetActive(value);
+        xAxisHandle.gameObject.SetActive(value);
 
         // Set the handler of the 3rd axis active only when it's 3d vis
         if (ZDimension != "Undefined") {
-            depthInteractableHandle.gameObject.SetActive(value);
+            zAxisHandle.gameObject.SetActive(value);
         }
     }
 
@@ -1165,10 +1170,38 @@ public class Chart : MonoBehaviourPunCallbacks
         transform.Find("RaycastCollider").GetComponent<Collider>().enabled = value;
     }
 
+    public string ID
+    {
+        get { return id; }
+        set
+        {
+            if (value == id)
+                return;
+
+            photonView.RPC("PropagateID", RpcTarget.All, value);
+        }
+    }
+
+    [PunRPC]
+    private void PropagateID(string value)
+    {
+        id = value;
+    }
+
+    public bool Is3D
+    {
+        get
+        {
+            return (XDimension != "Undefined" && YDimension != "Undefined" && ZDimension != "Undefined");
+        }
+    }
+
     #endregion
-    
+
     private void Awake()
     {
+        OriginalOwner = photonView.Owner;
+
         // Set blank values
         visualisation.colourDimension = "Undefined";
         visualisation.sizeDimension = "Undefined";
@@ -1464,7 +1497,6 @@ public class Chart : MonoBehaviourPunCallbacks
                 subChart.GeometryType = GeometryType;
                 subChart.XDimension = XDimension;
                 subChart.YDimension = YDimension;
-                // added ZDimension
                 subChart.ZDimension = ZDimension;
 
                 subChart.SizeDimension = SizeDimension;
@@ -1521,6 +1553,9 @@ public class Chart : MonoBehaviourPunCallbacks
                     float x = (-(Width / 2) + xDelta) + 2 * xDelta * j;
                     float y = ((Height / 2) - yDelta) - 2 * yDelta * i;
 
+                    // Adjust z position if the chart is three-dimensional
+                    float z = Is3D ? z = -Depth / 2  + 0.05f: 0;
+
                     //subChart.Scale = new Vector3(w * 0.75f, h * 0.65f, 1);//TODO:CHANGE 1 to 0.5?
 
                     //Add the resizing of the zAxis to the 3D vis
@@ -1531,7 +1566,7 @@ public class Chart : MonoBehaviourPunCallbacks
                     //Debug.Log(subChart.Scale);
 
                     subChart.KeyVisiblility = false;
-                    subChart.transform.localPosition = new Vector3(x, y, 0);
+                    subChart.transform.localPosition = new Vector3(x, y, z);
                     subChart.transform.rotation = transform.rotation;
 
                     // Create and position labels
@@ -1584,12 +1619,12 @@ public class Chart : MonoBehaviourPunCallbacks
             originalRot = transform.localRotation;
         }
 
-        DataLogger.Instance.LogActionData(this, photonView.Owner, "Vis Grab Start");
+        DataLogger.Instance.LogActionData(this, OriginalOwner, photonView.Owner, "Vis Grab start", ID);
     }
 
     private void ChartUngrabbed(object sender, InteractableObjectEventArgs e)
     {
-        DataLogger.Instance.LogActionData(this, photonView.Owner, "Vis Grab End");
+        DataLogger.Instance.LogActionData(this, OriginalOwner, photonView.Owner, "Vis Grab end", ID);
 
         // Animate the work shelf prototype back to its position
         if (isPrototype)
@@ -1609,7 +1644,7 @@ public class Chart : MonoBehaviourPunCallbacks
                 isThrowing = true;
                 deletionTimer = 0;
 
-                DataLogger.Instance.LogActionData(this, photonView.Owner, "Vis Thrown");
+                DataLogger.Instance.LogActionData(this, OriginalOwner, photonView.Owner, "Vis Thrown", ID);
             }
             else
             {
@@ -1663,10 +1698,10 @@ public class Chart : MonoBehaviourPunCallbacks
                 interactTouch.ForceTouch(dupe.gameObject);
                 interactGrab.AttemptGrab();
 
-                DataLogger.Instance.LogActionData(this, photonView.Owner, "Vis created");
+                DataLogger.Instance.LogActionData(this, OriginalOwner, photonView.Owner, "Vis Created", ID);
             }
             // Check if the chart is being held next to the panel for transfer
-            else if (!isPrototype && (isTouchingPanel || isTouchingDisplaySurface))
+            else if (!isPrototype && (isTouchingPanel || isTouchingDisplaySurface || isTouchingTable))
             {
                 VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(interactableObject.GetGrabbingObject()), 0.4f);
             }
@@ -1679,7 +1714,7 @@ public class Chart : MonoBehaviourPunCallbacks
                 ColliderActiveState = false;
                 transform.DOScale(0, 1f).OnComplete(() => ChartManager.Instance.RemoveVisualisation(this));
                 
-                DataLogger.Instance.LogActionData(this, photonView.Owner, "Vis destroyed");
+                DataLogger.Instance.LogActionData(this, OriginalOwner, photonView.Owner, "Vis Destroyed", ID);
             }
             else
             {
@@ -1688,59 +1723,25 @@ public class Chart : MonoBehaviourPunCallbacks
         }
 
         // Resizing
-        if (topLeftInteractableHandle.IsGrabbed() || bottomRightInteractableHandle.IsGrabbed() || depthInteractableHandle.IsGrabbed()) //New: add condition for the depth handler
+        if (xAxisHandle.IsGrabbed() || yAxisHandle.IsGrabbed() || zAxisHandle.IsGrabbed())
         {
-            float zHandler = (ZDimension != "Undefined") ? Depth : 0;
+            float zHandler = Is3D ? Depth / 2: 0;
 
             if (!isResizing)
             {
                 isResizing = true;
 
-                DataLogger.Instance.LogActionData(this, photonView.Owner, "Vis resize start");
+                DataLogger.Instance.LogActionData(this, OriginalOwner, photonView.Owner, "Vis Resize start", ID);
             }
 
             if (!photonView.IsMine)
                 photonView.RequestOwnership();
 
             Vector3 scale = Scale;
-            //Debug.Log("sale value " + scale);
 
-            if (topLeftInteractableHandle.IsGrabbed())
+            if (xAxisHandle.IsGrabbed())
             {
-                Vector3 handleLocalPos = topLeftInteractableHandle.transform.localPosition;
-                //Debug.Log("top left/y axis handler pos: " + handleLocalPos);
-
-                // Don't allow the handle to get too small
-                if (handleLocalPos.y < 0.15f)
-                    handleLocalPos.y = 0.15f;
-
-                scale.y = (handleLocalPos.y - 0.08f) * 2;
-
-                // Lock handle to only move along y axis
-                handleLocalPos.x = -Width / 2 - 0.05f;
-                handleLocalPos.z = - zHandler;
-                //handleLocalPos.z = 0;
-                //handleLocalPos.z = Depth + 0.5f;
-
-                topLeftInteractableHandle.transform.localPosition = handleLocalPos;
-                topLeftInteractableHandle.transform.localRotation = Quaternion.identity;
-
-                VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(topLeftInteractableHandle.GetGrabbingObject()), 0.075f);
-            }
-            else
-            {
-                Vector3 pos = new Vector3(-Width / 2 - 0.05f, scale.x / 2 + 0.08f, - zHandler);
-                //Vector3 pos = new Vector3(-Width / 2 - 0.05f, scale.x / 2 + 0.08f, 0);
-                //Vector3 pos = new Vector3(-Width / 2 - 0.05f, scale.y / 2 + 0.08f, Depth + 0.5f);
-                //Debug.Log("y axis handler pos not grabing: " + pos);
-
-                topLeftInteractableHandle.transform.localPosition = pos;
-                topLeftInteractableHandle.transform.localRotation = Quaternion.identity;
-            }
-            if (bottomRightInteractableHandle.IsGrabbed())
-            {
-                Vector3 handleLocalPos = bottomRightInteractableHandle.transform.localPosition;
-                //Debug.Log("bottom left/x axis handler pos: " + handleLocalPos);
+                Vector3 handleLocalPos = xAxisHandle.transform.localPosition;
 
                 // Don't allow the handle to get too small
                 if (handleLocalPos.x < 0.15f)
@@ -1749,88 +1750,67 @@ public class Chart : MonoBehaviourPunCallbacks
                 scale.x = (handleLocalPos.x - 0.08f) * 2;
 
                 // Lock handle to only move along x axis
-                handleLocalPos.y = -Height / 2 - 0.05f;
+                handleLocalPos.y = -scale.y / 2 - axisOffset;
                 handleLocalPos.z = - zHandler;
                 //handleLocalPos.z = 0;
                 //handleLocalPos.z = -Depth / 2 - 0.05f;
-                bottomRightInteractableHandle.transform.localPosition = handleLocalPos;
-                bottomRightInteractableHandle.transform.localRotation = Quaternion.identity;
+                xAxisHandle.transform.localPosition = handleLocalPos;
+                xAxisHandle.transform.localRotation = Quaternion.identity;
 
-                VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(bottomRightInteractableHandle.GetGrabbingObject()), 0.075f);
+                VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(xAxisHandle.GetGrabbingObject()), 0.075f);
             }
-            else
+            if (yAxisHandle.IsGrabbed())
             {
-                Vector3 pos = new Vector3(scale.x / 2 + 0.08f, -Height / 2 - 0.05f, -zHandler);
-                //Vector3 pos = new Vector3(scale.x / 2 + 0.08f, -Height / 2 - 0.05f, 0);
-                //Vector3 pos = new Vector3(scale.x / 2 + 0.08f, -Height / 2 - 0.05f, -Depth / 2 - 0.05f);
-
-                bottomRightInteractableHandle.transform.localPosition = pos;
-                bottomRightInteractableHandle.transform.localRotation = Quaternion.identity;
-            }
-
-            //New: zAxis depth handler
-            if (depthInteractableHandle.IsGrabbed())
-            {
-                Vector3 handleLocalPos = depthInteractableHandle.transform.localPosition;
-                //Debug.Log("depth/z axis handler pos: " + handleLocalPos);
+                Vector3 handleLocalPos = yAxisHandle.transform.localPosition;
 
                 // Don't allow the handle to get too small
-                Debug.Log("handleLocalPos.z : " + handleLocalPos.z);
-                //if (handleLocalPos.z < 0.15f)
-                //    handleLocalPos.z = 0.15f;
-                if (handleLocalPos.z < 0.05f)
-                    handleLocalPos.z = 0.05f;
+                if (handleLocalPos.y < 0.15f)
+                    handleLocalPos.y = 0.15f;
 
-                scale.z = handleLocalPos.z * 2;
+                scale.y = (handleLocalPos.y - 0.08f) * 2;
+
+                // Lock handle to only move along y axis
+                handleLocalPos.x = -scale.x / 2 - axisOffset;
+                handleLocalPos.z = -zHandler;
+                //handleLocalPos.z = 0;
+                //handleLocalPos.z = Depth + 0.5f;
+
+                yAxisHandle.transform.localPosition = handleLocalPos;
+                yAxisHandle.transform.localRotation = Quaternion.identity;
+
+                VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(yAxisHandle.GetGrabbingObject()), 0.075f);
+            }
+            if (zAxisHandle.IsGrabbed())
+            {
+                Vector3 handleLocalPos = zAxisHandle.transform.localPosition;
+
+                // Don't allow the handle to get too small
+                if (handleLocalPos.z < 0.15f)
+                    handleLocalPos.z = 0.15f;
+
+                scale.z = (handleLocalPos.z - 0.08f) * 2;
                 //scale.z = (handleLocalPos.z - 0.08f) * 2;
-                Debug.Log("scale.z : " + scale.z);
+                //Debug.Log("scale.z : " + scale.z);
 
                 // Lock handle to only move along z axis
-                handleLocalPos.y = -Height / 2 - 0.05f;
-                handleLocalPos.x = -Width / 2 - 0.05f;
+                handleLocalPos.x = -scale.x / 2 - axisOffset;
+                handleLocalPos.y = -scale.y / 2 - axisOffset;
                 
-                depthInteractableHandle.transform.localPosition = handleLocalPos;
-                depthInteractableHandle.transform.localRotation = Quaternion.identity;
+                zAxisHandle.transform.localPosition = handleLocalPos;
+                zAxisHandle.transform.localRotation = Quaternion.identity;
 
-                VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(depthInteractableHandle.GetGrabbingObject()), 0.075f);
-            }
-            else
-            {
-                Vector3 pos = new Vector3(-Width / 2 - 0.05f, -Height / 2 - 0.05f, scale.z / 2);
-                //Vector3 pos = new Vector3(-Width / 2 - 0.05f, -Height / 2 - 0.05f, scale.z / 2 + 0.08f);
-                //Debug.Log("z axis handler pos not grabing: " + pos);
-                //Debug.Log("scale.z / 2 + 0.08f : " + scale.z / 2 + 0.08f);
-
-                depthInteractableHandle.transform.localPosition = pos;
-                depthInteractableHandle.transform.localRotation = Quaternion.identity;
+                VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(zAxisHandle.GetGrabbingObject()), 0.075f);
             }
 
-            Scale = scale;
+            Scale = scale; // This handles the positions of the handlers
         }
+        // When resizing is stopped
         else if (isResizing)
         {
             isResizing = false;
+            PositionResizeHandlers();
 
-            float zHandler = (ZDimension != "Undefined") ? Depth : 0;
-
-            Vector3 tlPos = new Vector3(-Width / 2 - 0.05f, Height / 2 + 0.08f, -zHandler);
-            //Vector3 tlPos = new Vector3(-Width / 2 - 0.05f, Height / 2 + 0.08f, 0);
-            //Vector3 tlPos = new Vector3(-Width / 2 - 0.05f, Height / 2 + 0.08f, Depth / 2 + 0.05f);
-            topLeftInteractableHandle.transform.localPosition = tlPos;
-            topLeftInteractableHandle.transform.localRotation = Quaternion.identity;
-
-            Vector3 brPos = new Vector3(Width / 2 + 0.08f, -Height / 2 - 0.05f, -zHandler);
-            //Vector3 brPos = new Vector3(Width / 2 + 0.08f, -Height / 2 - 0.05f, 0);
-            //Vector3 brPos = new Vector3(Width / 2 + 0.08f, -Height / 2 - 0.05f, Depth / 2 + 0.05f);
-            bottomRightInteractableHandle.transform.localPosition = brPos;
-            bottomRightInteractableHandle.transform.localRotation = Quaternion.identity;
-
-            //NEW: Depth position
-            Vector3 dpPos = new Vector3(-Width / 2 - 0.05f, -Height / 2 - 0.05f, 0.08f);
-            depthInteractableHandle.transform.localPosition = dpPos;
-            depthInteractableHandle.transform.localRotation = Quaternion.identity;
-
-            DataLogger.Instance.LogActionData(this, photonView.Owner, "Vis resize end");
+            DataLogger.Instance.LogActionData(this, OriginalOwner, photonView.Owner, "Vis Resize end", ID);
         }
 
         // Facet normalisers
@@ -1862,25 +1842,22 @@ public class Chart : MonoBehaviourPunCallbacks
     /// the size is changed.
     /// </summary>
     private void SetColliderBounds()
-    {
-        float width = visualisation.width;
-        float height = visualisation.height;
-        float depth = visualisation.depth;
-
-        string x = visualisation.xDimension.Attribute;
-        string y = visualisation.yDimension.Attribute;
-        string z = visualisation.zDimension.Attribute;
-
-        //Debug.Log(z);
+    {        
+        // Calculate size for box collider used for grabbing
+        float xBoxSize = (XDimension != "Undefined") ? Width + 0.015f : 0.1f;
+        float yBoxSize = (YDimension != "Undefined") ? Height + 0.015f : 0.1f;
+        float zBoxSize = (ZDimension != "Undefined") ? Depth + 0.015f : 0.1f;
         
-        // Calculate size
-        float xSize = (x != "Undefined") ? width + 0.015f : 0.1f;
-        float ySize = (y != "Undefined") ? height + 0.015f : 0.1f;
-        float zSize = (z != "Undefined") ? depth + 0.015f : 0.1f;
-        //float zSize = (z != "Undefined") ? depth + .9f : 0.1f;
+        boxCollider.size = new Vector3(xBoxSize, yBoxSize, zBoxSize);
 
-        boxCollider.size = new Vector3(xSize, ySize, zSize);
+        // Calculate size for box collider used for raycasts (slightly bigger than grabbing collider)
+        float xRaycastSize = (XDimension != "Undefined") ? xBoxSize + 0.125f : 0.01f;
+        float yRaycastSize = (YDimension != "Undefined") ? yBoxSize + 0.125f : 0.01f;
+        float zRaycastSize = (ZDimension != "Undefined") ? zBoxSize + 0.125f : 0.01f;
 
+        raycastCollider.size = new Vector3(xRaycastSize, yRaycastSize, zRaycastSize);
+
+        /*
         //NEW: adjust the center of the collider to fit the 3D vis
         //float zColliderCenter = - (zSize - 1) / 2;
         float zColliderCenter = - zSize / 2;
@@ -1888,14 +1865,17 @@ public class Chart : MonoBehaviourPunCallbacks
         //Debug.Log("boxCollider.center " + boxCollider.center);
         //Debug.Log("boxCollider.size " + boxCollider.size);
 
-        if (ZDimension != "Undefined")
+        if (Is3D)
         {
             raycastCollider.center = new Vector3(0, 0, zColliderCenter);
             raycastCollider.size = new Vector3(xSize + 0.125f, ySize + 0.125f, zSize + 0.125f);
         }
-        else {
+        else
+        {
+            raycastCollider.center = new Vector3(0, 0, 0);
             raycastCollider.size = new Vector3(xSize + 0.125f, ySize + 0.125f, 0.01f);
         }
+        */
 
         // Disable colliders if this is not a scatterplot
         if (VisualisationType != AbstractVisualisation.VisualisationTypes.SCATTERPLOT)
@@ -1904,24 +1884,14 @@ public class Chart : MonoBehaviourPunCallbacks
             raycastCollider.enabled = false;
         }
 
-        float zHandler = (ZDimension != "Undefined") ? Depth : 0;
-
-        // Reposition the resize handles
-        topLeftInteractableHandle.transform.localPosition = new Vector3(-width / 2 - 0.05f, height / 2 + 0.08f, -zHandler);
-        //topLeftInteractableHandle.transform.localPosition = new Vector3(-width / 2 - 0.05f, height / 2 + 0.08f, -Depth / 2 - 0.05f); 
-
-        bottomRightInteractableHandle.transform.localPosition = new Vector3(width / 2 + 0.08f, -height / 2 - 0.05f, -zHandler);
-        //bottomRightInteractableHandle.transform.localPosition = new Vector3(width / 2 + 0.08f, -height / 2 - 0.05f, -Depth / 2 - 0.05f);
-
-        //NEW: reposition depth handler
-        depthInteractableHandle.transform.localPosition = new Vector3(-width / 2 - 0.05f, -height / 2 - 0.05f, 0.08f);
+        PositionResizeHandlers();
     }
 
     private void CenterVisualisation()
     {
         float x = (XDimension != "Undefined") ? Width / 2 : 0;
         float y = (YDimension != "Undefined") ? Height / 2 : 0;
-        float z = (ZDimension != "Undefined") ? Depth : 0;
+        float z = (ZDimension != "Undefined") ? Depth / 2 : 0;
 
         //visualisationGameObject.transform.DOLocalMove(new Vector3(-x, -y, -z), 0.1f).SetEase(Ease.OutCubic);
         visualisationGameObject.transform.localPosition = new Vector3(-x, -y, -z);
@@ -1950,9 +1920,17 @@ public class Chart : MonoBehaviourPunCallbacks
         }
     }
 
+    private void PositionResizeHandlers()
+    {
+        float zHandler = Is3D ? Depth / 2 : 0;
+
+        xAxisHandle.transform.localPosition = new Vector3(Width / 2 + 0.08f, -Height / 2 - axisOffset, -zHandler);
+        yAxisHandle.transform.localPosition = new Vector3(-Width / 2 - axisOffset, Height / 2 + 0.08f, -zHandler);
+        zAxisHandle.transform.localPosition = new Vector3(-Width / 2 - axisOffset, -Height / 2 - axisOffset, Depth / 2 + 0.08f);
+    }
+
     private void OnTriggerEnter(Collider other)
     {
-
         if (other.CompareTag("DisplaySurface"))
         {
             isTouchingDisplaySurface = true;
@@ -1979,11 +1957,15 @@ public class Chart : MonoBehaviourPunCallbacks
                 TransferChartToPanel();
             }
         }
-        else if (other.CompareTag("Table") && this.gameObject.transform.parent == null)
+        else if (!isPrototype && other.CompareTag("Table"))
         {
             isTouchingTable = true;
             tableSurface = other.GetComponent<TableSnapToSurface>();
-            AttachToTable();
+
+            if (isThrowing)
+            {
+                AttachToTable();
+            }
         }
     }
 
@@ -1998,7 +1980,7 @@ public class Chart : MonoBehaviourPunCallbacks
         {
             isTouchingPanel = false;
         }
-        else if (other.CompareTag("Table") && this.gameObject.transform.parent.parent == null)
+        else if (!isPrototype && other.CompareTag("Table"))
         {
             isTouchingTable = false;
             tableSurface = null;
@@ -2007,29 +1989,39 @@ public class Chart : MonoBehaviourPunCallbacks
 
     private void AttachToDisplayScreen()
     {
-        Vector3 pos = touchingDisplaySurface.CalculatePositionOnScreen(this);
-        Quaternion rot = touchingDisplaySurface.CalculateRotationOnScreen(this);
+        Vector3 pos;
+        Quaternion rot;
+
+        touchingDisplaySurface.CalculatePositionOnScreen(this, out pos, out rot);
 
         AnimateTowards(pos, rot, 0.2f);
 
-        DataLogger.Instance.LogActionData(this, photonView.Owner, "Vis attached");
+        isTouchingDisplaySurface = false;
+        touchingDisplaySurface = null;
+
+        DataLogger.Instance.LogActionData(this, OriginalOwner, photonView.Owner, "Vis Attached to Wall", ID);
     }
 
     private void AttachToTable()
     {
-        Vector3 pos = tableSurface.CalculateNewPosition(this);
-        Quaternion rot = tableSurface.CalculateRotation(this);
+        Vector3 pos;
+        Quaternion rot;
+
+        tableSurface.CalculatePositionOnTable(this, out pos, out rot);
 
         AnimateTowards(pos, rot, 0.2f);
 
-        DataLogger.Instance.LogActionData(this, photonView.Owner, "Vis attached to table");
+        isTouchingTable = false;
+        tableSurface = null;
+
+        DataLogger.Instance.LogActionData(this, OriginalOwner, photonView.Owner, "Vis Attached to Table", ID);
     }
 
     private void TransferChartToPanel()
     {
         touchingPanel.LoadChart(this, true);
 
-        DataLogger.Instance.LogActionData(this, photonView.Owner, "Vis transferred");
+        DataLogger.Instance.LogActionData(this, OriginalOwner, photonView.Owner, "Vis Transferred", ID);
     }
 
     public void AnimateTowards(Vector3 targetPos, Quaternion targetRot, float duration, bool toDestroy = false)

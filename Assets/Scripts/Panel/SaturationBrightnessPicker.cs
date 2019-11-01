@@ -45,12 +45,12 @@ public class SaturationBrightnessPicker : MonoBehaviour {
 
     private void PickerGrabbed(object sender, InteractableObjectEventArgs e)
     {
-        DataLogger.Instance.LogActionData(this, GetComponentInParent<Panel>().OriginalOwner, gameObject.name + " drag start");
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Panel>().OriginalOwner, GetComponentInParent<Panel>().OriginalOwner, gameObject.name + " Drag start");
     }
 
     private void PickerUngrabbed(object sender, InteractableObjectEventArgs e)
     {
-        DataLogger.Instance.LogActionData(this, GetComponentInParent<Panel>().OriginalOwner, gameObject.name + " drag end");
+        DataLogger.Instance.LogActionData(this, GetComponentInParent<Panel>().OriginalOwner, GetComponentInParent<Panel>().OriginalOwner, gameObject.name + " Drag end");
     }
 
     private void InitialiseComputeShader()

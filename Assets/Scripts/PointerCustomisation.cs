@@ -1,76 +1,34 @@
-﻿using System;
+﻿using Photon.Pun;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using VRTK;
 
-public class PointerCustomisation : MonoBehaviour
+public class PointerCustomisation : MonoBehaviourPunCallbacks
 {
-    [HideInInspector]
-    public bool showStickFlag = false;
-
     public Transform stick;
+    public GameObject stickSphere;
 
-    private GameObject ball;
-    private VRTK_ControllerEvents controllerEvents;
-    // Start is called before the first frame update
-    void Start()
+    public void Enable3DStick()
     {
-        if (transform.parent.Find("RightController") != null) {
-            controllerEvents = transform.parent.Find("RightController").GetComponent<VRTK_ControllerEvents>();
-            controllerEvents.TouchpadPressed += Enable3DStick;
-            controllerEvents.TouchpadReleased += Unable3DStick;
-            controllerEvents.TriggerClicked += Enable3DStick;
-            controllerEvents.TriggerUnclicked += Unable3DStick;
-            controllerEvents.GripClicked += Enable3DStick;
-            controllerEvents.GripUnclicked += Unable3DStick;
-        }
-        
-        
+        photonView.RPC("Enable3DStickRPC", RpcTarget.All);
     }
 
-    private void Unable3DStick(object sender, ControllerInteractionEventArgs e)
+    [PunRPC]
+    private void Enable3DStickRPC()
     {
-        if (showStickFlag)
-        {
-            if (stick.gameObject.activeSelf)
-                stick.gameObject.SetActive(false); 
-        }
-        else {
-            if (stick.gameObject.activeSelf)
-                stick.gameObject.SetActive(false);
-        }
-        if (ball != null) {
-            Destroy(ball);
-        }
-            
+        stick.gameObject.SetActive(true);
     }
 
-    private void Enable3DStick(object sender, ControllerInteractionEventArgs e)
+    public void Disable3DStick()
     {
-        if (showStickFlag)
-        {
-            if (!stick.gameObject.activeSelf) {
-                stick.gameObject.SetActive(true);
-                if (ball == null)
-                {
-                    ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    ball.transform.position = new Vector3(0, 0, 0);
-                    ball.name = "testingBall";
-                    ball.transform.localScale = Vector3.one * 0.001f;
-                }
-            }
-        }
-
+        photonView.RPC("Disable3DStickRPC", RpcTarget.All);
     }
 
-    // Update is called once per frame
-    void Update()
+    [PunRPC]
+    private void Disable3DStickRPC()
     {
-        if (stick.gameObject.activeSelf) {
-            if(ball != null)
-                ball.transform.position = stick.GetChild(0).GetChild(0).position;
-            //Debug.Log(stick.GetChild(0).GetChild(0).position);
-        }
+        stick.gameObject.SetActive(false);
     }
 }

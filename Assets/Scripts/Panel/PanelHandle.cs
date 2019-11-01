@@ -34,10 +34,10 @@ public class PanelHandle : MonoBehaviourPunCallbacks {
         isGrabbed = true;
         SetPositionAndRotation();
 
-        DataLogger.Instance.LogActionData(parent, parent.OriginalOwner, "Panel grab start");
+        DataLogger.Instance.LogActionData(parent, parent.OriginalOwner, parent.OriginalOwner, "Panel Grab start");
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         if (isGrabbed)
         {
@@ -63,6 +63,6 @@ public class PanelHandle : MonoBehaviourPunCallbacks {
     {
         isGrabbed = false;
 
-        DataLogger.Instance.LogActionData(parent, parent.OriginalOwner, "Panel grab end");
+        DataLogger.Instance.LogActionData(parent, parent.OriginalOwner, parent.OriginalOwner, "Panel Grab end");
     }
 }

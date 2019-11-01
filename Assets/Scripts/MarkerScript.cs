@@ -8,106 +8,94 @@ using VRTK;
 
 public class MarkerScript : MonoBehaviourPunCallbacks
 {
-    VRTK_InteractableObject vrio;
-
-    GameObject rc;
-
-    VRTK_ControllerEvents rcCE;
-
-    GameObject lc;
-
-    VRTK_ControllerEvents lcCE;
-
     public GameObject linePrefab;
-
     public GameObject currentLine;
-
+    public string currentLineID;
+    public Transform markerTip;
     public LineRenderer lineRenderer;
-
-    public List<Vector3> fingerPositions;
-
+    public List<Vector3> fingerPositions = new List<Vector3>();
     public MeshCollider meshCollider;
-
-    public Photon.Realtime.Player originalOwner { get; private set; }
-
-    //public Rigidbody rb;
-
     public Color markerColor;
 
-    private bool rightGripPressedFlag = false;
-    private bool lineStartFlag = false;
-    private static int viewID;
+    public Photon.Realtime.Player OriginalOwner { get; private set; }
+
+    private VRTK_InteractableObject interactableObject;
+    private int viewID;
+    private bool isDrawing = false;
+    private bool isTouchingChart;
+    private GameObject touchingChart;
 
     [Serializable]
     public class DrawingLineEvent : UnityEvent<List<float>> { }
     public DrawingLineEvent drawingLineEvent;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-        vrio = GetComponent<VRTK_InteractableObject>();
-        rc = GameObject.Find("RightController");
-        rcCE = rc.GetComponent<VRTK_ControllerEvents>();
-        lc = GameObject.Find("LeftController");
-        lcCE = lc.GetComponent<VRTK_ControllerEvents>();
+        OriginalOwner = photonView.Owner;
 
-        InitialiseMarkerColor();
+        interactableObject = GetComponent<VRTK_InteractableObject>();
+        interactableObject.InteractableObjectUsed += OnMarkerEnabled;
+        interactableObject.InteractableObjectUnused += OnMarkerDisabled;
+
+        if (photonView.IsMine)
+        {
+            InitialiseMarkerColor(PlayerPreferencesManager.Instance.SharedBrushColor);
+        }
     }
 
-
-
-    // Update is called once per frame
-    void Update()
+    private void OnDestroy()
     {
-        //Debug.Log("trigger: " + rcCE.triggerClicked + "; gripClicked: " + rcCE.gripClicked + "; gripPressed: " + rcCE.gripPressed);
+        interactableObject.InteractableObjectUsed -= OnMarkerEnabled;
+        interactableObject.InteractableObjectUnused -= OnMarkerDisabled;
+    }
 
-        //if (rcCE.triggerClicked) // check if the trigger button is pressed down
-        //{
-        if (rcCE.gripClicked) // check if the grip button is pressed down
-        //if (rcCE.triggerPressed)
+    private void OnMarkerEnabled(object sender, InteractableObjectEventArgs e)
+    {
+        if (!isDrawing && photonView.IsMine)
         {
-            //Debug.Log("IsOriginalOwner()" + IsOriginalOwner());
-            if (!lineStartFlag && photonView.IsMine && IsOriginalOwner())
-            {
-                currentLine = PhotonNetwork.Instantiate("Line", Vector3.zero, Quaternion.identity);
-                viewID = currentLine.GetComponent<PhotonView>().ViewID;
-                Debug.Log("current viewid: " + viewID);
-                CallCreateLine(viewID);
-            }
-                
+            currentLine = PhotonNetwork.Instantiate("Line", Vector3.zero, Quaternion.identity);
+            viewID = currentLine.GetComponent<PhotonView>().ViewID;
+            CallCreateLine(viewID);
 
-            lineStartFlag = true;
-            rightGripPressedFlag = true;
+            isDrawing = true;
+
+            currentLineID = Guid.NewGuid().ToString();
+            currentLine.GetComponent<LineScript>().SetLineID(currentLineID);
+
+            DataLogger.Instance.LogActionData(this, OriginalOwner, photonView.Owner, "Marker Draw start", currentLineID);
         }
+    }
 
-        if (!rcCE.gripClicked)
-        //if (!rcCE.triggerPressed)
+    private void OnMarkerDisabled(object sender, InteractableObjectEventArgs e)
+    {
+        if (isDrawing)
         {
-            if (rightGripPressedFlag)
-            {
-                lineStartFlag = false;
-                CallUpdateMesh(viewID);
-            }
-            rightGripPressedFlag = false;
+            isDrawing = false;
+
+            CallUpdateMesh(viewID);
+
+            DataLogger.Instance.LogActionData(this, OriginalOwner, photonView.Owner, "Marker Draw end", currentLineID);
         }
-
-        if (rightGripPressedFlag) //check whether or not the user is holding the grip button down
+    }
+    
+    private void Update()
+    {
+        if (isDrawing && currentLine != null)
         {
-            Vector3 tempFingerPos = gameObject.transform.position;
-            //Debug.Log("tempFingerPos" + tempFingerPos);
-            //Debug.Log("Vector3.Distance" + Vector3.Distance(tempFingerPos, fingerPositions[fingerPositions.Count - 1]));
-            if (Vector3.Distance(tempFingerPos, fingerPositions[fingerPositions.Count - 1]) != 0f)
+            Vector3 tempFingerPos = markerTip.position;
+
+            if (Vector3.Distance(tempFingerPos, fingerPositions[fingerPositions.Count - 1]) >= 0.005f)
             {
-                //UpdateLine(tempFingerPos);
                 CallUpdateLine(tempFingerPos);
             }
-        }
+            
+            if (isTouchingChart && currentLine.transform.parent == null)
+            {
+                currentLine.transform.SetParent(touchingChart.transform);
+            }
 
-        //if (lcCE.gripClicked)
-        //{
-        //    DestroyGameObject();
-        //}
-        //}
+            VRTK_ControllerHaptics.TriggerHapticPulse(VRTK_ControllerReference.GetControllerReference(interactableObject.GetGrabbingObject()), 0.025f);
+        }
     }
 
     public void CallCreateLine(int id)
@@ -118,37 +106,25 @@ public class MarkerScript : MonoBehaviourPunCallbacks
     [PunRPC]
     private void CreateLine(int id)
     {
-        Debug.Log("000");
-        // Create a new line and save it into a different variable
-        //currentLine = Instantiate(linePrefab, Vector3.zero, Quaternion.identity); 
-        //currentLine = PhotonNetwork.Instantiate("Line", Vector3.zero, Quaternion.identity);
-        //Debug.Log("currentLine.GetComponent<PhotonView>().ViewID" + currentLine.GetComponent<PhotonView>().ViewID);
         if (photonView.IsMine)
         {
             lineRenderer = currentLine.GetComponent<LineRenderer>();
-            Debug.Log("111");
         }
         else
         {
-            Debug.Log("22OK");
-            Debug.Log("22" + PhotonView.Find(id).gameObject.name);
-            lineRenderer = PhotonView.Find(id).gameObject.GetComponent<LineRenderer>();
-            Debug.Log("222");
+            currentLine = PhotonView.Find(id).gameObject;
+            lineRenderer = currentLine.GetComponent<LineRenderer>();
         }
-            
-        //Debug.Log(lineRenderer.transform.GetSiblingIndex());
 
-        //meshCollider = currentLine.AddComponent<MeshCollider>();
-        //meshCollider.convex = true;
-        //meshCollider.isTrigger = true;
-        //rb = currentLine.AddComponent<Rigidbody>();
-        //rb.useGravity = false;
+        viewID = id;
+
+        currentLine.GetComponent<Renderer>().material.color = markerColor;
 
         fingerPositions.Clear();
 
         // Set the first two points of the line renderer component
-        fingerPositions.Add(gameObject.transform.position);
-        fingerPositions.Add(gameObject.transform.position);
+        fingerPositions.Add(markerTip.position);
+        fingerPositions.Add(markerTip.position);
 
         //Debug.Log("createline linerenderer" + lineRenderer == null);
         lineRenderer.SetPosition(0, fingerPositions[0]);
@@ -165,10 +141,9 @@ public class MarkerScript : MonoBehaviourPunCallbacks
     private void UpdateLine(Vector3 newFingerPos)
     {
         fingerPositions.Add(newFingerPos);
-        //Debug.Log("fingerPositions length: " + fingerPositions.Count);
+
         lineRenderer.positionCount++;
         lineRenderer.SetPosition(lineRenderer.positionCount - 1, newFingerPos);
-
     }
 
     public void CallUpdateMesh(int id)
@@ -180,99 +155,48 @@ public class MarkerScript : MonoBehaviourPunCallbacks
     private void UpdateMesh(int id)
     {
         Mesh mesh = new Mesh();
-        //Debug.Log("updateMesh linerenderer" + lineRenderer == null);
-
-        //bool isOriginalOwner = IsOriginalOwner();
-        //Debug.Log("isOriginalOwner " + isOriginalOwner);
-        //if (isOriginalOwner)
 
         lineRenderer = PhotonView.Find(id).gameObject.GetComponent<LineRenderer>();
-
-        //if (photonView.IsMine)
-        //{
-        //    //lineRenderer = currentLine.GetComponent<LineRenderer>();
-        //    //Debug.Log("Get local player's linerenderer");
-        //    //return;
-        //}
-        //else
-        //{
-        //    //Debug.Log("44OK");
-        //    //Debug.Log("id " + id);
-        //    //Debug.Log("44" + PhotonView.Find(id).gameObject.name);
-        //    lineRenderer = PhotonView.Find(id).gameObject.GetComponent<LineRenderer>();
-        //    //Debug.Log("444");
-        //}
-
-        lineRenderer.BakeMesh(mesh, true);
-
-        //if (photonView.IsMine)
-        //{
-        //    meshCollider = currentLine.GetComponent<MeshCollider>();
-        //    Debug.Log("555");
-        //}
-        //else
-        //{
-        //    Debug.Log("55OK");
-        //    Debug.Log("55" + PhotonView.Find(id).gameObject.name);
-        //    meshCollider = PhotonView.Find(id).gameObject.GetComponent<MeshCollider>();
-        //    Debug.Log("555");
-        //}
-
+        
+        lineRenderer.BakeMesh(mesh, Camera.main, true);
+        
         meshCollider = PhotonView.Find(id).gameObject.GetComponent<MeshCollider>();
         meshCollider.sharedMesh = mesh;
     }
-
-    //void DestroyGameObject()
-    //{
-    //    Destroy(currentLine);
-    //}
-
-    void OnTriggerEnter(Collider collider)
+    
+    void OnTriggerEnter(Collider other)
     {
-        //Debug.Log("collider.gameObject.tag: " + collider.gameObject.tag);
-        if (collider.gameObject.tag == "Chart" && rightGripPressedFlag)
+        if (other.gameObject.tag == "Chart")
         {
-            Transform newParent = collider.gameObject.transform;
-            //Debug.Log("collider.gameObject " + collider.gameObject);
-            currentLine.transform.SetParent(newParent);
-            //Debug.Log("currentLine.transform.parent " + currentLine.transform.parent);
+            isTouchingChart = true;
+            touchingChart = other.gameObject;
         }
     }
 
-    //void OnCollisionEnter(Collision col)
-    //{
-    //    if (col.gameObject. tag == "Chart")
-    //    {
-    //        Transform newParent = col.gameObject.transform;
-    //        currentLine.transform.SetParent(newParent);
-    //        Debug.Log("currentLine.transform.parent " + currentLine.transform.parent);
-    //    }
-    //}
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.tag == "Chart" && other == touchingChart)
+        {
+            isTouchingChart = false;
+            touchingChart = null;
+        }
+    }
 
-    private void InitialiseMarkerColor()
+    [PunRPC]
+    private void InitialiseMarkerColor(Color color)
     {
         // Set the color of shared brushing as the color of the eraser and share them to others via RPC only if this belongs to the player
         if (photonView.IsMine)
         {
-            markerColor = PlayerPreferencesManager.Instance.SharedBrushColor;
-
-            GameObject markerLid = this.gameObject.transform.GetChild(0).GetChild(0).GetChild(0).gameObject;
-            markerLid.GetComponent<Renderer>().material.color = markerColor;
-
-            GameObject markerTip = this.gameObject.transform.GetChild(0).GetChild(2).GetChild(2).gameObject;
-            markerTip.GetComponent<Renderer>().material.color = markerColor;
-
-            GameObject line = this.gameObject.GetComponent<MarkerScript>().linePrefab.gameObject;
-            line.GetComponent<Renderer>().sharedMaterial.color = markerColor;
-            //Debug.Log("line.GetComponent<Renderer>().sharedMaterial.color " + line.GetComponent<Renderer>().sharedMaterial.color);
+            photonView.RPC("InitialiseMarkerColor", RpcTarget.OthersBuffered, color);
         }
-    }
 
-    private bool IsOriginalOwner()
-    {
-        if (originalOwner == null)
-            return (photonView.Owner.ActorNumber == PhotonNetwork.LocalPlayer.ActorNumber);
+        markerColor = color;
 
-        return (originalOwner.ActorNumber == PhotonNetwork.LocalPlayer.ActorNumber);
+        GameObject markerLid = this.gameObject.transform.GetChild(0).GetChild(0).GetChild(0).gameObject;
+        markerLid.GetComponent<Renderer>().material.color = markerColor;
+
+        GameObject markerTip = this.gameObject.transform.GetChild(0).GetChild(2).GetChild(2).gameObject;
+        markerTip.GetComponent<Renderer>().material.color = markerColor;
     }
 }
