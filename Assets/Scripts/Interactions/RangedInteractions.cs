@@ -408,7 +408,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 selectedInteractionRenderer.Sprite = rangedInteractionSprite;
                 tracerVisibility = VisibilityStates.AlwaysOn;
                 SetPointerOpacityOne();
-                Toggle3DstickOff();
+                Set3DstickOff();
                 interactGrab.enabled = true;
                 break;
 
@@ -527,7 +527,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
         if (!isDetailsOnDemandActive)
         {
-            Toggle3DstickOff();
+            Set3DstickOff();
         }
     }
 
@@ -569,7 +569,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
         if (!isDetailsOnDemandActive)
         {
-            Toggle3DstickOff();
+            Set3DstickOff();
         }
     }
 
@@ -618,7 +618,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
         if (activeState == InteractionState.None)
         {
-            Toggle3DstickOff();
+            Set3DstickOff();
         }
     }
 
@@ -672,14 +672,14 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
                     if (chart.Is3D)
                     {
-                        Toggle3DstickOn();
+                        Set3DstickOn();
                         SetPointerOpacityZero();
                         brushingInput1.position = stickSphere.transform.position;
                         _3DDOD = true;
                     }
                     else
                     {
-                        Toggle3DstickOff();
+                        Set3DstickOff();
                         SetPointerOpacityOne();
                         brushingInput1.position = hit.point;
                         _3DDOD = false;
@@ -687,7 +687,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 }
                 else
                 {
-                    Toggle3DstickOff();
+                    Set3DstickOff();
                     SetPointerOpacityOne();
                     brushingInput1.position = hit.point;
                     _3DDOD = false;
@@ -712,22 +712,6 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
                 _3DDOD = false;
             }
         }
-
-        //// Disable 3d stick while writing
-        //if (interactGrab.GetGrabbedObject() != null)
-        //{
-        //    Toggle3DstickOff();
-        //}
-
-        //GameObject[] markerList = GameObject.FindGameObjectsWithTag("Marker");
-
-        //foreach ( GameObject marker in markerList)
-        //{
-        //    //Debug.Log("Marker is grabbed: " + marker.GetComponent<VRTK_InteractableObject>().IsGrabbed());
-
-        //    if (marker.GetComponent< VRTK_InteractableObject>().IsGrabbed())
-        //        Toggle3DstickOff();
-        //}
     }
 
     protected override void FixedUpdate()
@@ -785,7 +769,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             
             if (collidedObject.GetComponentInParent<Chart>().Is3D)
             {
-                Toggle3DstickOn();
+                Set3DstickOn();
                 SetPointerOpacityZero();
 
                 Vector3 stickPosition = stickSphere.transform.position;
@@ -794,7 +778,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
             }
             else
             {
-                Toggle3DstickOff();
+                Set3DstickOff();
                 SetPointerOpacityOne();
 
                 rangedBrush.transform.position = hit.point;
@@ -807,38 +791,11 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         }
         else
         {
-            Toggle3DstickOff();
+            Set3DstickOff();
             SetPointerOpacityOne();
 
             rangedBrush.transform.position = hit.point;
             brushingInput1.position = hit.point;
-
-            /*
-            if (isTriggerClicked)
-            {
-                if (!rangedBrush.activeSelf)
-                    rangedBrush.SetActive(true);
-
-                Toggle3DstickOn();
-                SetPointerOpacityZero();
-
-                Vector3 stickPosition = stickSphere.transform.position;
-                rangedBrush.transform.position = stickPosition;
-                brushingInput1.position = stickPosition;
-
-                brushingAndLinking.brushEnabled = true;
-
-                TriggerControllerVibration(0.025f);
-            }
-            else
-            {
-                rangedBrush.SetActive(false);
-                brushingAndLinking.brushEnabled = false;
-
-                Toggle3DstickOff();
-                SetPointerOpacityOne();
-            }
-            */
         }
 
         if (IsValidCollision())
@@ -1095,33 +1052,20 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
 
                 // Draw label at the point
 
-                //if (isChecking3D)
-                //{
-                //    Vector3 cursorPosition = vrtkPointer.pointerRenderer.GetPointerObjects()[1].transform.position;
-                //    networkedDetailsOnDemandLabel.transform.position = cursorPosition;
-                //    //Debug.Log("drawn at cursor position");
-                //}
-                //else
-                //{
-                //    networkedDetailsOnDemandLabel.transform.position = hit.point;
-                //    Debug.Log("hit.point: " + hit.point);
-                //}
                 if (_3DDOD)
                 {
                     networkedDetailsOnDemandLabel.transform.position = stickSphere.transform.position;
                     networkedDetailsOnDemandLabel.transform.rotation = Quaternion.LookRotation(stickSphere.transform.position - Camera.main.transform.position, Vector3.up);
-                    networkedDetailsOnDemandLabel.ToggleState(true);
-                    networkedDetailsOnDemandLabel.SetText(nearestIndices, visualisationToInspect);
-                    networkedDetailsOnDemandLabel.SetLinePosition(worldPos);
                 }
                 else
                 {
                     networkedDetailsOnDemandLabel.transform.position = hit.point;
                     networkedDetailsOnDemandLabel.transform.rotation = visualisationToInspect.transform.rotation;
-                    networkedDetailsOnDemandLabel.ToggleState(true);
-                    networkedDetailsOnDemandLabel.SetText(nearestIndices, visualisationToInspect);
-                    networkedDetailsOnDemandLabel.SetLinePosition(worldPos);
                 }
+
+                networkedDetailsOnDemandLabel.ToggleState(true);
+                networkedDetailsOnDemandLabel.SetText(nearestIndices, visualisationToInspect);
+                networkedDetailsOnDemandLabel.SetLinePosition(worldPos);
             }
             else
             {
@@ -1250,7 +1194,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         return go;
     }
 
-    private void Toggle3DstickOn()
+    private void Set3DstickOn()
     {
         if (pointerCustomisation != null)
         {
@@ -1258,7 +1202,7 @@ public class RangedInteractions : VRTK_StraightPointerRenderer {
         }
     }
 
-    private void Toggle3DstickOff()
+    private void Set3DstickOff()
     {
         if (pointerCustomisation != null)
         {

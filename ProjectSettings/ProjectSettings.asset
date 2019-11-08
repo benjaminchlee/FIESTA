@@ -657,7 +657,7 @@ PlayerSettings:
   cloudServicesEnabled:
     Analytics: 0
     Build: 0
-    Collab: 0
+    Collab: 1
     ErrorHub: 0
     Game_Performance: 0
     Hub: 0
@@ -683,10 +683,10 @@ PlayerSettings:
   facebookXfbml: 0
   facebookFrictionlessRequests: 1
   apiCompatibilityLevel: 3
-  cloudProjectId: df531f7d-ec5f-47d0-8e9f-50d585317cb2
+  cloudProjectId: 210f563a-98b5-418d-9f61-9bf2d88075ec
   framebufferDepthMemorylessMode: 0
-  projectName: FIESTA
-  organizationId: annikaxy
+  projectName: FIESTA3D
+  organizationId: benjaminchlee
   cloudEnabled: 0
   enableNativePlatformBackendsForNewInputSystem: 0
   disableOldInputManagerSupport: 0

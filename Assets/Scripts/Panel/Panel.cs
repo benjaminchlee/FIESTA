@@ -96,9 +96,6 @@ public class Panel : MonoBehaviourPunCallbacks
             standardChart.YDimension = dataSource[0].Identifier;
             //standardChart.ZDimension = dataSource[0].Identifier;
             standardChart.FacetSize = 1;
-            //standardChart.Width = standardTransform.localScale.x;
-            //standardChart.Height = standardTransform.localScale.y;
-            //standardChart.Depth = standardTransform.localScale.z;
             standardChart.transform.position = standardTransform.position;
             standardChart.transform.rotation = standardTransform.rotation;
 

@@ -115,5 +115,39 @@ MonoBehaviour:
   - SendParticipantNumberRPC
   - SetLineIDRPC
   - StopBeingDrawnRPC
+  - AttributeFiltersRPC
+  - ColliderActiveStateRPC
+  - ColorDimensionRPC
+  - ColorPaletteDimensionRPC
+  - ColorPaletteRPC
+  - ColorRPC
+  - DepthRPC
+  - FacetDimensionRPC
+  - FacetSizeRPC
+  - GeometryTypeRPC
+  - GradientRPC
+  - HeightRPC
+  - IDRPC
+  - IsPrototypeRPC
+  - KeyVisiblilityRPC
+  - LinkingDimensionRPC
+  - ResizeHandleVisibilityRPC
+  - ScaleRPC
+  - ScatterplotMatrixSizeRPC
+  - SizeDimensionRPC
+  - SizeRPC
+  - VisualisationTypeRPC
+  - WidthRPC
+  - XAxisVisibilityRPC
+  - XDimensionRPC
+  - XNormaliserRPC
+  - YAxisVisibilityRPC
+  - YDimensionRPC
+  - YNormaliserRPC
+  - ZAxisVisibilityRPC
+  - ZDimensionRPC
+  - ZNormaliserRPC
+  - PrivateBrushColorRPC
+  - SharedBrushColorRPC
   DisableAutoOpenWizard: 1
   ShowSettings: 1

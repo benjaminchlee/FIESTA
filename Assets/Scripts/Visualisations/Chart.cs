@@ -86,12 +86,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == chartType)
                 return;
 
-            photonView.RPC("PropagateVisualisationType", RpcTarget.All, value);
+            photonView.RPC("VisualisationTypeRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateVisualisationType(AbstractVisualisation.VisualisationTypes value)
+    private void VisualisationTypeRPC(AbstractVisualisation.VisualisationTypes value)
     {
         chartType = value;
 
@@ -121,12 +121,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == GeometryType)
                 return;
 
-            photonView.RPC("PropagateGeometryType", RpcTarget.All, value);
+            photonView.RPC("GeometryTypeRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateGeometryType(AbstractVisualisation.GeometryType value)
+    private void GeometryTypeRPC(AbstractVisualisation.GeometryType value)
     {
         visualisation.geometry = value;
         visualisation.updateViewProperties(AbstractVisualisation.PropertyType.GeometryType);
@@ -152,19 +152,19 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == XDimension)
                 return;
 
-            photonView.RPC("PropagateXDimension", RpcTarget.All, value);
+            photonView.RPC("XDimensionRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateXDimension(string value)
+    private void XDimensionRPC(string value)
     {
         visualisation.xDimension = value;
+        visualisation.updateViewProperties(AbstractVisualisation.PropertyType.X);
 
         switch (chartType)
         {
             case AbstractVisualisation.VisualisationTypes.SCATTERPLOT:
-                visualisation.updateViewProperties(AbstractVisualisation.PropertyType.X);
                 CenterVisualisation();
                 SetColliderBounds();
 
@@ -181,7 +181,7 @@ public class Chart : MonoBehaviourPunCallbacks
                 break;
         }
 
-        PropagateXNormaliser(new Vector2(0, 1));
+        XNormaliserRPC(new Vector2(0, 1));
     }
 
     public string YDimension
@@ -192,12 +192,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == YDimension)
                 return;
 
-            photonView.RPC("PropagateYDimension", RpcTarget.All, value);
+            photonView.RPC("YDimensionRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateYDimension(string value)
+    private void YDimensionRPC(string value)
     {
         visualisation.yDimension = value;
 
@@ -221,7 +221,7 @@ public class Chart : MonoBehaviourPunCallbacks
                 break;
         }
 
-        PropagateYNormaliser(new Vector2(0, 1));
+        YNormaliserRPC(new Vector2(0, 1));
     }
 
     public string ZDimension
@@ -232,12 +232,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == ZDimension)
                 return;
 
-            photonView.RPC("PropagateZDimension", RpcTarget.All, value);
+            photonView.RPC("ZDimensionRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateZDimension(string value)
+    private void ZDimensionRPC(string value)
     {
         visualisation.zDimension = value;
 
@@ -261,7 +261,7 @@ public class Chart : MonoBehaviourPunCallbacks
                 break;
         }
 
-        PropagateZNormaliser(new Vector2(0, 1));
+        ZNormaliserRPC(new Vector2(0, 1));
     }
 
     public Vector2 XNormaliser
@@ -272,12 +272,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == XNormaliser)
                 return;
 
-            photonView.RPC("PropagateXNormaliser", RpcTarget.All, value);
+            photonView.RPC("XNormaliserRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateXNormaliser(Vector2 value)
+    private void XNormaliserRPC(Vector2 value)
     {
         visualisation.xDimension.minScale = value.x;
         visualisation.xDimension.maxScale = value.y;
@@ -306,12 +306,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == YNormaliser)
                 return;
 
-            photonView.RPC("PropagateYNormaliser", RpcTarget.All, value);
+            photonView.RPC("YNormaliserRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateYNormaliser(Vector2 value)
+    private void YNormaliserRPC(Vector2 value)
     {
         visualisation.yDimension.minScale = value.x;
         visualisation.yDimension.maxScale = value.y;
@@ -340,12 +340,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == ZNormaliser)
                 return;
 
-            photonView.RPC("PropagateZNormaliser", RpcTarget.All, value);
+            photonView.RPC("ZNormaliserRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateZNormaliser(Vector2 value)
+    private void ZNormaliserRPC(Vector2 value)
     {
         visualisation.zDimension.minScale = value.x;
         visualisation.zDimension.maxScale = value.y;
@@ -374,12 +374,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == ColorDimension)
                 return;
 
-            photonView.RPC("PropagateColorDimension", RpcTarget.All, value);
+            photonView.RPC("ColorDimensionRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateColorDimension(string value)
+    private void ColorDimensionRPC(string value)
     {
         visualisation.colourDimension = value;
         visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
@@ -405,12 +405,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == ColorPaletteDimension)
                 return;
 
-            photonView.RPC("PropagateColorPaletteDimension", RpcTarget.All, value);
+            photonView.RPC("ColorPaletteDimensionRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateColorPaletteDimension(string value)
+    private void ColorPaletteDimensionRPC(string value)
     {
         visualisation.colorPaletteDimension = value;
 
@@ -441,12 +441,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == Color)
                 return;
 
-            photonView.RPC("PropagateColor", RpcTarget.All, value);
+            photonView.RPC("ColorRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateColor(Color value)
+    private void ColorRPC(Color value)
     {
         visualisation.colour = value;
         visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Colour);
@@ -480,7 +480,7 @@ public class Chart : MonoBehaviourPunCallbacks
                 gradientList.Add(colorKey.color.g);
                 gradientList.Add(colorKey.color.b);
             }
-            photonView.RPC("PropagateGradient", RpcTarget.Others, gradientList.ToArray());
+            photonView.RPC("GradientRPC", RpcTarget.Others, gradientList.ToArray());
 
             // Run for the owner only
             switch (chartType)
@@ -502,7 +502,7 @@ public class Chart : MonoBehaviourPunCallbacks
     }
 
     [PunRPC]
-    private void PropagateGradient(float[] gradientArray)
+    private void GradientRPC(float[] gradientArray)
     {
         // Create color keys from received array
         // Values are in order time, r, g, b
@@ -542,12 +542,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == visualisation.coloursPalette)
                 return;
 
-            photonView.RPC("PropagateColorPalette", RpcTarget.All, value);
+            photonView.RPC("ColorPaletteRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateColorPalette(Color[] value)
+    private void ColorPaletteRPC(Color[] value)
     {
         visualisation.coloursPalette = value;
 
@@ -576,12 +576,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == SizeDimension)
                 return;
             
-            photonView.RPC("PropagateSizeDimension", RpcTarget.All, value);
+            photonView.RPC("SizeDimensionRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateSizeDimension(string value)
+    private void SizeDimensionRPC(string value)
     {
         visualisation.sizeDimension = value;
         visualisation.updateViewProperties(AbstractVisualisation.PropertyType.Size);
@@ -611,12 +611,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == Size)
                 return;
 
-            photonView.RPC("PropagateSize", RpcTarget.All, value);
+            photonView.RPC("SizeRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateSize(float value)
+    private void SizeRPC(float value)
     {
         visualisation.size = value;
         visualisation.updateViewProperties(AbstractVisualisation.PropertyType.SizeValues);
@@ -639,12 +639,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (LinkingDimension != "Undefined" && value == LinkingDimension)
                 return;
 
-            photonView.RPC("PropagateLinkingDimension", RpcTarget.All, value);
+            photonView.RPC("LinkingDimensionRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateLinkingDimension(string value)
+    private void LinkingDimensionRPC(string value)
     {
         switch (chartType)
         {
@@ -719,12 +719,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == Scale)
                 return;
 
-            photonView.RPC("PropagateScale", RpcTarget.All, value);
+            photonView.RPC("ScaleRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateScale(Vector3 value)
+    private void ScaleRPC(Vector3 value)
     {
         visualisation.width = value.x;
         visualisation.height = value.y;
@@ -778,12 +778,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == Width)
                 return;
 
-            photonView.RPC("PropagateWidth", RpcTarget.All, value);
+            photonView.RPC("WidthRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateWidth(float value)
+    private void WidthRPC(float value)
     {
         visualisation.width = value;
         CenterVisualisation();
@@ -822,12 +822,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == Height)
                 return;
 
-            photonView.RPC("PropagateHeight", RpcTarget.All, value);
+            photonView.RPC("HeightRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateHeight(float value)
+    private void HeightRPC(float value)
     {
         visualisation.height = value;
         CenterVisualisation();
@@ -866,12 +866,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == Depth)
                 return;
 
-            photonView.RPC("PropagateDepth", RpcTarget.All, value);
+            photonView.RPC("DepthRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateDepth(float value)
+    private void DepthRPC(float value)
     {
         visualisation.depth = value;
         CenterVisualisation();
@@ -913,12 +913,12 @@ public class Chart : MonoBehaviourPunCallbacks
             // TODO: ONLY WORKS WITH ONE FILTER
             AttributeFilter af = value[0];
 
-            photonView.RPC("PropagateAttributeFilters", RpcTarget.All, af.Attribute, af.minFilter, af.maxFilter, af.minScale, af.maxScale);
+            photonView.RPC("AttributeFiltersRPC", RpcTarget.All, af.Attribute, af.minFilter, af.maxFilter, af.minScale, af.maxScale);
         }
     }
 
     [PunRPC]
-    private void PropagateAttributeFilters(string attribute, float minFilter, float maxFilter, float minScale, float maxScale)
+    private void AttributeFiltersRPC(string attribute, float minFilter, float maxFilter, float minScale, float maxScale)
     {
         AttributeFilter af = new AttributeFilter()
         {
@@ -944,12 +944,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == scatterplotMatrixSize)
                 return;
 
-            photonView.RPC("PropagateScatterplotMatrixSize", RpcTarget.All, value);
+            photonView.RPC("ScatterplotMatrixSizeRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateScatterplotMatrixSize(int value)
+    private void ScatterplotMatrixSizeRPC(int value)
     {
         if (VisualisationType == AbstractVisualisation.VisualisationTypes.SCATTERPLOT_MATRIX)
         {
@@ -967,12 +967,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == facetDimension)
                 return;
             
-            photonView.RPC("PropagateFacetDimension", RpcTarget.All, value);
+            photonView.RPC("FacetDimensionRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateFacetDimension(string value)
+    private void FacetDimensionRPC(string value)
     {
         facetDimension = value;
 
@@ -1000,12 +1000,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == facetSize)
                 return;
 
-            photonView.RPC("PropagateFacetSize", RpcTarget.All, value);
+            photonView.RPC("FacetSizeRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateFacetSize(int value)
+    private void FacetSizeRPC(int value)
     {
         facetSize = value;
 
@@ -1024,12 +1024,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == isPrototype)
                 return;
 
-            photonView.RPC("PropagateIsPrototype", RpcTarget.All, value);
+            photonView.RPC("IsPrototypeRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateIsPrototype(bool value)
+    private void IsPrototypeRPC(bool value)
     {
         isPrototype = value;
     }
@@ -1046,12 +1046,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == XAxisVisibility || visualisation.theVisualizationObject.X_AXIS == null)
                 return;
 
-            photonView.RPC("PropagateXAxisVisibility", RpcTarget.All, value);
+            photonView.RPC("XAxisVisibilityRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateXAxisVisibility(bool value)
+    private void XAxisVisibilityRPC(bool value)
     {
         visualisation.theVisualizationObject.X_AXIS.SetActive(value);
     }
@@ -1068,12 +1068,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == YAxisVisibility || visualisation.theVisualizationObject.Y_AXIS == null)
                 return;
 
-            photonView.RPC("PropagateYAxisVisibility", RpcTarget.All, value);
+            photonView.RPC("YAxisVisibilityRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateYAxisVisibility(bool value)
+    private void YAxisVisibilityRPC(bool value)
     {
         visualisation.theVisualizationObject.Y_AXIS.SetActive(value);
     }
@@ -1090,12 +1090,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == ZAxisVisibility || visualisation.theVisualizationObject.Z_AXIS == null)
                 return;
 
-            photonView.RPC("PropagateZAxisVisibility", RpcTarget.All, value);
+            photonView.RPC("ZAxisVisibilityRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateZAxisVisibility(bool value)
+    private void ZAxisVisibilityRPC(bool value)
     {
         visualisation.theVisualizationObject.Z_AXIS.SetActive(value);
     }
@@ -1111,12 +1111,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == KeyVisiblility || visualisation.key == null)
                 return;
 
-            photonView.RPC("PropagateKeyVisibility", RpcTarget.All, value);
+            photonView.RPC("KeyVisiblilityRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateKeyVisibility(bool value)
+    private void KeyVisiblilityRPC(bool value)
     {
         visualisation.key.SetActive(value);
     }
@@ -1133,12 +1133,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == resizeHandleVisibility)
                 return;
 
-            photonView.RPC("PropagateResizeHandleVisibility", RpcTarget.All, value);
+            photonView.RPC("ResizeHandleVisibilityRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateResizeHandleVisibility(bool value)
+    private void ResizeHandleVisibilityRPC(bool value)
     {
         resizeHandleVisibility = value;
 
@@ -1159,12 +1159,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == ColliderActiveState)
                 return;
 
-            photonView.RPC("PropagateColliderActiveState", RpcTarget.All, value);
+            photonView.RPC("ColliderActiveStateRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateColliderActiveState(bool value)
+    private void ColliderActiveStateRPC(bool value)
     {
         GetComponent<Collider>().enabled = value;
         transform.Find("RaycastCollider").GetComponent<Collider>().enabled = value;
@@ -1178,12 +1178,12 @@ public class Chart : MonoBehaviourPunCallbacks
             if (value == id)
                 return;
 
-            photonView.RPC("PropagateID", RpcTarget.All, value);
+            photonView.RPC("IDRPC", RpcTarget.All, value);
         }
     }
 
     [PunRPC]
-    private void PropagateID(string value)
+    private void IDRPC(string value)
     {
         id = value;
     }
@@ -1856,27 +1856,7 @@ public class Chart : MonoBehaviourPunCallbacks
         float zRaycastSize = (ZDimension != "Undefined") ? zBoxSize + 0.125f : 0.01f;
 
         raycastCollider.size = new Vector3(xRaycastSize, yRaycastSize, zRaycastSize);
-
-        /*
-        //NEW: adjust the center of the collider to fit the 3D vis
-        //float zColliderCenter = - (zSize - 1) / 2;
-        float zColliderCenter = - zSize / 2;
-        boxCollider.center = new Vector3(0, 0, zColliderCenter);
-        //Debug.Log("boxCollider.center " + boxCollider.center);
-        //Debug.Log("boxCollider.size " + boxCollider.size);
-
-        if (Is3D)
-        {
-            raycastCollider.center = new Vector3(0, 0, zColliderCenter);
-            raycastCollider.size = new Vector3(xSize + 0.125f, ySize + 0.125f, zSize + 0.125f);
-        }
-        else
-        {
-            raycastCollider.center = new Vector3(0, 0, 0);
-            raycastCollider.size = new Vector3(xSize + 0.125f, ySize + 0.125f, 0.01f);
-        }
-        */
-
+        
         // Disable colliders if this is not a scatterplot
         if (VisualisationType != AbstractVisualisation.VisualisationTypes.SCATTERPLOT)
         {
@@ -1895,8 +1875,6 @@ public class Chart : MonoBehaviourPunCallbacks
 
         //visualisationGameObject.transform.DOLocalMove(new Vector3(-x, -y, -z), 0.1f).SetEase(Ease.OutCubic);
         visualisationGameObject.transform.localPosition = new Vector3(-x, -y, -z);
-
-        //Debug.Log(visualisationGameObject.transform.localPosition);
 
         // Reposition the key
         switch (chartType)

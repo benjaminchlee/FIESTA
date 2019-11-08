@@ -24,9 +24,7 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks, IPunObservable {
     ComputeBuffer brushedIndicesBuffer;
     ComputeBuffer filteredIndicesBuffer;
     ComputeBuffer nearestDistancesBuffer;
-
-    GameObject rc;
-
+    
     [SerializeField]
     public Material myRenderMaterial;
 
@@ -93,12 +91,12 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks, IPunObservable {
         get { return privateBrushColor; }
         set
         {
-            photonView.RPC("PropagatePrivateBrushColor", RpcTarget.AllBuffered, value);
+            photonView.RPC("PrivateBrushColorRPC", RpcTarget.AllBuffered, value);
         }
     }
 
     [PunRPC]
-    private void PropagatePrivateBrushColor(Color value)
+    private void PrivateBrushColorRPC(Color value)
     {
         privateBrushColor = value;
 
@@ -110,12 +108,12 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks, IPunObservable {
         get { return sharedBrushColor; }
         set
         {
-            photonView.RPC("PropagateSharedBrushColor", RpcTarget.AllBuffered, value);
+            photonView.RPC("SharedBrushColorRPC", RpcTarget.AllBuffered, value);
         }
     }
 
     [PunRPC]
-    private void PropagateSharedBrushColor(Color value)
+    private void SharedBrushColorRPC(Color value)
     {
         sharedBrushColor = value;
         
@@ -139,14 +137,13 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks, IPunObservable {
         InitialiseBuffersAndTextures();
 
         ResetBrushTexture();
-
-        rc = GameObject.Find("RightController");
     }
     
     private void Update()
     {
         if (brushEnabled)
         {
+            // Get list of visualisations that the brush is touching
             switch (BRUSH_TYPE)
             {
                 case BrushType.SPHERE:
@@ -163,21 +160,18 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks, IPunObservable {
                     Debug.LogError("Box brushing not fully implemented nor tested.");
                     break;
             }
-        }
-       // updateNearestDistances();
-        //if (input1 != null && input2 != null)
-        {
-            // Called when brushing
-            if (brushEnabled && brushingVisualisations.Count != 0)
+
+            // Update the brush texture (i.e. get brushed points) only when there is at least one touching visualisation
+            if (brushingVisualisations.Count != 0)
             {
                 updateBrushTexture();
             }
+        }
 
-            //called when details on demand
-            if (inspectButtonController && visualisationToInspect != null)
-            {
-                updateNearestDistances();
-            }
+        // Called for details on demand
+        if (inspectButtonController && visualisationToInspect != null)
+        {
+            updateNearestDistances();
         }
     }
 
@@ -318,8 +312,7 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks, IPunObservable {
 
     public void updateBrushTexture()
     {
-        //bla.ReadPixels(new Rect(),0,0).
-        //set brushgin mode
+        // Set brushing mode
         computeShader.SetInt("BrushMode", (int) (BRUSH_TYPE));
         computeShader.SetInt("SelectionMode", (int) (SELECTION_TYPE));
 
@@ -333,29 +326,15 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks, IPunObservable {
             switch (BRUSH_TYPE)
             {
                 case BrushType.SPHERE:
-                    //projectedPointer1 = brushingVisualisation.transform.InverseTransformPoint(Vector3.one / 2f);
-
-                    //                    projectedPointer1 = brushingVisualisation.transform.InverseTransformPoint(input1.transform.position);
-                    //Vector3 rightcontrollerPosition = GameObject.Find("Controller (right)").transform.position;
-
-                    //Vector3 threedStickPosition = GameObject.Find("StickSphere").transform.position;
-
-                    //projectedPointer1 = visualisationToInspect.transform.InverseTransformPoint(threedStickPosition);
-
-
                     projectedPointer1 = brushingVisualisation.transform.InverseTransformPoint(input1.transform.position);
-
-                    //  Vector3 
+                    
                     computeShader.SetFloats("pointer1", projectedPointer1.x, projectedPointer1.y, projectedPointer1.z);
 
                     break;
                 case BrushType.BOX:
-                    projectedPointer1 =
-                        brushingVisualisation.transform.InverseTransformPoint(input1.transform.position);
-                    projectedPointer2 =
-                        brushingVisualisation.transform.InverseTransformPoint(input2.transform.position);
-
-                    //  Vector3 
+                    projectedPointer1 = brushingVisualisation.transform.InverseTransformPoint(input1.transform.position);
+                    projectedPointer2 = brushingVisualisation.transform.InverseTransformPoint(input2.transform.position);
+                    
                     computeShader.SetFloats("pointer1", projectedPointer1.x, projectedPointer1.y, projectedPointer1.z);
                     computeShader.SetFloats("pointer2", projectedPointer2.x, projectedPointer2.y, projectedPointer2.z);
                     break;
@@ -401,24 +380,10 @@ public class BrushingAndLinking : MonoBehaviourPunCallbacks, IPunObservable {
                 nearestDistances = nearestDistancesRequest.GetData<float>().ToList();
                 NearestDistancesComputed.Invoke(nearestDistances);
             }
-
-            // Dispatch again
-            //Vector3 projectedPointer;
-
+            
             UpdateComputeBuffers(visualisationToInspect);
 
-            //  projectedPointer = visualisationToInspect.transform.InverseTransformPoint(Vector3.one/2f);
-
             Vector3 inversePosition = visualisationToInspect.transform.InverseTransformPoint(input1.transform.position);
-
-           // Vector3 rightcontrollerPosition = GameObject.Find("Controller (right)").transform.position;
-
-            //Vector3 inversePosition = visualisationToInspect.transform.InverseTransformPoint(rightcontrollerPosition);
-            //print("-->> brushing2: " +inversePosition.ToString("G8"));
-
-            //projectedPointer = new Vector3(0.1f, 0.1f, 0.1f);
-
-//            computeShader.SetFloats("pointer1", projectedPointer.x, projectedPointer.y, projectedPointer.z);
             computeShader.SetFloats("pointer1", inversePosition.x, inversePosition.y, inversePosition.z);
 
             //set the filters and normalisation values of the brushing visualisation to the computer shader
