@@ -51,6 +51,7 @@ public class DataReplayer : MonoBehaviour
     public bool showAnnotations = true;
     public bool showSpectator = true;
     public bool use2D3DVisualisationColors = false;
+    public bool useBlocksForVisualisations = false;
 
     private Mode mode;
     private bool isRunnning;
@@ -516,17 +517,28 @@ public class DataReplayer : MonoBehaviour
                                 case "Visualisation":
                                     if (showVisualisations)
                                     {
-                                        // If is 2D
-                                        if (objectValues[17] == "Undefined")
-                                            go = Instantiate(replayVisualisation2DPrefab);
-                                        // If is 3D
-                                        else
-                                            go = Instantiate(replayVisualisation3DPrefab);
+                                        if (objectValues[14] != "")
+                                        {
+                                            if (!useBlocksForVisualisations)
+                                            {
+                                                // If is 2D
+                                                if (objectValues[17] == "Undefined")
+                                                    go = Instantiate(replayVisualisation2DPrefab);
+                                                // If is 3D
+                                                else
+                                                    go = Instantiate(replayVisualisation3DPrefab);
+                                            }
+                                            else
+                                            {
+                                                go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                                            }
 
-                                        Vector3 scale = new Vector3(float.Parse(objectValues[11]), float.Parse(objectValues[12]), float.Parse(objectValues[13]));
-                                        go.transform.position = pos;
-                                        go.transform.rotation = rot;
-                                        go.transform.localScale = scale;
+                                            Vector3 scale = (objectValues[17] != "Undefined") ? new Vector3(float.Parse(objectValues[11]), float.Parse(objectValues[12]), float.Parse(objectValues[13])) : new Vector3(float.Parse(objectValues[11]), float.Parse(objectValues[12]), 0.1f);
+
+                                            go.transform.position = pos;
+                                            go.transform.rotation = rot;
+                                            go.transform.localScale = scale;
+                                        }
                                     }
                                     break;
                             }
@@ -536,7 +548,7 @@ public class DataReplayer : MonoBehaviour
                                 int originalOwner = GetID(objectValues[2]);
                                 int currentOwner = GetID(objectValues[3]);
 
-                                if (objectValues[1] == "Visualisation")
+                                if (objectValues[1] == "Visualisation" && use2D3DVisualisationColors)
                                 {
                                     ColorVisualisationObject(go, objectValues[17] != "Undefined");
                                 }

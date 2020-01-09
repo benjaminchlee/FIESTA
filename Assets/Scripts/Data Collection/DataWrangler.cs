@@ -152,6 +152,45 @@ public class DataWrangler : MonoBehaviour
         Debug.Log("Consolidating all player and action data done!");
     }
 
+    public void ConsolidateObjectData()
+    {
+        string path = string.Format("{0}Study1_Group{1}_AllObjectData.txt", outputFolder, groupID);
+
+        StreamWriter streamWriter = new StreamWriter(path, true);
+
+        int startIndex = (groupID - 1) * 4;
+        bool isHeaderWritten = false;
+        int questionNo = 1;
+
+        for (int a = startIndex; a < startIndex + 4; a++)
+        {
+            TextAsset objectData = objectDataFiles[a];
+
+            string[] objectDataLines = objectData.text.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            
+            if (!isHeaderWritten)
+            {
+                // Write header
+                streamWriter.Write("QuestionID\t");
+                streamWriter.WriteLine(objectDataLines[0]);
+
+                isHeaderWritten = true;
+            }
+
+            for (int i = 1; i < objectDataLines.Length; i++)
+            {
+                streamWriter.Write(questionNo + "\t");
+                streamWriter.WriteLine(objectDataLines[i]);
+            }
+
+            questionNo++;
+        }
+
+        streamWriter.Close();
+
+        Debug.Log("Consolidating all object data done!");
+    }
+    
     public void ProcessAllActionData()
     {
         string path = string.Format("{0}Group{1}_ProcessedActions.txt", outputFolder, groupID);
@@ -252,7 +291,7 @@ public class DataWrangler : MonoBehaviour
 
     public void ProcessLookingAtVisualisations()
     {
-        string path = string.Format("{0}Group{1}_LookingAtVisualisationDuration.txt", outputFolder, groupID);
+        string path = string.Format("{0}Study2_Group{1}_LookingAtVisualisationDuration.txt", outputFolder, groupID);
         StreamWriter streamWriter = new StreamWriter(path, true);
 
         // Write header
@@ -302,7 +341,7 @@ public class DataWrangler : MonoBehaviour
                     {
                         string[] objectValues = objectDataLines[j].Split('\t');
 
-                        if (currentTimestamp > float.Parse(objectValues[0]) && objectValues[14] == visualisationID)
+                        if (float.Parse(objectValues[0]) > currentTimestamp && objectValues[14] == visualisationID)
                         {
                             objectIndex = j;
 
@@ -318,20 +357,20 @@ public class DataWrangler : MonoBehaviour
                             float x = float.Parse(objectValues[4]);
                             float z = float.Parse(objectValues[6]);
 
-                            // If the visualisation is in the wall region
-                            if ((-2 < x && x < -1.5) || (1.5 < x && x < 2) || (-2 < z && z < -1.5) || (1.5 < z && z < 2))
-                            {
-                                durationWall += timestampDuration;
-                            }
                             // If the visualisation is in the table region
-                            else if ((-0.5 < x && x < 0.5) && (-0.5 < z && z < 0.5))
+                            if ((-0.5f < x && x < 0.5f) && (-0.5f < z && z < 0.5f))
                             {
                                 durationTable += timestampDuration;
                             }
-                            // If the visualisation is in the "in-between" region
-                            else if ((-1.5 < x && x < -0.5) || (0.5 < x && x < 1.5) || (-1.5 < z && z < -0.5) || (0.5 < z && z < 1.5))
+                            // If the visualisation is in the in-between region
+                            else if ((-1.5f < x && x < 1.5f) && (-1.5f < z && z < 1.5f))
                             {
                                 durationInBetween += timestampDuration;
+                            }
+                            // If the visualisation is in the wall region
+                            else if ((-2f < x && x < 2f) && (-2f < z && z < 2f))
+                            {
+                                durationWall += timestampDuration;
                             }
 
                             break;

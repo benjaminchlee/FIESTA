@@ -19,7 +19,12 @@ public class DataWranglerEditor : Editor
         {
             dataWrangler.ConsolidateAllPlayerAndActionData();
         }
-        
+
+        if (GUILayout.Button("Consolidate All Object Data"))
+        {
+            dataWrangler.ConsolidateObjectData();
+        }
+
         if (GUILayout.Button("Process Action Data"))
         {
             dataWrangler.ProcessAllActionData();
