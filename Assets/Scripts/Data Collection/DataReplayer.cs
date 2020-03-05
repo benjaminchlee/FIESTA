@@ -18,23 +18,33 @@ public class DataReplayer : MonoBehaviour
     public GameObject replayRightHandPrefab;
     public GameObject replayVisualisation2DPrefab;
     public GameObject replayVisualisation3DPrefab;
-    public GameObject replayPanelPrefab;
+    public GameObject replayPartAPanelPrefab;
+    public GameObject replayPartBPanelPrefab;
     public GameObject replayMarkerPrefab;
     public GameObject replayEraserPrefab;
     public GameObject replayLinePrefab;
 
     [Header("General Settings")]
+    [Range(1, 2)]
+    public int study = 1;
     [Range(1, 5)]
     public int groupID = 1;
     [Range(1, 4)]
     public int questionID = 1;
+    public bool useOwnershipColors = true;
     public bool useDynamicOwnershipColors = false;
     public Color player1Color = Color.red;
     public Color player2Color = Color.blue;
     public Color player3Color = Color.green;
-    public List<TextAsset> playerDataFiles;
-    public List<TextAsset> objectDataFiles;
-    public List<TextAsset> annotationDataFiles;
+
+    [Header("Part A Data Files")]
+    public List<TextAsset> A_playerDataFiles;
+    public List<TextAsset> A_objectDataFiles;
+
+    [Header("Part B Data Files")]
+    public List<TextAsset> B_playerDataFiles;
+    public List<TextAsset> B_objectDataFiles;
+    public List<TextAsset> B_annotationDataFiles;
 
     [Header("Replay Settings")]
     public int replayInterval = 100;
@@ -55,6 +65,7 @@ public class DataReplayer : MonoBehaviour
 
     private Mode mode;
     private bool isRunnning;
+    private bool isPaused;
     private Coroutine replayCoroutine;
 
     private void Awake()
@@ -89,10 +100,21 @@ public class DataReplayer : MonoBehaviour
         }
     }
     
+
+    public void StartStopReplay()
+    {
+        isPaused = !isPaused;
+    }
+
     private IEnumerator LiveReplay()
     {
         isRunnning = true;
+        isPaused = false;
 
+        List<TextAsset> playerDataFiles = (study == 1) ? A_playerDataFiles : B_playerDataFiles;
+        List<TextAsset> objectDataFiles = (study == 1) ? A_objectDataFiles :B_objectDataFiles;
+        List<TextAsset> annotationDataFiles = (study == 1) ? null : B_annotationDataFiles; // Part A has no annotations
+        
         List<GameObject> players = new List<GameObject>();
         List<GameObject> leftHands = new List<GameObject>();
         List<GameObject> rightHands = new List<GameObject>();
@@ -118,20 +140,19 @@ public class DataReplayer : MonoBehaviour
             ColorObject(rightHand, i);
             rightHands.Add(rightHand);
 
-            GameObject panel = Instantiate(replayPanelPrefab);
-            //ColorObject(panel, i);
+            GameObject panel = Instantiate(study == 1 ? replayPartAPanelPrefab : replayPartBPanelPrefab);
             panels.Add(panel);
 
-            GameObject marker = Instantiate(replayMarkerPrefab);
-            //ColorObject(marker, i);
-            markers.Add(marker);
+            if (study == 2)
+            {
+                GameObject marker = Instantiate(replayMarkerPrefab);
+                markers.Add(marker);
 
-            GameObject eraser = Instantiate(replayEraserPrefab);
-            //ColorObject(eraser, i);
-            erasers.Add(eraser);
+                GameObject eraser = Instantiate(replayEraserPrefab);
+                erasers.Add(eraser);
+            }
         }
         GameObject spectator = Instantiate(replayPlayerPrefab);
-        //ColorObject(spectator, 3);
         players.Add(spectator);
 
 
@@ -139,16 +160,24 @@ public class DataReplayer : MonoBehaviour
         string[] playerDataLines2 = playerDataFiles[(groupID - 1) * 12 + (questionID - 1) * 3 + 1].text.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
         string[] playerDataLines3 = playerDataFiles[(groupID - 1) * 12 + (questionID - 1) * 3 + 2].text.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
         string[] objectDataLines = objectDataFiles[(groupID - 1) * 4 + questionID - 1].text.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-        string[] annotationDataLines = annotationDataFiles[(groupID - 1) * 4 + questionID - 1].text.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        string[] annotationDataLines = null;
+        if (study == 2) annotationDataLines = annotationDataFiles[(groupID - 1) * 4 + questionID - 1].text.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
         int j = 1;
         int l = 1;
 
-        for (int i = 1; i < playerDataLines1.Length; i += replayInterval)
+        for (int i = 1; i < playerDataLines1.Length; i += (isPaused) ? 0 : replayInterval)
         {
+            if (isPaused)
+            {
+                yield return new WaitForEndOfFrame();
+                continue;
+            }
+
             float currentTime = float.Parse(playerDataLines1[i].Split('\t')[0]);
             
             int lineCounter = 0;
+            int visCounter = 0;
             
             foreach (var key in chartsDictionary.Keys)
             {
@@ -165,16 +194,27 @@ public class DataReplayer : MonoBehaviour
                 {
                     string type = values[1];
                     int originalOwner = GetID(values[2]);
-                    int currentOwner = GetID(values[3]);
+                    int currentOwner = GetID(values[(study == 2) ? 3 : 2]);
 
-                    Vector3 pos = new Vector3(float.Parse(values[4]), float.Parse(values[5]), float.Parse(values[6]));
-                    Quaternion rot = new Quaternion(float.Parse(values[7]), float.Parse(values[8]), float.Parse(values[9]), float.Parse(values[10]));
+                    Vector3 pos;
+                    Quaternion rot;
+                    if (study == 1)
+                    {
+                        pos = new Vector3(float.Parse(values[3]), float.Parse(values[4]), float.Parse(values[5]));
+                        rot = new Quaternion(float.Parse(values[6]), float.Parse(values[7]), float.Parse(values[8]), float.Parse(values[9]));
+                    }
+                    else
+                    {
+                        pos = new Vector3(float.Parse(values[4]), float.Parse(values[5]), float.Parse(values[6]));
+                        rot = new Quaternion(float.Parse(values[7]), float.Parse(values[8]), float.Parse(values[9]), float.Parse(values[10]));
+                    }
                     
                     switch (type)
                     {
                         case "Panel":
                             GameObject panel = panels[originalOwner];
-                            ColorObject(panel, originalOwner, currentOwner);
+                            if (useOwnershipColors) ColorObject(panel, originalOwner, currentOwner);
+                            else panel.tag = "Replay";
                             panel.transform.position = pos;
                             panel.transform.rotation = rot;
                             break;
@@ -200,84 +240,136 @@ public class DataReplayer : MonoBehaviour
                             break;
 
                         case "Visualisation":
-                            string id = values[14];
-                            // Make sure vis has an ID
-                            if (id == "")
-                                break;
-                            
-                            Chart chart;
-                            if (chartsDictionary.ContainsKey(id))
+                            // Part B has much more information logged than Part A
+                            if (study == 1)
                             {
-                                chart = chartsDictionary[id];
+                                float width = 0, height = 0, depth = 0;
+                                if (values.Length > 10)
+                                {
+                                    width = float.Parse(values[10]);
+                                    height = float.Parse(values[11]);
+                                    depth = float.Parse(values[12]);
+
+                                    // Try to skip the "panel visualisation holder"
+                                    if (width == 0.9f && height == 0.9f && depth == 1f)
+                                    {
+                                        break;
+                                    }
+                                }
+
+                                string id = visCounter.ToString();
+
+                                Chart chart;
+                                if (chartsDictionary.ContainsKey(id))
+                                {
+                                    chart = chartsDictionary[id];
+                                }
+                                else
+                                {
+                                    chart = ChartManager.Instance.CreateVisualisation("");
+                                    chartsDictionary[id] = chart;
+
+                                    chart.XDimension = "Date";
+                                    chart.YDimension = "Price";
+                                    chart.GeometryType = IATK.AbstractVisualisation.GeometryType.Points;
+                                }
+
+                                visitedCharts[id] = true;
+                                visCounter++;
+
+                                if (values.Length > 10)
+                                {
+                                    chart.Width = width;
+                                    chart.Height = height;
+                                    chart.Depth = depth;
+                                }
+
+                                if (useOwnershipColors) ColorObject(chart.gameObject, originalOwner, originalOwner);
+                                else chart.gameObject.tag = "Replay";
+                                chart.transform.position = pos;
+                                chart.transform.rotation = rot;
                             }
-                            else
+                            if (study == 2)
                             {
-                                chart = ChartManager.Instance.CreateVisualisation("");
-                                chartsDictionary[id] = chart;
-                            }
+                                string id = values[14];
+                                // Make sure vis has an ID
+                                if (id == "")
+                                    break;
 
-                            visitedCharts[id] = true;
+                                Chart chart;
+                                if (chartsDictionary.ContainsKey(id))
+                                {
+                                    chart = chartsDictionary[id];
+                                }
+                                else
+                                {
+                                    chart = ChartManager.Instance.CreateVisualisation("");
+                                    chartsDictionary[id] = chart;
+                                }
 
-                            float width = float.Parse(values[11]);
-                            float height = float.Parse(values[12]);
-                            float depth = float.Parse(values[13]);
-                            string xDimension = values[15];
-                            string yDimension = values[16];
-                            string zDimension = values[17];
-                            float size = float.Parse(values[18]);
-                            string sizeDimension = values[19];
-                            string colorTmp = values[20];
-                            string colorDimension = values[21];
-                            string facetDimension = values[22];
-                            int facetSize = int.Parse(values[23]);
-                            string xNormaliserTmp = values[24];
-                            string yNormaliserTmp = values[25];
-                            string zNormaliserTmp = values[26];
+                                visitedCharts[id] = true;
 
-                            string[] colorSplit = colorTmp.Replace("RGBA(", "").Replace(")", "").Split(',');
-                            Color color = new Color(float.Parse(colorSplit[0].Trim()), float.Parse(colorSplit[1].Trim()), float.Parse(colorSplit[2].Trim()), float.Parse(colorSplit[3].Trim()));
+                                float width = float.Parse(values[11]);
+                                float height = float.Parse(values[12]);
+                                float depth = float.Parse(values[13]);
+                                string xDimension = values[15];
+                                string yDimension = values[16];
+                                string zDimension = values[17];
+                                float size = float.Parse(values[18]);
+                                string sizeDimension = values[19];
+                                string colorTmp = values[20];
+                                string colorDimension = values[21];
+                                string facetDimension = values[22];
+                                int facetSize = int.Parse(values[23]);
+                                string xNormaliserTmp = values[24];
+                                string yNormaliserTmp = values[25];
+                                string zNormaliserTmp = values[26];
 
-                            string[] xNormSplit = xNormaliserTmp.Replace("(", "").Replace(")", "").Split(',');
-                            Vector2 xNormaliser = new Vector2(float.Parse(xNormSplit[0].Trim()), float.Parse(xNormSplit[1].Trim()));
-                            string[] yNormSplit = yNormaliserTmp.Replace("(", "").Replace(")", "").Split(',');
-                            Vector2 yNormaliser = new Vector2(float.Parse(yNormSplit[0].Trim()), float.Parse(yNormSplit[1].Trim()));
-                            string[] zNormSplit = zNormaliserTmp.Replace("(", "").Replace(")", "").Split(',');
-                            Vector2 zNormaliser = new Vector2(float.Parse(zNormSplit[0].Trim()), float.Parse(zNormSplit[1].Trim()));
+                                string[] colorSplit = colorTmp.Replace("RGBA(", "").Replace(")", "").Split(',');
+                                Color color = new Color(float.Parse(colorSplit[0].Trim()), float.Parse(colorSplit[1].Trim()), float.Parse(colorSplit[2].Trim()), float.Parse(colorSplit[3].Trim()));
 
-                            chart.VisualisationType = IATK.AbstractVisualisation.VisualisationTypes.SCATTERPLOT;
-                            chart.XDimension = xDimension;
-                            chart.YDimension = yDimension;
-                            chart.ZDimension = zDimension;
-                            chart.XNormaliser = xNormaliser;
-                            chart.YNormaliser = yNormaliser;
-                            chart.ZNormaliser = zNormaliser;
-                            chart.Size = size;
-                            chart.SizeDimension = sizeDimension;
-                            chart.Color = color;
-                            chart.ColorDimension = colorDimension;
-                            chart.FacetDimension = facetDimension;
-                            chart.FacetSize = facetSize;
-                            chart.Width = width;
-                            chart.Height = height;
-                            chart.Depth = depth;
-                            chart.GeometryType = IATK.AbstractVisualisation.GeometryType.Points;
+                                string[] xNormSplit = xNormaliserTmp.Replace("(", "").Replace(")", "").Split(',');
+                                Vector2 xNormaliser = new Vector2(float.Parse(xNormSplit[0].Trim()), float.Parse(xNormSplit[1].Trim()));
+                                string[] yNormSplit = yNormaliserTmp.Replace("(", "").Replace(")", "").Split(',');
+                                Vector2 yNormaliser = new Vector2(float.Parse(yNormSplit[0].Trim()), float.Parse(yNormSplit[1].Trim()));
+                                string[] zNormSplit = zNormaliserTmp.Replace("(", "").Replace(")", "").Split(',');
+                                Vector2 zNormaliser = new Vector2(float.Parse(zNormSplit[0].Trim()), float.Parse(zNormSplit[1].Trim()));
 
-                            // Create placeholder gradient
-                            Gradient grad = new Gradient();
-                            grad.colorKeys = new GradientColorKey[] {
+                                chart.VisualisationType = IATK.AbstractVisualisation.VisualisationTypes.SCATTERPLOT;
+                                chart.XDimension = xDimension;
+                                chart.YDimension = yDimension;
+                                chart.ZDimension = zDimension;
+                                chart.XNormaliser = xNormaliser;
+                                chart.YNormaliser = yNormaliser;
+                                chart.ZNormaliser = zNormaliser;
+                                chart.Size = size;
+                                chart.SizeDimension = sizeDimension;
+                                chart.Color = color;
+                                chart.ColorDimension = colorDimension;
+                                chart.FacetDimension = facetDimension;
+                                chart.FacetSize = facetSize;
+                                chart.Width = width;
+                                chart.Height = height;
+                                chart.Depth = depth;
+                                chart.GeometryType = IATK.AbstractVisualisation.GeometryType.Points;
+
+                                // Create placeholder gradient
+                                Gradient grad = new Gradient();
+                                grad.colorKeys = new GradientColorKey[] {
                                 new GradientColorKey() { color = Color.white, time = 0.0f },
                                 new GradientColorKey() { color = Color.red, time = 1.0f }
-                            };
-                            grad.alphaKeys = new GradientAlphaKey[] {
+                                };
+                                grad.alphaKeys = new GradientAlphaKey[] {
                                 new GradientAlphaKey() { alpha = 1.0f, time = 0.0f },
                                 new GradientAlphaKey() { alpha = 1.0f, time = 1.0f }
-                            };
-                            chart.Gradient = grad;
+                                };
+                                chart.Gradient = grad;
 
-                            ColorObject(chart.gameObject, originalOwner, currentOwner);
-                            chart.transform.position = pos;
-                            chart.transform.rotation = rot;
-
+                                if (useOwnershipColors) ColorObject(chart.gameObject, originalOwner, currentOwner);
+                                else chart.gameObject.tag = "Replay";
+                                chart.transform.position = pos;
+                                chart.transform.rotation = rot;
+                            }
                             break;
                     }
 
@@ -340,67 +432,69 @@ public class DataReplayer : MonoBehaviour
             rightHands[2].transform.position = new Vector3(float.Parse(playerValues3[19]), float.Parse(playerValues3[20]), float.Parse(playerValues3[21]));
             rightHands[2].transform.rotation = new Quaternion(float.Parse(playerValues3[22]), float.Parse(playerValues3[23]), float.Parse(playerValues3[24]), float.Parse(playerValues3[25]));
 
-
-            // Position annotations at this timestep
-            while (l < annotationDataLines.Length)
+            if (study == 2)
             {
-                string[] values = annotationDataLines[l].Split('\t');
-                float thisTime = float.Parse(values[0]);
-
-                if (IsEqual(thisTime, currentTime))
+                // Position annotations at this timestep
+                while (l < annotationDataLines.Length)
                 {
-                    int originalOwner = GetID(values[1]);
-                    int currentOwner = GetID(values[2]);
+                    string[] values = annotationDataLines[l].Split('\t');
+                    float thisTime = float.Parse(values[0]);
 
-                    // Convert string representation of vector3 array into an actual array
-                    string positionsTmp = values[3].Replace(")|(", ",").Replace("(", "").Replace(")", ""); // Remove all brackets
-                    string[] positionsSplit = positionsTmp.Split(','); // Split to get individual strings of floats
-
-                    int numPositions = positionsSplit.Length / 3;
-                    Vector3[] positions = new Vector3[numPositions];
-                    int index = 0;
-                    for (int m = 0; m < positionsSplit.Length; m += 3)
+                    if (IsEqual(thisTime, currentTime))
                     {
-                        positions[index] = new Vector3(float.Parse(positionsSplit[m].Trim()),
-                            float.Parse(positionsSplit[m + 1].Trim()),
-                            float.Parse(positionsSplit[m + 2].Trim()));
-                        index++;
-                    }
+                        int originalOwner = GetID(values[1]);
+                        int currentOwner = GetID(values[2]);
 
-                    // Get line renderer
-                    LineRenderer lineRenderer;
-                    if (lineCounter < lines.Count)
-                    {
-                        lineRenderer = lines[lineCounter];
-                    }
-                    else
-                    {
-                        lineRenderer = Instantiate(replayLinePrefab).GetComponent<LineRenderer>();
-                        lines.Add(lineRenderer);
-                    }
-                    lineCounter++;
+                        // Convert string representation of vector3 array into an actual array
+                        string positionsTmp = values[3].Replace(")|(", ",").Replace("(", "").Replace(")", ""); // Remove all brackets
+                        string[] positionsSplit = positionsTmp.Split(','); // Split to get individual strings of floats
 
-                    lineRenderer.positionCount = numPositions;
-                    lineRenderer.SetPositions(positions);
-                    ColorObject(lineRenderer.gameObject, originalOwner, currentOwner);
+                        int numPositions = positionsSplit.Length / 3;
+                        Vector3[] positions = new Vector3[numPositions];
+                        int index = 0;
+                        for (int m = 0; m < positionsSplit.Length; m += 3)
+                        {
+                            positions[index] = new Vector3(float.Parse(positionsSplit[m].Trim()),
+                                float.Parse(positionsSplit[m + 1].Trim()),
+                                float.Parse(positionsSplit[m + 2].Trim()));
+                            index++;
+                        }
 
-                    l++;
-                }
-                else
-                {
-                    if (thisTime > currentTime)
-                        break;
-                    else
+                        // Get line renderer
+                        LineRenderer lineRenderer;
+                        if (lineCounter < lines.Count)
+                        {
+                            lineRenderer = lines[lineCounter];
+                        }
+                        else
+                        {
+                            lineRenderer = Instantiate(replayLinePrefab).GetComponent<LineRenderer>();
+                            lines.Add(lineRenderer);
+                        }
+                        lineCounter++;
+
+                        lineRenderer.positionCount = numPositions;
+                        lineRenderer.SetPositions(positions);
+                        ColorObject(lineRenderer.gameObject, originalOwner, currentOwner);
+
                         l++;
+                    }
+                    else
+                    {
+                        if (thisTime > currentTime)
+                            break;
+                        else
+                            l++;
+                    }
                 }
-            }
 
-            // Remove unnecessary lines
-            for (int k = lines.Count - 1; k > lineCounter; k--)
-            {
-                LineRenderer lr = lines[k];
-                lines.Remove(lr);
-                DestroyImmediate(lr.gameObject);
+                // Remove unnecessary lines
+                for (int k = lines.Count - 1; k > lineCounter; k--)
+                {
+                    LineRenderer lr = lines[k];
+                    lines.Remove(lr);
+                    DestroyImmediate(lr.gameObject);
+                }
             }
 
             yield return new WaitForEndOfFrame();
@@ -413,6 +507,9 @@ public class DataReplayer : MonoBehaviour
     private IEnumerator ReplayAndScreenshot()
     {
         isRunnning = true;
+
+        List<TextAsset> playerDataFiles = (study == 1) ? A_playerDataFiles : B_playerDataFiles;
+        List<TextAsset> objectDataFiles = (study == 1) ? A_objectDataFiles : B_objectDataFiles;
 
         List<GameObject> players = new List<GameObject>();
         List<GameObject> objects = new List<GameObject>();
@@ -473,15 +570,26 @@ public class DataReplayer : MonoBehaviour
                         if (IsEqual(float.Parse(objectValues[0]), currentTime))
                         {
                             GameObject go = null;
-                            Vector3 pos = new Vector3(float.Parse(objectValues[4]), float.Parse(objectValues[5]), float.Parse(objectValues[6]));
-                            Quaternion rot = new Quaternion(float.Parse(objectValues[7]), float.Parse(objectValues[8]), float.Parse(objectValues[9]), float.Parse(objectValues[10]));
+
+                            Vector3 pos;
+                            Quaternion rot;
+                            if (study == 1)
+                            {
+                                pos = new Vector3(float.Parse(objectValues[3]), float.Parse(objectValues[4]), float.Parse(objectValues[5]));
+                                rot = new Quaternion(float.Parse(objectValues[6]), float.Parse(objectValues[7]), float.Parse(objectValues[8]), float.Parse(objectValues[9]));
+                            }
+                            else
+                            {
+                                pos = new Vector3(float.Parse(objectValues[4]), float.Parse(objectValues[5]), float.Parse(objectValues[6]));
+                                rot = new Quaternion(float.Parse(objectValues[7]), float.Parse(objectValues[8]), float.Parse(objectValues[9]), float.Parse(objectValues[10]));
+                            }
 
                             switch (objectValues[1])
                             {
                                 case "Panel":
                                     if (showPanels)
                                     {
-                                        go = Instantiate(replayPanelPrefab);
+                                        go = Instantiate(study == 1 ? replayPartAPanelPrefab : replayPartBPanelPrefab);
                                         go.transform.position = pos;
                                         go.transform.rotation = rot;
                                     }
@@ -517,27 +625,59 @@ public class DataReplayer : MonoBehaviour
                                 case "Visualisation":
                                     if (showVisualisations)
                                     {
-                                        if (objectValues[14] != "")
+                                        if (study == 1)
                                         {
-                                            if (!useBlocksForVisualisations)
+                                            if (objectValues.Length > 10)
                                             {
-                                                // If is 2D
-                                                if (objectValues[17] == "Undefined")
-                                                    go = Instantiate(replayVisualisation2DPrefab);
-                                                // If is 3D
-                                                else
-                                                    go = Instantiate(replayVisualisation3DPrefab);
-                                            }
-                                            else
-                                            {
-                                                go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                                                float width = float.Parse(objectValues[10]);
+                                                float height = float.Parse(objectValues[11]);
+                                                float depth = float.Parse(objectValues[12]);
+
+                                                // Try to skip the "panel visualisation holder"
+                                                if (width == 0.9f && height == 0.9f && depth == 1f)
+                                                {
+                                                    break;
+                                                }
                                             }
 
-                                            Vector3 scale = (objectValues[17] != "Undefined") ? new Vector3(float.Parse(objectValues[11]), float.Parse(objectValues[12]), float.Parse(objectValues[13])) : new Vector3(float.Parse(objectValues[11]), float.Parse(objectValues[12]), 0.1f);
+                                            if (!useBlocksForVisualisations)
+                                                go = Instantiate(replayVisualisation2DPrefab);
+                                            else
+                                                go = GameObject.CreatePrimitive(PrimitiveType.Cube);
 
                                             go.transform.position = pos;
                                             go.transform.rotation = rot;
-                                            go.transform.localScale = scale;
+
+                                            if (objectValues.Length > 10)
+                                            {
+                                                Vector3 scale = new Vector3(float.Parse(objectValues[10]), float.Parse(objectValues[11]), 0.1f);
+                                                go.transform.localScale = scale;
+                                            }
+                                        }
+                                        else if (study == 2)
+                                        {
+                                            if (objectValues[14] != "")
+                                            {
+                                                if (!useBlocksForVisualisations)
+                                                {
+                                                    // If is 2D
+                                                    if (objectValues[17] == "Undefined")
+                                                        go = Instantiate(replayVisualisation2DPrefab);
+                                                    // If is 3D
+                                                    else
+                                                        go = Instantiate(replayVisualisation3DPrefab);
+                                                }
+                                                else
+                                                {
+                                                    go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                                                }
+
+                                                Vector3 scale = (objectValues[17] != "Undefined") ? new Vector3(float.Parse(objectValues[11]), float.Parse(objectValues[12]), float.Parse(objectValues[13])) : new Vector3(float.Parse(objectValues[11]), float.Parse(objectValues[12]), 0.1f);
+
+                                                go.transform.position = pos;
+                                                go.transform.rotation = rot;
+                                                go.transform.localScale = scale;
+                                            }
                                         }
                                     }
                                     break;
@@ -546,15 +686,21 @@ public class DataReplayer : MonoBehaviour
                             if (go != null)
                             {
                                 int originalOwner = GetID(objectValues[2]);
-                                int currentOwner = GetID(objectValues[3]);
+                                int currentOwner = GetID(objectValues[(study == 2) ? 3 : 2]);
 
                                 if (objectValues[1] == "Visualisation" && use2D3DVisualisationColors)
                                 {
-                                    ColorVisualisationObject(go, objectValues[17] != "Undefined");
+                                    if (study == 1)
+                                        ColorVisualisationObject(go, false);
+                                    else
+                                        ColorVisualisationObject(go, objectValues[17] != "Undefined");
                                 }
                                 else
                                 {
-                                    ColorObject(go, originalOwner, currentOwner);
+                                    if (study == 1)
+                                        ColorObject(go, originalOwner, originalOwner);
+                                    else
+                                        ColorObject(go, originalOwner, currentOwner);
                                 }
 
                                 objects.Add(go);
@@ -592,6 +738,9 @@ public class DataReplayer : MonoBehaviour
                 {
                     Destroy(go);
                 }
+
+                players.Clear();
+                objects.Clear();
 
                 yield return new WaitForEndOfFrame();
             }

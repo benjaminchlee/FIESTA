@@ -26,6 +26,18 @@ public class DataReplayerEditor : Editor
             }
         }
 
+        if (GUILayout.Button("Pause/Unpause Replay"))
+        {
+            if (Application.isPlaying)
+            {
+                dataReplayer.StartStopReplay();
+            }
+            else
+            {
+                Debug.LogError("Game must be playing to pause replay!");
+            }
+        }
+
         if (GUILayout.Button("Screenshot Data"))
         {
             if (Application.isPlaying)
