@@ -3,21 +3,21 @@
 
 FIESTA is a multiplayer Unity program that allows users to collaboratively visually analyse data in a shared virtual/augmented reality environment. It can support an arbitrary number of users and works in both co-located and remote settings.
 
+It was developed as a research prototype in the paper *Shared Surfaces and Spaces: Collaborative Data Visualisation in a Co-located Immersive Environment*.
+
 ## Requirements
 To properly run FIESTA, you will need to have installed:
 - Unity 2018.3.6f1
-- Oculus software
-- ZED SDK (for AR passthrough)
+- SteamVR
 - Photon Server (for self-hosted server)
 
-This repository currently contains most necessary 3rd party plugins and files to run. These will most likely be removed later on:
+This repository currently contains most necessary 3rd party plugins and files to run:
 - IATK
 - VRTK v3.3.0
 - SteamVR v1.2.3
 - Oculus Integration
 - PUN v2
 - DOTween
-- ZED Plugin for Unity (for AR passthrough)
 
 ## How to run
 ### Setting up networking
@@ -30,27 +30,32 @@ If you want to host your own local server, refer to [this guide](https://doc.pho
 
 If you want to use a cloud server, check "Use Name Server" instead.
 
-### Launching the game
+### Launching FIESTA
+There are three main scenes of note when launching FIESTA:
+* Start with StartupScene if running from a standalone build
+* Start with ConnectingScene if running from the Editor and using VR (with IP addresses already set up in Photon's server settings)
+* Start with NonVR_ConnectingScene if running from the Editor and not using VR (with IP addresses already set up in Photon's server settings)
+
+### Scenes in FIESTA
 FIESTA swaps between scenes in order to properly load players and their required objects. The order in which these scenes load are:
 1. StartupScene
 	* This assists with specifying the correct IP address to connect to, particularly for when FIESTA is being launched from a standalone build and not from the Editor
 	* Clicking "Connect" will connect to the specified IP address. If left blank, it will default to localhost.
-	* "Connect to Cloud" will connect to a cloud server, irrespective of what was entered in the IP address field
-	* Checking "Connect as spectator (non VR)" will influence which scene is launched when connected
+	* Clicking "Connect to Cloud" will instead connect to a cloud server, irrespective of what was entered in the IP address field
+	* Checking "Connect as spectator (non VR)" modifies which scene is launched when connected to the server. When unchecked, the standard VR-enabled scene is launched (ConnectingScene). When checked, a separate desktop-only scene is launched (NonVR_ConnectingScene).
 2. *(NonVR_)* ConnectingScene
 	* This acts as the "lobby" in which players connect to before loading into the actual scene
 	* The player's name and colour of their avatar can be customised with the keyboard and mouse
-	* The default scene will enable an avatar controlled in VR, the NonVR scene will enable an avatar controlled using the keyboard and mouse
+	* ConnectingScene will enable an avatar controlled in VR, NonVR_ConnectingScene will enable an avatar controlled using the keyboard and mouse
 	* The game can then be started either by clicking on the "Start" button on-screen, or by grabbing onto the floating "Start" button
 3. MainScene
 	* This is where the actual data visualisation functionality of FIESTA exists
-
-In short, launch StartupScene if running from a standalone build, launch ConnectingScene is running from the Editor (with IP addresses properly setup in Photon's server settings).
+	* All important objects are simultaneously loaded for all players who were in the ConnectingScene
 
 ### Notes on running
 There are some things to bear in mind about how FIESTA functions:
 * It does not support users joining and leaving mid-game, therefore ensure that all users are connected before starting
-* With enough users and/or a higher defined server tickrate, PUN may force disconnect a user if network traffic is too high. The easy solution is to use a private locally hosted server instead
+* With enough users and/or a higher defined server tickrate, PUN may force disconnect a user if network traffic is too high to a cloud server. The easy solution is to use a private locally hosted server instead
 
 ## Setting up co-located environment
 FIESTA can be used in both co-located and remote collaborative contexts. While remote collaboration is easier to setup, co-located collaboration requires that the VR tracking system is properly synchronised across all users to prevent accidental collisions.
