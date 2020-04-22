@@ -24,7 +24,7 @@ This repository currently contains most necessary 3rd party plugins and files to
 As FIESTA is a multiplayer program, clients must connect to a server. We use the [Photon Unity Networking engine](https://www.photonengine.com/en-US/Photon) for this. 
 You can either use the cloud servers hosted by Exit Games themselves (free up to 20 CCUs) or host your own one locally. The former requires less setup time, but the latter is less prone to latency and bandwidth restrictions and therefore is recommended.
 
-In either case, you will need an AppId (API key) to use Photon. You get one by signing up on their [website](https://www.photonengine.com/en-US/Photon), and creating a new Photon PUN or RealTime app. You can then enter this key into Unity via Window > Photon Unity Networking > PUN Wizard and choosing Setup Project.
+In either case, you will need an AppId (API key) to use Photon. You get one for free by signing up on their [website](https://www.photonengine.com/en-US/Photon), and creating a new Photon PUN or RealTime app. You can then enter this key into Unity via Window > Photon Unity Networking > PUN Wizard and choosing Setup Project. In order for multiple clients to connect to the same server, all of them need to share the same API key.
 
 If you want to host your own local server, refer to [this guide](https://doc.photonengine.com/en-us/server/current/getting-started/photon-server-in-5min) for instructions. You will need to enter the IP address of the server in the inspector via Window > Photon Unity Networking > Highlight Server Settings. Make sure "Use Name Server" is unchecked.
 
