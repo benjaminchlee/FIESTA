@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 public class DataReplayer : MonoBehaviour
 {
@@ -11,6 +12,8 @@ public class DataReplayer : MonoBehaviour
         REPLAY,
         SCREENSHOT
     }
+
+    public GameObject table;
 
     [Header("Prefabs")]
     public GameObject replayPlayerPrefab;
@@ -36,23 +39,15 @@ public class DataReplayer : MonoBehaviour
     public Color player1Color = Color.red;
     public Color player2Color = Color.blue;
     public Color player3Color = Color.green;
-
-    [Header("Part A Data Files")]
-    public List<TextAsset> A_playerDataFiles;
-    public List<TextAsset> A_objectDataFiles;
-
-    [Header("Part B Data Files")]
-    public List<TextAsset> B_playerDataFiles;
-    public List<TextAsset> B_objectDataFiles;
-    public List<TextAsset> B_annotationDataFiles;
-
+    
     [Header("Replay Settings")]
-    public int replayInterval = 100;
+    [Range(1, 50)]
+    public int replaySpeed = 1;
 
     [Header("Screenshot Settings")]
     public string outputFolder;
     public string suffix;
-    public int screenshotInterval = 100;
+    public int screenshotInterval = 20;
     public bool showPanels = true;
     public bool showPlayers = true;
     public bool showVisualisations = true;
@@ -68,9 +63,90 @@ public class DataReplayer : MonoBehaviour
     private bool isPaused;
     private Coroutine replayCoroutine;
 
+    private List<TextAsset> A_playerDataFiles;
+    private List<TextAsset> A_objectDataFiles;
+
+    private List<TextAsset> B_playerDataFiles;
+    private List<TextAsset> B_objectDataFiles;
+    private List<TextAsset> B_annotationDataFiles;
+
     private void Awake()
     {
         UnityEngine.XR.XRSettings.enabled = false;
+    }
+
+    public void Start()
+    {
+        FindPlayerDataFiles();
+        FindObjectDataFiles();
+        FindAnnotationDataFiles();
+    }
+
+    private void FindPlayerDataFiles()
+    {
+        A_playerDataFiles = new List<TextAsset>();
+        B_playerDataFiles = new List<TextAsset>();
+
+        string[] guids = AssetDatabase.FindAssets("t:textasset playerdata", new string[] { "Assets/Logs/Study A" });
+        foreach (string guid in guids)
+        {
+            TextAsset file = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(guid)) as TextAsset;
+            A_playerDataFiles.Add(file);
+        }
+
+        guids = AssetDatabase.FindAssets("t:textasset playerdata", new string[] { "Assets/Logs/Study B" });
+        foreach (string guid in guids)
+        {
+            TextAsset file = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(guid)) as TextAsset;
+            B_playerDataFiles.Add(file);
+        }
+
+        if (A_playerDataFiles.Count == 0 || B_playerDataFiles.Count == 0)
+        {
+            Debug.LogError("Cound not find log files. Make sure they are placed in the .../Assets/Logs/ folder with both Study A and B subfolders.");
+        }
+    }
+
+    private void FindObjectDataFiles()
+    {
+        A_objectDataFiles = new List<TextAsset>();
+        B_objectDataFiles = new List<TextAsset>();
+
+        string[] guids = AssetDatabase.FindAssets("t:textasset objectdata", new string[] { "Assets/Logs/Study A" });
+        foreach (string guid in guids)
+        {
+            TextAsset file = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(guid)) as TextAsset;
+            A_objectDataFiles.Add(file);
+        }
+
+        guids = AssetDatabase.FindAssets("t:textasset objectdata", new string[] { "Assets/Logs/Study B" });
+        foreach (string guid in guids)
+        {
+            TextAsset file = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(guid)) as TextAsset;
+            B_objectDataFiles.Add(file);
+        }
+
+        if (A_objectDataFiles.Count == 0 || B_objectDataFiles.Count == 0)
+        {
+            Debug.LogError("Cound not find log files. Make sure they are placed in the .../Assets/Logs/ folder with both Study A and B subfolders.");
+        }
+    }
+
+    private void FindAnnotationDataFiles()
+    {
+        B_annotationDataFiles = new List<TextAsset>();
+
+        string[] guids = AssetDatabase.FindAssets("t:textasset annotationdata", new string[] { "Assets/Logs/Study B" });
+        foreach (string guid in guids)
+        {
+            TextAsset file = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(guid)) as TextAsset;
+            B_annotationDataFiles.Add(file);
+        }
+        
+        if (B_annotationDataFiles.Count == 0)
+        {
+            Debug.LogError("Cound not find log files. Make sure they are placed in the .../Assets/Logs/ folder with both Study A and B subfolders.");
+        }
     }
 
     public void StartReplay()
@@ -110,6 +186,8 @@ public class DataReplayer : MonoBehaviour
     {
         isRunnning = true;
         isPaused = false;
+
+        table.SetActive(study == 2);
 
         List<TextAsset> playerDataFiles = (study == 1) ? A_playerDataFiles : B_playerDataFiles;
         List<TextAsset> objectDataFiles = (study == 1) ? A_objectDataFiles :B_objectDataFiles;
@@ -166,7 +244,7 @@ public class DataReplayer : MonoBehaviour
         int j = 1;
         int l = 1;
 
-        for (int i = 1; i < playerDataLines1.Length; i += (isPaused) ? 0 : replayInterval)
+        for (int i = 1; i < playerDataLines1.Length; i += (isPaused) ? 0 : replaySpeed)
         {
             if (isPaused)
             {
@@ -507,6 +585,8 @@ public class DataReplayer : MonoBehaviour
     private IEnumerator ReplayAndScreenshot()
     {
         isRunnning = true;
+
+        table.SetActive(study == 2);
 
         List<TextAsset> playerDataFiles = (study == 1) ? A_playerDataFiles : B_playerDataFiles;
         List<TextAsset> objectDataFiles = (study == 1) ? A_objectDataFiles : B_objectDataFiles;
