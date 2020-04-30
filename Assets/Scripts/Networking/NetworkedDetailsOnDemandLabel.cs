@@ -66,6 +66,7 @@ public class NetworkedDetailsOnDemandLabel : MonoBehaviourPunCallbacks {
         
         stringBuilder.AppendFormat("<b>{0} (x):</b> {1}\n", visualisation.xDimension.Attribute, dataSource.getOriginalValue(indices[0], visualisation.xDimension.Attribute));
         stringBuilder.AppendFormat("<b>{0} (y):</b> {1}\n", visualisation.yDimension.Attribute, dataSource.getOriginalValue(indices[0], visualisation.yDimension.Attribute));
+        if (visualisation.zDimension.Attribute != "Undefined") stringBuilder.AppendFormat("<b>{0} (z):</b> {1}\n", visualisation.zDimension.Attribute, dataSource.getOriginalValue(indices[0], visualisation.zDimension.Attribute));
 
         stringBuilder.Append("--------\n");
 
