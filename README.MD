@@ -78,3 +78,23 @@ To synchronise positions of players and objects in FIESTA, we need to use the sa
 2. Copy over chaperone_info.vrchap
 3. Navigate to \<steam install directory>\config\lighthouse
 4. Copy over lighthousedb.json
+
+## Data Replayer
+We used FIESTA to conduct a user study in our paper *Shared Surfaces and Spaces: Collaborative Data Visualisation in a Co-located Immersive Environment*. While we are unable to publish the video footage due to participant names being visible, we provide a means to "replay" the events of each group and task in the study using Unity.
+
+### How to run
+Other than having the FIESTA source code and Unity Editor, you will need the following:
+* A Photon API key to properly see visualisation objects. Follow same instructions listed above
+* The original log files, which you can download [here](https://drive.google.com/file/d/1pitxd03uAmUEDYTKQqUfPNuN3cXQjYe_/view?usp=sharing). When downloaded, extract the Logs folder into the FIESTA project's Assets folder without renaming any files. The final directory should be "FIESTA/Assets/Logs/". Note that you do not need to do anything else, as the scripts will find the required files at runtime
+
+Once set up, you can watch the replay as follows:
+1. On the Unity Editor, open the "DataWranglingScene" scene
+2. Press the Play button to run the scene
+3. Click on the "DataReplayer" GameObject in the Hierarchy
+4. In the Inspector, select which study, group, and question (task) you want to view. Note that in this case, Groups 6 to 10 are accessed via Study 2, Groups 1 to 5 instead
+5. Click on "Replay Data" at the bottom of the Inspector to start replaying the events in the study
+	* To adjust replay speed, drag the "Replay Speed" slider
+	* To pause/resume the replay , click on "Pause/Unpause Replay"
+	* To reset the entire replay, click on "Clear Scene"
+
+As the events are resimulated in Unity, you can pan and move the Scene camera any way you wish during the replay.
